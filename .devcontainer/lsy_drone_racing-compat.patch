@@ -1,0 +1,80 @@
+diff --git a/lsy_drone_racing/control/attitude_controller_multi.py b/lsy_drone_racing/control/attitude_controller_multi.py
+index 29ba999..ad6d03e 100644
+--- a/lsy_drone_racing/control/attitude_controller_multi.py
++++ b/lsy_drone_racing/control/attitude_controller_multi.py
+@@ -35,7 +35,7 @@ class AttitudeController(SingleAttitudeController):
+         super().__init__({k: v[self.rank] for k, v in obs.items()}, info, config)
+         # We don't want the example controllers to crash, so we speed up this one to get ahead
+         self._t_total = 10
+-        waypoints = self._des_pos_spline._c[-1]
++        waypoints = self._des_pos_spline.c[-1]
+         t = np.linspace(0, self._t_total, len(waypoints))
+         self._des_pos_spline = CubicSpline(t, waypoints)
+         self._des_vel_spline = self._des_pos_spline.derivative()
+diff --git a/lsy_drone_racing/control/train_rl.py b/lsy_drone_racing/control/train_rl.py
+index 62e031a..af78cbf 100644
+--- a/lsy_drone_racing/control/train_rl.py
++++ b/lsy_drone_racing/control/train_rl.py
+@@ -26,6 +26,7 @@ from gymnasium import spaces
+ from gymnasium.spaces import flatten_space
+ from gymnasium.vector import VectorEnv, VectorObservationWrapper, VectorRewardWrapper
+ from gymnasium.vector.utils import batch_space
++from gymnasium.wrappers.vector.array_conversion import ArrayConversion
+ from gymnasium.wrappers.vector.jax_to_torch import JaxToTorch
+ from jax import Array
+ from jax.scipy.spatial.transform import Rotation as R
+@@ -192,7 +193,7 @@ class RandTrajEnv(DroneEnv):
+         self.disturbances = {mode: rng_spec2fn(spec) for mode, spec in specs.items()}
+         if "dynamics" in self.disturbances:
+             disturbance_fn = build_dynamics_disturbance_fn(self.disturbances["dynamics"])
+-            insert_fn_before(self.sim.step_pipeline, "integrate", disturbance_fn)
++            insert_fn_before(self.sim.step_pipeline, "integration", disturbance_fn)
+             self.sim.build_step_fn()
+ 
+         # Update observation space
+@@ -308,18 +309,24 @@ class RandTrajEnv(DroneEnv):
+         terminate = jp.any((pos[:, 0, :] < lower_bounds) | (pos[:, 0, :] > upper_bounds), axis=-1)
+         return terminate
+ 
+-    def build_reset_randomization_fn(self, dynamics: str) -> Callable[[SimData, Array], SimData]:
++    def build_reset_randomization_fn(
++        self, dynamics: str
++    ) -> Callable[[SimData, SimData, Array], SimData]:
+         """Reset randomization."""
+ 
+         # Spin up rotors to help takeoff
+-        def _reset_randomization_so_rpy(data: SimData, mask: Array) -> SimData:
++        def _reset_randomization_so_rpy(
++            data: SimData, _default_data: SimData, mask: Array
++        ) -> SimData:
+             rotor_vel = 0.05 * jp.ones(
+                 (data.core.n_worlds, data.core.n_drones, data.states.rotor_vel.shape[-1])
+             )
+             data = data.replace(states=leaf_replace(data.states, mask, rotor_vel=rotor_vel))
+             return data
+ 
+-        def _reset_randomization_first_principles(data: SimData, mask: Array) -> SimData:
++        def _reset_randomization_first_principles(
++            data: SimData, _default_data: SimData, mask: Array
++        ) -> SimData:
+             rotor_vel = 10000.0 * jp.ones(
+                 (data.core.n_worlds, data.core.n_drones, data.states.rotor_vel.shape[-1])
+             )
+@@ -493,7 +500,16 @@ def make_envs(
+         d_act_xy_coef=coefs.get("d_act_xy_coef", 1.0),
+     )
+     env = FlattenJaxObservation(env)
+-    env = JaxToTorch(env, torch_device)
++    if jax_device == "gpu" and torch_device.type == "cpu":
++        env = ArrayConversion(
++            env,
++            env_xp=jp,
++            target_xp=np,
++            env_device=jax.devices(jax_device)[0],
++        )
++        env = ArrayConversion(env, env_xp=np, target_xp=torch, target_device=torch_device)
++    else:
++        env = JaxToTorch(env, torch_device)
+     return env
+ 
+ 

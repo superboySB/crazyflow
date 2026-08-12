@@ -20,7 +20,7 @@
             ],
             "settings": {
                 "terminal.integrated.shell.linux": "/bin/bash",
-                "python.defaultInterpreterPath": "/home/vscode/venv/bin/python",
+                "python.defaultInterpreterPath": "/opt/crazyflow/.pixi/envs/gpu-tests/bin/python",
                 "jupyter.kernels.excludePythonEnvironments": [
                     "/usr/bin/python",
                     "/usr/bin/python3.10",
@@ -51,14 +51,17 @@
     },
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
-        "XAUTHORITY": "${localEnv:XAUTHORITY}"
+        "XAUTHORITY": "/tmp/.Xauthority"
     },
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind",
+        "source=${localEnv:XAUTHORITY},target=/tmp/.Xauthority,type=bind,readonly"
+    ],
     "runArgs": [
         "--interactive",
         "--net=host",
         "--ipc=host",
-        // "--gpus=all", //use only with GPU
-        // "--runtime=nvidia" //use only with GPU
+        "--gpus=all"
     ],
     "postCreateCommand": "python -m pip install -e '.'", //[test,gpu]
     "remoteUser": "vscode"
