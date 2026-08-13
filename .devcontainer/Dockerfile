@@ -63,13 +63,18 @@ USER ${USERNAME}
 RUN curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.76.0 bash
 
 WORKDIR /opt/crazyflow
-COPY --chown=${USERNAME}:${USERNAME} . .
-RUN pixi install --locked -e gpu-tests
+COPY --chown=${USERNAME}:${USERNAME} pyproject.toml pixi.lock README.md LICENSE ./
+RUN pixi install --locked -e gpu-tests --skip crazyflow
 
 # Keep the environment inside the image.  PYTHONPATH makes a bind-mounted
 # checkout at /workspace/crazyflow take precedence over the build-time copy.
 ENV PATH="/opt/crazyflow/.pixi/envs/gpu-tests/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cublas/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cuda_cupti/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cudnn/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cufft/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cusolver/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cusparse/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/nccl/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/nvshmem/lib:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+
+# Source changes are a cheap layer: they do not invalidate the locked CUDA
+# dependency environment above.
+COPY --chown=${USERNAME}:${USERNAME} . .
+RUN python -m pip install --no-deps --no-build-isolation -e .
 
 # Gymnasium 1.3 still calls the six-argument camera API removed in MuJoCo
 # 3.11.  Keep Crazyflow's source untouched by pinning the last compatible
@@ -82,9 +87,9 @@ RUN python -m pip install --no-cache-dir --no-deps --force-reinstall \
 
 # Pin the externally maintained racing course so rebuilds do not silently
 # change behavior.  Install its simulation, optional gamepad, and RL packages
-# into the same CUDA-enabled Python environment as Crazyflow.  The simulator
-# runs on JAX/CUDA while the compact PPO policy uses the CPU PyTorch wheel.
-ARG LSY_DRONE_RACING_REF=9ecb1cb0a78a232b7cad764344797bfa1c45f462
+# into the same CUDA-enabled Python environment as Crazyflow.  PyTorch's
+# official CUDA 12.6 wheel lets both the JAX simulator and PPO policy use GPU.
+ARG LSY_DRONE_RACING_REF=065a6ecb7a7621f156bdd0bedc70020e3331a3e9
 USER root
 RUN mkdir -p /opt/lsy_drone_racing \
     && chown "${USERNAME}:${USERNAME}" /opt/lsy_drone_racing
@@ -94,10 +99,11 @@ RUN git clone https://github.com/learnsyslab/lsy_drone_racing.git \
         /opt/lsy_drone_racing \
     && cd /opt/lsy_drone_racing \
     && git checkout --detach "${LSY_DRONE_RACING_REF}" \
-    && git apply /opt/crazyflow/docker/lsy_drone_racing-scipy.patch \
+    && git apply /opt/crazyflow/.devcontainer/lsy_drone_racing-compat.patch \
     && python -m pip install \
-        --index-url https://download.pytorch.org/whl/cpu \
+        --index-url https://download.pytorch.org/whl/cu126 \
         torch==2.8.0 \
+    && python -c 'import torch; assert torch.backends.cuda.is_built(); assert torch.version.cuda == "12.6"' \
     && python -m pip install wandb==0.28.1 \
     && python -m pip install -e ".[gamepad,rl]"
 

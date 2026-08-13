@@ -78,3 +78,28 @@ index 62e031a..af78cbf 100644
      return env
  
  
+@@ -758,19 +774,21 @@ def train_ppo(
+ def evaluate_ppo(args: Args, n_eval: int, model_path: Path) -> tuple[float, float]:
+     """Evaluate."""
+     set_seeds(args.seed)
+-    device = torch.device("cpu")
++    device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
+     r_coefs = {
+         "n_obs": args.n_obs,
+         "rpy_coef": args.rpy_coef,
+         "d_act_xy_coef": args.d_act_xy_coef,
+         "d_act_th_coef": args.d_act_th_coef,
+         "act_coef": args.act_coef,
+     }
+-    eval_env = make_envs(num_envs=1, coefs=r_coefs)
++    eval_env = make_envs(
++        num_envs=1, jax_device=args.jax_device, torch_device=device, coefs=r_coefs
++    )
+     agent = Agent(eval_env.single_observation_space.shape, eval_env.single_action_space.shape).to(
+         device
+     )
+-    agent.load_state_dict(torch.load(model_path))
++    agent.load_state_dict(torch.load(model_path, map_location=device))
+     with torch.no_grad():
+         episode_rewards = []
+         episode_lengths = []

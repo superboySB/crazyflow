@@ -64,5 +64,5 @@
         "--gpus=all"
     ],
     "postCreateCommand": "python -m pip install -e '.'", //[test,gpu]
-    "remoteUser": "vscode"
+    "remoteUser": "user"
 }

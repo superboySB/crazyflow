@@ -47,7 +47,7 @@ cd /workspace/crazyflow
 
 ## 检查运行环境
 
-查看显卡、CUDA 和 JAX 后端：
+查看显卡、CUDA、JAX 和 PyTorch 后端：
 
 ```bash
 nvidia-smi
@@ -56,10 +56,15 @@ nvcc --version
 python - <<'PY'
 import jax
 import jax.numpy as jnp
+import torch
 
 x = jax.device_put(jnp.ones((1024, 1024)), jax.devices("gpu")[0])
 y = (x @ x).block_until_ready()
 print(jax.default_backend(), y.device, y[0, 0])
+
+t = torch.ones((1024, 1024), device="cuda")
+u = t @ t
+print(torch.__version__, torch.version.cuda, u.device, u[0, 0].item())
 PY
 ```
 
@@ -276,7 +281,7 @@ python scripts/evaluate.py
 
 ## 训练和评估 PPO 策略
 
-训练器默认使用 1024 个 JAX/CUDA 并行环境，完成约 150 万环境步；策略网络使用 CPU PyTorch，避免镜像中重复安装一套 PyTorch CUDA 运行库。
+训练器默认使用 1024 个 JAX/CUDA 并行环境，完成约 150 万环境步；训练和评估会自动选择 PyTorch/CUDA。JAX 环境与 PyTorch 策略位于同一 GPU，数据通过 GPU array 转换传递。
 
 完整训练：
 
