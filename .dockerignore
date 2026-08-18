@@ -17,6 +17,8 @@ benchmark/data
 build
 dist
 site
+saves
 note.md
 usage.md
-usage_assets
+usage_assets/*
+!usage_assets/train_gymnasium.py
