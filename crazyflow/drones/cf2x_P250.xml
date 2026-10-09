@@ -1,4 +1,13 @@
 <mujoco model="cf2x">
+  <!--
+  Platform data not used by the simulation, kept for estimators, firmware and tooling:
+  rotor_dyn_coef_simple = 7.709730027690284
+  thrust_dyn_coef = 7.9435775497736785
+  vmotor2thrust = [-0.02476537915958403, 0.06523793527519485, -0.026792504967750107, 0.006776789303971145]  # Index is order
+  vmotor2torque = [-2.8633106919309745e-5, 0.00011679386117520097, 5.105754520419129e-5, 0.0]  # Index is order
+  vmotor2rpm = [4657.542534331524, 7536.161830990926]  # Index is order
+  prop_radius = 23.4e-3 # TODO check
+  -->
   <compiler inertiafromgeom="false" meshdir="assets" autolimits="true" />
 
   <asset>
@@ -40,7 +49,7 @@
   <worldbody>
     <body name="drone" pos="0 0 0.05" childclass="cf2x">
       <site name="CoM" />
-      <inertial pos="0.0 0.0 0.0" mass="0.027" diaginertia="2.3951e-5 2.3951e-5 3.2347e-5" />
+      <inertial pos="0.0 0.0 0.0" mass="0.0318" diaginertia="2.3951e-5 2.3951e-5 3.2347e-5" />
 
       <!-- Meshes -->
       <geom mesh="pcb" material="gray" class="visual" />
@@ -83,7 +92,7 @@
     </body>
 
     <body name="drone_fused" pos="0 0 0.05" childclass="cf2x">
-      <inertial pos="0.0 0.0 0.0" mass="0.027" diaginertia="2.3951e-5 2.3951e-5 3.2347e-5" />
+      <inertial pos="0.0 0.0 0.0" mass="0.0318" diaginertia="2.3951e-5 2.3951e-5 3.2347e-5" />
       <geom mesh="cf2x_fused" material="" class="visual" />
       <geom name="col_sphere_fused" type="sphere" size="0.07" pos="0 0 0.005" class="collision" contype="1" conaffinity="1" />
       <geom name="col_box_fused" type="box" size="0.055 0.055 0.02" class="collision" rgba="0.5 0.5 0.5 0" contype="0" conaffinity="0" />

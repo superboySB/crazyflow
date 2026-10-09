@@ -17,23 +17,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import casadi as cs
-import jax
 import jax.numpy as jnp
 from array_api_compat import array_namespace
 from array_api_compat import device as xp_device
-from flax.struct import dataclass
+from flax.struct import dataclass, field
 from scipy.spatial.transform import Rotation as R
 
 import crazyflow.dynamics.symbols as symbols
-from crazyflow.dynamics.core import load_params, supports
+from crazyflow.dynamics.core import load_fn_params, supports
 from crazyflow.dynamics.utils import rotation
-from crazyflow.utils import to_xp
+from crazyflow.utils import CORE_NDIM_KEY, to_xp
 
 if TYPE_CHECKING:
     from jax import Device
 
     from crazyflow._typing import Array  # To be changed to array_api_typing later
-    from crazyflow.sim.data import SimData
 
 
 @supports(rotor_dynamics=False)
@@ -75,11 +73,12 @@ def dynamics(
             [0, 0, -9.81].
         J: Inertia matrix (kg m^2).
         J_inv: Inverse inertia matrix (1/kg m^2).
-        acc_coef: Coefficient for the acceleration (1/s^2).
-        cmd_f_coef: Coefficient for the collective thrust (N/rad^2).
-        rpy_coef: Coefficient for the roll pitch yaw dynamics (1/s).
-        rpy_rates_coef: Coefficient for the roll pitch yaw rates dynamics (1/s^2).
-        cmd_rpy_coef: Coefficient for the roll pitch yaw command dynamics (1/s).
+        acc_coef: Thrust offset (N).
+        cmd_f_coef: Thrust scaling coefficient.
+        rpy_coef: Rotational dynamics coefficients of the roll, pitch, and yaw angles (1/s^2).
+        rpy_rates_coef: Rotational dynamics coefficients of the roll, pitch, and yaw rates (1/s).
+        cmd_rpy_coef: Rotational dynamics coefficients of the commanded roll, pitch, and yaw
+            (1/s^2).
 
     Returns:
         The derivatives (pos_dot, quat_dot, vel_dot, ang_vel_dot).
@@ -150,9 +149,9 @@ def dynamics_euler(
     cmd_f = cmd[..., -1]
     cmd_rpy = cmd[..., 0:3]
     drone_z_axis = R.from_euler("xyz", rpy).as_matrix()[..., -1]
-    thrust = acc_coef + cmd_f_coef * cmd_f
+    thrust = acc_coef + cmd_f_coef * cmd_f[..., None]  # (..., 1)
     pos_dot = vel
-    vel_dot = 1.0 / mass * thrust[..., None] * drone_z_axis + gravity_vec
+    vel_dot = 1.0 / mass * thrust * drone_z_axis + gravity_vec
     rpy_rates_dot = rpy_coef * rpy + rpy_rates_coef * rpy_rates + cmd_rpy_coef * cmd_rpy
     return pos_dot, rpy_rates, vel_dot, rpy_rates_dot
 
@@ -185,11 +184,14 @@ def symbolic_dynamics(
         gravity_vec: Gravity vector, shape ``(3,)``.
         J: Inertia matrix, shape ``(3, 3)``.
         J_inv: Inverse inertia matrix, shape ``(3, 3)``.
-        acc_coef: Scalar acceleration offset coefficient.
-        cmd_f_coef: Collective-thrust-to-acceleration coefficient.
-        rpy_coef: RPY state feedback coefficient, shape ``(3,)``.
-        rpy_rates_coef: RPY-rate feedback coefficient, shape ``(3,)``.
-        cmd_rpy_coef: RPY command feedforward coefficient, shape ``(3,)``.
+        acc_coef: Thrust offset in N.
+        cmd_f_coef: Thrust scaling coefficient.
+        rpy_coef: Rotational dynamics coefficients of the roll, pitch, and yaw angles in 1/s², shape
+            ``(3,)``.
+        rpy_rates_coef: Rotational dynamics coefficients of the roll, pitch, and yaw rates in 1/s,
+            shape ``(3,)``.
+        cmd_rpy_coef: Rotational dynamics coefficients of the commanded roll, pitch, and yaw in
+            1/s², shape ``(3,)``.
 
     Returns:
         Tuple ``(X_dot, X, U, Y)`` of CasADi ``MX`` expressions:
@@ -235,7 +237,7 @@ def symbolic_dynamics(
 
     # Rotational equation of motion
     xi = cs.vertcat(
-        cs.horzcat(0, -symbols.ang_vel.T), cs.horzcat(symbols.ang_vel, -cs.skew(symbols.ang_vel))
+        cs.horzcat(-cs.skew(symbols.ang_vel), symbols.ang_vel), cs.horzcat(-symbols.ang_vel.T, 0)
     )
     quat_dot = 0.5 * (xi @ symbols.quat)
     ang_vel_dot = rotation.cs_rpy_rates_deriv2ang_vel_deriv(
@@ -275,11 +277,14 @@ def symbolic_dynamics_euler(
     Args:
         mass: Drone mass in kg.
         gravity_vec: Gravity vector, shape ``(3,)``.
-        acc_coef: Scalar acceleration offset coefficient.
-        cmd_f_coef: Collective-thrust-to-acceleration coefficient.
-        rpy_coef: RPY state feedback coefficient, shape ``(3,)``.
-        rpy_rates_coef: RPY-rate feedback coefficient, shape ``(3,)``.
-        cmd_rpy_coef: RPY command feedforward coefficient, shape ``(3,)``.
+        acc_coef: Thrust offset in N.
+        cmd_f_coef: Thrust scaling coefficient.
+        rpy_coef: Rotational dynamics coefficients of the roll, pitch, and yaw angles in 1/s², shape
+            ``(3,)``.
+        rpy_rates_coef: Rotational dynamics coefficients of the roll, pitch, and yaw rates in 1/s,
+            shape ``(3,)``.
+        cmd_rpy_coef: Rotational dynamics coefficients of the commanded roll, pitch, and yaw in
+            1/s², shape ``(3,)``.
 
     Returns:
         Tuple ``(X_dot, X, U, Y)`` of CasADi ``MX`` expressions:
@@ -316,65 +321,46 @@ def symbolic_dynamics_euler(
 
 @dataclass
 class Params:
-    mass: Array  # (N, M, 1)
+    mass: Array = field(metadata={CORE_NDIM_KEY: 1})  # (1,)
     """Mass of the drone."""
 
-    gravity_vec: Array  # (N, M, 3)
+    gravity_vec: Array = field(metadata={CORE_NDIM_KEY: 1})  # (3,)
     """Gravity vector of the drone."""
 
-    J: Array  # (N, M, 3, 3)
+    J: Array = field(metadata={CORE_NDIM_KEY: 2})  # (3, 3)
     """Inertia matrix of the drone."""
 
-    J_inv: Array  # (N, M, 3, 3)
+    J_inv: Array = field(metadata={CORE_NDIM_KEY: 2})  # (3, 3)
     """Inverse of the inertia matrix of the drone."""
 
-    acc_coef: Array  # (N, M, 1)
-    """Coefficient for the acceleration."""
+    acc_coef: Array = field(metadata={CORE_NDIM_KEY: 1})  # (1,)
+    """Thrust offset."""
 
-    cmd_f_coef: Array  # (N, M, 1)
-    """Coefficient for the collective thrust."""
+    cmd_f_coef: Array = field(metadata={CORE_NDIM_KEY: 1})  # (1,)
+    """Thrust scaling coefficient."""
 
-    rpy_coef: Array  # (N, M, 1)
-    """Coefficient for the roll pitch yaw dynamics."""
+    rpy_coef: Array = field(metadata={CORE_NDIM_KEY: 1})  # (3,)
+    """Rotational dynamics coefficients of the roll, pitch, and yaw angles."""
 
-    rpy_rates_coef: Array  # (N, M, 1)
-    """Coefficient for the roll pitch yaw rates dynamics."""
+    rpy_rates_coef: Array = field(metadata={CORE_NDIM_KEY: 1})  # (3,)
+    """Rotational dynamics coefficients of the roll, pitch, and yaw rates."""
 
-    cmd_rpy_coef: Array  # (N, M, 1)
-    """Coefficient for the roll pitch yaw command dynamics."""
+    cmd_rpy_coef: Array = field(metadata={CORE_NDIM_KEY: 1})  # (3,)
+    """Rotational dynamics coefficients of the commanded roll, pitch, and yaw."""
 
     @staticmethod
-    def create(n_worlds: int, n_drones: int, drone: str, device: Device) -> Params:
-        """Create a default set of parameters for the simulation."""
-        p = load_params(dynamics, drone)
-        J = jax.device_put(jnp.tile(p["J"][None, None, :, :], (n_worlds, n_drones, 1, 1)), device)
+    def create(drone: str, device: Device) -> Params:
+        """Create the default parameters for the simulation."""
+        p = load_fn_params(dynamics, drone)
+        J = jnp.asarray(p["J"], device=device)
         return Params(
-            mass=jnp.full((n_worlds, n_drones, 1), p["mass"], device=device),
+            mass=jnp.asarray([p["mass"]], device=device),
             gravity_vec=jnp.asarray(p["gravity_vec"], device=device),
             J=J,
             J_inv=jnp.linalg.inv(J),
-            acc_coef=jnp.asarray(p["acc_coef"], device=device),
-            cmd_f_coef=jnp.asarray(p["cmd_f_coef"], device=device),
+            acc_coef=jnp.asarray([p["acc_coef"]], device=device),
+            cmd_f_coef=jnp.asarray([p["cmd_f_coef"]], device=device),
             rpy_coef=jnp.asarray(p["rpy_coef"], device=device),
             rpy_rates_coef=jnp.asarray(p["rpy_rates_coef"], device=device),
             cmd_rpy_coef=jnp.asarray(p["cmd_rpy_coef"], device=device),
         )
-
-
-def sim_dynamics(data: SimData) -> SimData:
-    """Compute the forces and torques from the so_rpy dynamics."""
-    params: Params = data.params
-    vel, _, acc, ang_acc = dynamics(
-        pos=data.states.pos,
-        quat=data.states.quat,
-        vel=data.states.vel,
-        ang_vel=data.states.ang_vel,
-        cmd=data.controls.attitude.cmd,
-        dist_f=data.states.force,
-        dist_t=data.states.torque,
-        **params.__dict__,
-    )
-    states_deriv = data.states_deriv.replace(
-        vel=vel, ang_vel=data.states.ang_vel, acc=acc, ang_acc=ang_acc
-    )
-    return data.replace(states_deriv=states_deriv)

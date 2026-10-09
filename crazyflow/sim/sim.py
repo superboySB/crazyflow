@@ -11,29 +11,39 @@ import jax
 import jax.numpy as jnp
 import mujoco
 import mujoco.mjx as mjx
+import numpy as np
 from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 from jax import Array, Device
+from jax.sharding import NamedSharding, PartitionSpec
 
 import crazyflow.sim.functional as F
 from crazyflow.control import Control
 from crazyflow.control.mellinger import (
     control_attitude2force_torque,
+    control_body_rate2force_torque,
     control_commit_attitude,
     control_force_torque2rotor_vel,
     control_state2attitude,
 )
+from crazyflow.control.transform import motor_force2rotor_vel
+from crazyflow.drones import Drone
 from crazyflow.dynamics import Dynamics
-from crazyflow.dynamics.first_principles import sim_dynamics as first_principles_dynamics
-from crazyflow.dynamics.so_rpy import sim_dynamics as so_rpy_dynamics
-from crazyflow.dynamics.so_rpy_rotor import sim_dynamics as so_rpy_rotor_dynamics
-from crazyflow.dynamics.so_rpy_rotor_drag import sim_dynamics as so_rpy_rotor_drag_dynamics
+from crazyflow.dynamics import load_params as load_dynamics_params
 from crazyflow.exception import ConfigError, NotInitializedError
 from crazyflow.sim.data import SimControls, SimCore, SimData, SimParams, SimState, SimStateDeriv
+from crazyflow.sim.dynamics import (
+    first_principles_dynamics,
+    so_rpy_dynamics,
+    so_rpy_rotor_drag_dynamics,
+    so_rpy_rotor_dynamics,
+)
 from crazyflow.sim.integration import Integrator, euler, rk4, symplectic_euler
 from crazyflow.sim.pipeline import append_fn
-from crazyflow.utils import grid_2d, pytree_replace
+from crazyflow.sim.sharding import WORLD_AXIS, build_sharded_data, build_sharded_mjx_data, placement
+from crazyflow.utils import grid_2d, pytree_replace, world_mask
 
 if TYPE_CHECKING:
+    from jax.sharding import Mesh
     from mujoco.mjx import Data, Model
     from numpy.typing import NDArray
 
@@ -70,18 +80,20 @@ class Sim:
         self,
         n_worlds: int = 1,
         n_drones: int = 1,
-        drone: str = "cf21B_500",
+        drone: Drone = Drone.cf21B_500,
         dynamics: Dynamics = Dynamics.default,
         control: Control = Control.default,
         integrator: Integrator = Integrator.default,
         freq: int = 500,
         state_freq: int = 100,
         attitude_freq: int = 500,
+        body_rate_freq: int = 500,
         force_torque_freq: int = 500,
         device: str = "cpu",
         xml_path: Path | None = None,
         rng_key: int = 0,
         fused_mjx_model: bool = False,
+        mesh: Mesh | None = None,
     ):
         """Build the scene and the step and reset pipelines, and allocate the batched sim data.
 
@@ -95,6 +107,7 @@ class Sim:
             freq: Dynamics step frequency in Hz.
             state_freq: Frequency in Hz at which the state controller runs.
             attitude_freq: Frequency in Hz at which the attitude controller runs.
+            body_rate_freq: Frequency in Hz at which the body rate controller runs.
             force_torque_freq: Frequency in Hz at which the force/torque controller runs.
             device: Device to place the simulation data on (e.g. ``"cpu"`` or ``"gpu"``).
             xml_path: Path to a custom scene XML. Defaults to ``crazyflow/scene.xml``.
@@ -102,11 +115,12 @@ class Sim:
             fused_mjx_model: If True, use the ``drone_fused`` body whose visual geometry is fused
                 into a single mesh. This shrinks the MJX model and reduces its memory footprint at
                 the cost of visual detail.
+            mesh: Mesh to distribute the worlds over.
         """
         assert Dynamics(dynamics) in Dynamics, f"Dynamics mode {dynamics} not implemented"
         assert Control(control) in Control, f"Control mode {control} not implemented"
         if dynamics != Dynamics.first_principles:
-            if control in (Control.force_torque, Control.rotor_vel):
+            if control in (Control.body_rate, Control.force_torque, Control.rotor_vel):
                 raise ConfigError(f"Control mode {control} requires first principles dynamics")
         if freq > 10_000 and not jax.config.jax_enable_x64:
             raise ConfigError("High frequency simulations require double precision mode")
@@ -115,9 +129,11 @@ class Sim:
         self.drone = drone
         self.integrator = integrator
         self.device = jax.devices(device)[0]
+        self.mesh = mesh
         self.n_worlds = n_worlds
         self.n_drones = n_drones
         self.freq = freq
+        self.max_geom_pairs = -1 if n_drones < 64 else 2 * n_drones
         self.max_visual_geom = 1000
 
         # Initialize MuJoCo world and data
@@ -128,7 +144,11 @@ class Sim:
         self.mj_model, self.mj_data, self.mjx_model, self.mjx_data = self.build_mjx_model(self.spec)
         self.viewer: MujocoRenderer | None = None
 
-        self.data = self.init_data(state_freq, attitude_freq, force_torque_freq, rng_key)
+        freqs = (state_freq, attitude_freq, body_rate_freq, force_torque_freq)
+        if mesh is None:
+            self.data = self.init_data(*freqs, rng_key)
+        else:
+            self.data = build_sharded_data(partial(self.init_data, *freqs), rng_key, mesh)
         self.default_data: SimData = self.build_default_data()
 
         # Build the simulation pipeline and overwrite the default _step implementation with it
@@ -143,12 +163,16 @@ class Sim:
         # simulation pipeline.
         for name, fn in build_control_fns(self.control, self.dynamics):
             append_fn(self.step_pipeline, fn, name=name)
+        # Keep the rotor command (RPM or thrust, see ``rotor_vel_limits``) within the motor limits
+        lower, upper = rotor_vel_limits(self.dynamics, self.drone)
+        clip_fn = partial(clip_rotor_vel_cmd, lower=lower, upper=upper, dynamics=self.dynamics)
+        append_fn(self.step_pipeline, clip_fn, name="clip_rotor_vel_cmd")
         integrate_fn = select_integrate_fn(self.integrator, select_dynamics_fn(self.dynamics))
         append_fn(self.step_pipeline, integrate_fn, name="integration")
-        append_fn(self.step_pipeline, increment_steps)
         # We never drop below -0.001 (drones can't pass through the floor). We use -0.001 to
         # enable checks for negative z sign
         append_fn(self.step_pipeline, clip_floor_pos)
+        append_fn(self.step_pipeline, increment_steps)
 
         self._reset = self.build_reset_fn()
         self._step = self.build_step_fn()
@@ -175,6 +199,10 @@ class Sim:
     def attitude_control(self, controls: Array):
         """Set the desired attitude for all drones in all worlds."""
         self.data = F.attitude_control(self.data, controls)
+
+    def body_rate_control(self, controls: Array):
+        """Set the desired body rates and collective thrust for all drones in all worlds."""
+        self.data = F.body_rate_control(self.data, controls)
 
     def force_torque_control(self, controls: Array):
         """Set the desired force and torque for all drones in all worlds."""
@@ -263,6 +291,7 @@ class Sim:
         assert self._xml_path.exists(), f"Model file {self._xml_path} does not exist"
         spec = mujoco.MjSpec.from_file(str(self._xml_path))
         spec.option.timestep = 1 / self.freq
+        spec.add_numeric(name="max_geom_pairs", data=[self.max_geom_pairs])
         spec.copy_during_attach = True
         drone_spec = mujoco.MjSpec.from_file(str(self.drone_path))
         frame = spec.worldbody.add_frame(name="world")
@@ -325,7 +354,12 @@ class Sim:
         mj_data = mujoco.MjData(mj_model)
         mjx_model = mjx.put_model(mj_model, device=self.device)
         mjx_data = mjx.put_data(mj_model, mj_data, device=self.device)
-        mjx_data = jax.vmap(lambda _: mjx_data)(jnp.arange(self.n_worlds))
+        if self.mesh is None:
+            mjx_data = jax.vmap(lambda _: mjx_data)(jnp.arange(self.n_worlds))
+        else:
+            # mjx_model has no world axis, so we replicate it to keep it compatible with the mesh
+            mjx_model = jax.device_put(mjx_model, NamedSharding(self.mesh, PartitionSpec()))
+            mjx_data = build_sharded_mjx_data(mjx_data, self.n_worlds, self.mesh)
         return mj_model, mj_data, mjx_model, mjx_data
 
     def _unweld_drones(self, mj_model: mujoco.MjModel):
@@ -424,10 +458,34 @@ class Sim:
         """
         state_freq = 0 if (s := self.data.controls.state) is None else s.freq
         attitude_freq = 0 if (a := self.data.controls.attitude) is None else a.freq
+        body_rate_freq = 0 if (br := self.data.controls.body_rate) is None else br.freq
         force_torque_freq = 0 if (ft := self.data.controls.force_torque) is None else ft.freq
-        self.data = self.init_data(
-            state_freq, attitude_freq, force_torque_freq, self.data.core.rng_key
-        )
+        freqs = (state_freq, attitude_freq, body_rate_freq, force_torque_freq)
+        rng_key = self.data.core.rng_key
+        if self.mesh is None:
+            self.data = self.init_data(*freqs, rng_key)
+        else:
+            self.data = build_sharded_data(partial(self.init_data, *freqs), rng_key, self.mesh)
+        return self.data
+
+    def shard(self, mesh: Mesh) -> SimData:
+        """Distribute the data, default data and MJX data over a mesh along the world axis.
+
+        Args:
+            mesh: Mesh to distribute the worlds over, as built by
+                [world_mesh][crazyflow.sim.sharding.world_mesh].
+
+        Returns:
+            The placed simulation data.
+        """
+        self.mesh = mesh
+        self.data = jax.device_put(self.data, placement(self.data, mesh))
+        self.default_data = jax.device_put(self.default_data, placement(self.default_data, mesh))
+        # We also have to move the mjx_model and mjx_data to the mesh. mjx_model is replicated, data
+        # is sharded along its world axis
+        self.mjx_model = jax.device_put(self.mjx_model, NamedSharding(mesh, PartitionSpec()))
+        world = NamedSharding(mesh, PartitionSpec(WORLD_AXIS))
+        self.mjx_data = jax.device_put(self.mjx_data, world)
         return self.data
 
     def build_default_data(self) -> SimData:
@@ -449,20 +507,26 @@ class Sim:
         if self.viewer is not None:
             self.viewer.close()
             self.viewer = None
+        self.spec.numeric("max_geom_pairs").data = [self.max_geom_pairs]
         self.mj_model, self.mj_data, self.mjx_model, self.mjx_data = self.build_mjx_model(self.spec)
 
     def init_data(
-        self, state_freq: int, attitude_freq: int, force_torque_freq: int, rng_key: Array
+        self,
+        state_freq: int,
+        attitude_freq: int,
+        body_rate_freq: int,
+        force_torque_freq: int,
+        rng_key: Array,
     ) -> SimData:
         """Initialize the simulation data."""
+        device = self.device if self.mesh is None else None  # Sharded data is placed by the caller
         drone_name = "drone_fused" if self.fused_mjx_model else "drone"
         drone_mocap_ids = [
             self.mj_model.body(f"{drone_name}:{i}").mocapid.item() for i in range(self.n_drones)
         ]
         N, D = self.n_worlds, self.n_drones
         data = SimData(
-            states=SimState.create(N, D, self.device),
-            states_deriv=SimStateDeriv.create(N, D, self.device),
+            states=SimState.create(N, D, device),
             controls=SimControls.create(
                 N,
                 D,
@@ -470,11 +534,12 @@ class Sim:
                 self.drone,
                 state_freq,
                 attitude_freq,
+                body_rate_freq,
                 force_torque_freq,
-                self.device,
+                device,
             ),
-            params=SimParams.create(N, D, self.dynamics, self.drone, self.device),
-            core=SimCore.create(self.freq, N, D, drone_mocap_ids, rng_key, self.device),
+            params=SimParams.create(self.dynamics, self.drone, device),
+            core=SimCore.create(self.freq, N, D, drone_mocap_ids, rng_key, device),
         )
         if D > 1:  # If multiple drones, arrange them in a grid
             grid = grid_2d(D)
@@ -492,6 +557,8 @@ class Sim:
             return self.data.controls.state.freq
         if self.control == Control.attitude:
             return self.data.controls.attitude.freq
+        if self.control == Control.body_rate:
+            return self.data.controls.body_rate.freq
         if self.control == Control.force_torque:
             return self.data.controls.force_torque.freq
         raise NotImplementedError(f"Control mode {self.control} not implemented")
@@ -511,11 +578,22 @@ class Sim:
     def contacts(self, body: str | None = None) -> Array:
         """Get contact information from the simulation.
 
+        Note:
+            ``sim.max_geom_pairs`` limits the maximum detectable collision contacts per collision
+            group. This is relevant for swarms, where the full pairwise collision buffer grows
+            quadratically. By default, we allocate 2*n_drones contact pairs if the swarm size
+            exceeds 64. That gives us enough capacity to detect all drone-drone contacts. However,
+            if the swarm collapses e.g. into a single position, this will no longer be correct. If
+            you need to truly detect all contacts, set ``sim.max_geom_pairs`` to -1 and rebuild the
+            simulation.
+
         Args:
             body: Optional body name to filter contacts for. If None, returns flags for all bodies.
 
         Returns:
-            An boolean array of shape (n_worlds,) that is True if any contact is present.
+            A boolean array of shape (n_worlds, n_contacts), one flag per slot in the contact
+            buffer. Which geoms a slot holds is given by the matching entries of
+            ``sim.mjx_data._impl.contact.geom1`` and ``geom2``.
         """
         if body is None:
             return self.mjx_data._impl.contact.dist < 0
@@ -544,6 +622,7 @@ def build_control_fns(
     """
     state = ("state_controller", control_state2attitude)
     attitude = ("attitude_controller", control_attitude2force_torque)
+    body_rate = ("body_rate_controller", control_body_rate2force_torque)
     force_torque = ("force_torque_controller", control_force_torque2rotor_vel)
     commit_attitude = ("commit_attitude", control_commit_attitude)
     match control:
@@ -558,6 +637,8 @@ def build_control_fns(
                 stages = (commit_attitude,)
             else:
                 raise NotImplementedError(f"Control mode {control} not implemented for {dynamics}")
+        case Control.body_rate:
+            stages = (body_rate, force_torque)
         case Control.force_torque:
             stages = (force_torque,)
         case Control.rotor_vel:
@@ -568,7 +649,7 @@ def build_control_fns(
     return stages
 
 
-def select_dynamics_fn(dynamics: Dynamics) -> Callable[[SimData], SimData]:
+def select_dynamics_fn(dynamics: Dynamics) -> Callable[[SimData], SimStateDeriv]:
     """Select the dynamics function for the given dynamics mode."""
     match dynamics:
         case Dynamics.first_principles:
@@ -584,7 +665,7 @@ def select_dynamics_fn(dynamics: Dynamics) -> Callable[[SimData], SimData]:
 
 
 def select_integrate_fn(
-    integrator: Integrator, dynamics_fn: Callable[[SimData], SimData]
+    integrator: Integrator, dynamics_fn: Callable[[SimData], SimStateDeriv]
 ) -> Callable[[SimData], SimData]:
     """Select the integration function for the given dynamics and integrator mode."""
     match integrator:
@@ -601,8 +682,14 @@ def select_integrate_fn(
 
 
 def reset(data: SimData, default_data: SimData, mask: Array | None = None) -> SimData:
-    """Reset the simulation data to the default data for the worlds specified by the mask."""
-    return pytree_replace(data, default_data, mask)  # Does not overwrite rng_key
+    """Reset the simulation data to the default data for the worlds specified by the mask.
+
+    Without a mask, the full data is restored. The mask selects along the world axis, so it only
+    restores per-world arrays. The rng key is never restored.
+    """
+    if mask is None:
+        return default_data.replace(core=default_data.core.replace(rng_key=data.core.rng_key))
+    return pytree_replace(data, default_data, world_mask(data), mask)
 
 
 def increment_steps(data: SimData) -> SimData:
@@ -646,6 +733,28 @@ def clip_floor_pos(data: SimData) -> SimData:
         jnp.where(clip[..., None], 0, data.states.vel[..., :3])
     )
     return data.replace(states=data.states.replace(pos=clip_pos, vel=clip_vel))
+
+
+def rotor_vel_limits(dynamics: Dynamics, drone: Drone) -> tuple[float, float]:
+    """Limits of ``rotor_vel`` in RPM (first principles) or collective thrust in N (others)."""
+    params = load_dynamics_params(dynamics, drone)
+    thrust_min, thrust_max = float(params["thrust_min"]), float(params["thrust_max"])
+    if dynamics == Dynamics.first_principles:
+        rpm = motor_force2rotor_vel(np.asarray([thrust_min, thrust_max]), params["rpm2thrust"])
+        return float(rpm[0]), float(rpm[1])
+    return 4 * thrust_min, 4 * thrust_max
+
+
+def clip_rotor_vel_cmd(
+    data: SimData, lower: Array | float, upper: Array | float, dynamics: Dynamics
+) -> SimData:
+    """Clip the rotor command (RPM for first principles, collective thrust otherwise)."""
+    if dynamics == Dynamics.first_principles:
+        rotor_vel = jnp.clip(data.controls.rotor_vel, lower, upper)
+        return data.replace(controls=data.controls.replace(rotor_vel=rotor_vel))
+    attitude = data.controls.attitude
+    cmd = attitude.cmd.at[..., -1].set(jnp.clip(attitude.cmd[..., -1], lower, upper))
+    return data.replace(controls=data.controls.replace(attitude=attitude.replace(cmd=cmd)))
 
 
 @partial(jax.jit, static_argnames="device")

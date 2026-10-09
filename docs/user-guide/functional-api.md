@@ -18,7 +18,7 @@ data, default_data = sim.data, sim.default_data
 step, reset = sim.build_step_fn(), sim.build_reset_fn()
 
 cmd = jnp.zeros((1, 1, 4), dtype=jnp.float32)
-cmd = cmd.at[..., 3].set(float(data.params.mass[0, 0, 0]) * 9.81)
+cmd = cmd.at[..., 3].set(float(data.params.mass[0]) * 9.81)
 
 
 @jax.jit
@@ -58,7 +58,7 @@ From this point, `data` is a plain JAX pytree and `step` and `reset` are compile
 
 ## Purely functional controller functions
 
-`crazyflow.sim.functional` mirrors all four `Sim` control methods as pure functions:
+`crazyflow.sim.functional` mirrors all `Sim` control methods as pure functions:
 
 ```python
 import crazyflow.sim.functional as F
@@ -68,6 +68,7 @@ import crazyflow.sim.functional as F
 |---|---|
 | `F.state_control(data, controls)` | Stage a state command |
 | `F.attitude_control(data, controls)` | Stage an attitude command |
+| `F.body_rate_control(data, controls)` | Stage a body rate command |
 | `F.force_torque_control(data, controls)` | Stage a force/torque command |
 | `F.rotor_vel_control(data, controls)` | Stage rotor velocity commands |
 | `F.controllable(data)` | Boolean mask — which worlds may update their controller this step |
@@ -92,7 +93,7 @@ data, default_data = sim.data, sim.default_data
 step, reset = sim.build_step_fn(), sim.build_reset_fn()
 
 cmd = jnp.zeros((1, 1, 4), dtype=jnp.float32)
-cmd = cmd.at[..., 3].set(float(data.params.mass[0, 0, 0]) * 9.81)
+cmd = cmd.at[..., 3].set(float(data.params.mass[0]) * 9.81)
 
 
 @jax.jit
@@ -138,7 +139,7 @@ def loss(cmd, data):
 grad_fn = jax.jit(jax.grad(loss))
 
 cmd = jnp.zeros((1, 1, 4), dtype=jnp.float32)
-cmd = cmd.at[..., 3].set(float(data.params.mass[0, 0, 0]) * 9.81)
+cmd = cmd.at[..., 3].set(float(data.params.mass[0]) * 9.81)
 
 grad = grad_fn(cmd, data)
 # Drone is above the target: reducing thrust lowers it toward 1 m.

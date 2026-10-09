@@ -4,14 +4,16 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation as R
 
-from crazyflow.control import load_params, parametrize
+from crazyflow.control import load_fn_params, parametrize
 from crazyflow.control.mellinger import (
     attitude2force_torque,
+    body_rate2force_torque,
     force_torque2rotor_vel,
     state2attitude,
 )
-from crazyflow.drones import available_drones
+from crazyflow.drones import Drone
 
 if TYPE_CHECKING:
     from crazyflow._typing import Array  # To be changed to array_api_typing later
@@ -23,23 +25,23 @@ def create_rnd_states(shape: tuple[int, ...] = ()) -> tuple[Array, Array, Array,
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_state2attitude(drone: str) -> None:
     controller = parametrize(state2attitude, drone)
     # Single input
     pos, quat, vel, ang_vel = create_rnd_states()
-    rpyt, pos_err_i = controller(pos, quat, vel, np.ones(13), ctrl_freq=100)
+    rpyt, pos_err_i = controller(pos, quat, vel, np.ones(16), ctrl_freq=100)
     assert rpyt.shape == (4,)
     assert pos_err_i.shape == (3,)
     # Batch input
     pos, quat, vel, ang_vel = create_rnd_states((5, 4))
-    rpyt, pos_err_i = controller(pos, quat, vel, np.ones((5, 4, 13)), ctrl_freq=100)
+    rpyt, pos_err_i = controller(pos, quat, vel, np.ones((5, 4, 16)), ctrl_freq=100)
     assert rpyt.shape == (5, 4, 4)
     assert pos_err_i.shape == (5, 4, 3)
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_attitude2force_torque(drone: str) -> None:
     controller = parametrize(attitude2force_torque, drone)
     # Single input
@@ -60,7 +62,28 @@ def test_attitude2force_torque(drone: str) -> None:
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque(drone: str) -> None:
+    controller = parametrize(body_rate2force_torque, drone)
+    # Single input
+    _, quat, _, ang_vel = create_rnd_states()
+    cmd = np.array([0.1, 0.1, 0.1, 1.0])  # body rates and thrust command
+    force_des, torque_des, r_int_error = controller(quat, ang_vel, cmd)
+    assert force_des.shape == (1,)
+    assert torque_des.shape == (3,)
+    assert r_int_error.shape == (3,)
+    # Batch input
+    _, quat, _, ang_vel = create_rnd_states((5, 4))
+    cmd = np.random.randn(5, 4, 4)
+    cmd[..., 3] = np.abs(cmd[..., 3])  # Ensure positive thrust
+    force_des, torque_des, r_int_error = controller(quat, ang_vel, cmd)
+    assert force_des.shape == (5, 4, 1)
+    assert torque_des.shape == (5, 4, 3)
+    assert r_int_error.shape == (5, 4, 3)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
 def test_force_torque2rotor_vel(drone: str) -> None:
     controller = parametrize(force_torque2rotor_vel, drone)
     # Single input
@@ -79,7 +102,7 @@ def test_force_torque2rotor_vel(drone: str) -> None:
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_state2attitude_at_setpoint(drone: str) -> None:
     # At setpoint with identity orientation and zero acc, RPY command should be
     # [0, 0, 0] and thrust must be positive (hovering against gravity).
@@ -87,23 +110,25 @@ def test_state2attitude_at_setpoint(drone: str) -> None:
     pos = np.zeros(3)
     quat = np.array([0.0, 0.0, 0.0, 1.0])
     vel = np.zeros(3)
-    cmd = np.zeros(13)  # setpoint at origin, zero vel/acc, yaw=0
+    cmd = np.zeros(16)  # setpoint at origin, zero vel/acc
+    cmd[9:13] = R.from_euler("z", 0.0).as_quat()
     rpyt, _ = controller(pos, quat, vel, cmd)
     assert np.allclose(rpyt[:3], 0.0, atol=1e-6), f"RPY at setpoint should be ~0, got {rpyt[:3]}"
     assert rpyt[3] > 0.0, "Hovering thrust must be positive"
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_state2attitude_integral_error_accumulation(drone: str) -> None:
     # A constant position error must cause the integral error to accumulate
     # linearly until it would exceed int_err_max (clipped by the controller).
     controller = parametrize(state2attitude, drone)
-    params = load_params(state2attitude, drone)
+    params = load_fn_params(state2attitude, drone)
     pos = np.zeros(3)
     quat = np.array([0.0, 0.0, 0.0, 1.0])
     vel = np.zeros(3)
-    cmd = np.zeros(13)
+    cmd = np.zeros(16)
+    cmd[9:13] = R.from_euler("z", 0.0).as_quat()
     cmd[0] = 1.0  # 1 m setpoint error in x
     ctrl_freq = 100.0
     dt = 1.0 / ctrl_freq
@@ -120,7 +145,7 @@ def test_state2attitude_integral_error_accumulation(drone: str) -> None:
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_attitude2force_torque_at_setpoint(drone: str) -> None:
     # Identity orientation commanded → zero attitude error → zero corrective torque.
     controller = parametrize(attitude2force_torque, drone)
@@ -135,7 +160,7 @@ def test_attitude2force_torque_at_setpoint(drone: str) -> None:
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_attitude2force_torque_zero_thrust(drone: str):
     # Zero thrust command → firmware zeros torque; outputs are all zero.
     controller = parametrize(attitude2force_torque, drone)
@@ -147,16 +172,98 @@ def test_attitude2force_torque_zero_thrust(drone: str):
     assert np.allclose(torque_des, 0.0, atol=1e-6)
 
 
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque_at_setpoint(drone: str) -> None:
+    # Level drone with measured rates equal to the commanded rates → zero corrective torque.
+    controller = parametrize(body_rate2force_torque, drone)
+    quat = R.from_euler("xyz", [0.0, 0.0, 0.7]).as_quat()  # Any yaw is level
+    ang_vel = np.array([0.3, -0.2, 0.1])
+    cmd = np.array([0.3, -0.2, 0.1, 0.5])
+    force_des, torque_des, _ = controller(quat, ang_vel, cmd, prev_ang_vel=ang_vel)
+    assert np.allclose(torque_des, 0.0, atol=1e-6), (
+        f"Torque at setpoint should be ~0, got {torque_des}"
+    )
+    assert force_des[0] > 0.0, "Force must be positive for positive thrust command"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque_zero_thrust(drone: str):
+    # Zero thrust command → firmware zeros torque; outputs are all zero.
+    controller = parametrize(body_rate2force_torque, drone)
+    quat = np.array([0.0, 0.0, 0.0, 1.0])
+    ang_vel = np.zeros(3)
+    cmd = np.array([0.1, 0.1, 0.1, 0.0])  # non-zero rates but zero thrust
+    force_des, torque_des, _ = controller(quat, ang_vel, cmd)
+    assert np.allclose(force_des, 0.0, atol=1e-6)
+    assert np.allclose(torque_des, 0.0, atol=1e-6)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque_sign(drone: str):
+    # A positive rate error about one axis must produce a positive torque about that axis only.
+    controller = parametrize(body_rate2force_torque, drone)
+    quat = np.array([0.0, 0.0, 0.0, 1.0])
+    ang_vel = np.zeros(3)
+    for axis in range(3):
+        cmd = np.array([0.0, 0.0, 0.0, 0.5])
+        cmd[axis] = 1.0
+        _, torque_des, _ = controller(quat, ang_vel, cmd, prev_ang_vel=ang_vel, prev_cmd=cmd)
+        assert torque_des[axis] > 0.0, f"Torque about axis {axis} must be positive: {torque_des}"
+        others = np.delete(torque_des, axis)
+        assert np.allclose(others, 0.0, atol=1e-6), f"Cross-axis torque for axis {axis}: {others}"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque_matches_attitude(drone: str):
+    # A zero body rate command is equivalent to commanding a level attitude at the current yaw.
+    att_controller = parametrize(attitude2force_torque, drone)
+    rate_controller = parametrize(body_rate2force_torque, drone)
+    quat = R.from_euler("xyz", [0.2, -0.1, 0.7]).as_quat()
+    ang_vel = np.array([0.1, -0.2, 0.05])
+    prev_ang_vel = np.array([0.05, -0.1, 0.0])
+    att_cmd = np.array([0.0, 0.0, 0.7, 0.5])
+    rate_cmd = np.array([0.0, 0.0, 0.0, 0.5])
+    force_att, torque_att, err_att = att_controller(
+        quat, ang_vel, att_cmd, prev_ang_vel=prev_ang_vel
+    )
+    force_rate, torque_rate, err_rate = rate_controller(
+        quat, ang_vel, rate_cmd, prev_ang_vel=prev_ang_vel
+    )
+    assert np.allclose(force_att, force_rate, atol=1e-6)
+    assert np.allclose(torque_att, torque_rate, atol=1e-6)
+    assert np.allclose(err_att, err_rate, atol=1e-6)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque_leveling(drone: str):
+    # The firmware levels a tilted drone even at the rate setpoint. Zero attitude gains disable it.
+    controller = parametrize(body_rate2force_torque, drone)
+    params = load_fn_params(body_rate2force_torque, drone)
+    quat = R.from_euler("xyz", [0.2, 0.0, 0.0]).as_quat()  # Rolled by 0.2 rad
+    ang_vel = np.zeros(3)
+    cmd = np.array([0.0, 0.0, 0.0, 0.5])
+    _, torque_des, _ = controller(quat, ang_vel, cmd)
+    assert torque_des[0] < 0.0, f"Leveling torque must oppose the roll, got {torque_des}"
+    params["kR"], params["ki_m"] = np.zeros(3), np.zeros(3)
+    _, torque_des, _ = body_rate2force_torque(quat, ang_vel, cmd, **params)
+    assert np.allclose(torque_des, 0.0, atol=1e-6), f"Torque with zero attitude gains {torque_des}"
+
+
 # Batch consistency (batch result == sequential result)
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_state2attitude_batch_consistency(drone: str):
     controller = parametrize(state2attitude, drone)
     batch = (3, 2)
     pos, quat, vel, _ = create_rnd_states(batch)
-    cmd = np.random.randn(*batch, 13)
+    cmd = np.random.randn(*batch, 16)
     rpyt_batch, err_batch = controller(pos, quat, vel, cmd)
     for i in range(batch[0]):
         for j in range(batch[1]):
@@ -166,7 +273,7 @@ def test_state2attitude_batch_consistency(drone: str):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_attitude2force_torque_batch_consistency(drone: str):
     controller = parametrize(attitude2force_torque, drone)
     batch = (3, 2)
@@ -183,7 +290,34 @@ def test_attitude2force_torque_batch_consistency(drone: str):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
+def test_body_rate2force_torque_batch_consistency(drone: str):
+    controller = parametrize(body_rate2force_torque, drone)
+    batch = (3, 2)
+    _, quat, _, ang_vel = create_rnd_states(batch)
+    _, _, _, prev_ang_vel = create_rnd_states(batch)
+    cmd = np.random.randn(*batch, 4)
+    cmd[..., 3] = np.abs(cmd[..., 3])
+    prev_cmd = np.random.randn(*batch, 4)
+    force_batch, torque_batch, err_batch = controller(
+        quat, ang_vel, cmd, prev_ang_vel=prev_ang_vel, prev_cmd=prev_cmd
+    )
+    for i in range(batch[0]):
+        for j in range(batch[1]):
+            force_s, torque_s, err_s = controller(
+                quat[i, j],
+                ang_vel[i, j],
+                cmd[i, j],
+                prev_ang_vel=prev_ang_vel[i, j],
+                prev_cmd=prev_cmd[i, j],
+            )
+            assert np.allclose(force_batch[i, j], force_s, atol=1e-5)
+            assert np.allclose(torque_batch[i, j], torque_s, atol=1e-5)
+            assert np.allclose(err_batch[i, j], err_s, atol=1e-5)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
 def test_force_torque2rotor_vel_batch_consistency(drone: str):
     controller = parametrize(force_torque2rotor_vel, drone)
     batch = (3, 2)
@@ -196,11 +330,40 @@ def test_force_torque2rotor_vel_batch_consistency(drone: str):
             assert np.allclose(rpm_batch[i, j], rpm_s, atol=1e-5)
 
 
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_attitude2force_torque_batch_zero_thrust(drone: str):
+    # Drones with zero thrust must stay at zero force, independent of other drones
+    controller = parametrize(attitude2force_torque, drone)
+    quat = np.tile(np.array([0.0, 0.0, 0.0, 1.0]), (2, 1))
+    ang_vel = np.zeros((2, 3))
+    cmd = np.array([[0.1, 0.1, 0.1, 0.0], [0.1, 0.1, 0.1, 0.5]])
+    force_batch, torque_batch, _ = controller(quat, ang_vel, cmd)
+    force_single, torque_single, _ = controller(quat[0], ang_vel[0], cmd[0])
+    assert np.allclose(force_single, 0.0, atol=1e-6), "Drone with zero thrust must have zero force"
+    assert np.allclose(force_batch[0], force_single, atol=1e-6)
+    assert np.allclose(torque_batch[0], torque_single, atol=1e-6)
+    assert force_batch[1] > 0.0, "Drone thrust must be positive"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("drone", Drone)
+def test_force_torque2rotor_vel_batch_zero_force(drone: str):
+    # Drones with zero desired force must not be clipped because other drones have non-zero force.
+    controller = parametrize(force_torque2rotor_vel, drone)
+    force = np.array([[0.0], [0.2]])
+    torque = np.zeros((2, 3))
+    rotor_vel_batch = controller(force, torque)
+    rotor_vel_single = controller(force[0], torque[0])
+    assert np.allclose(rotor_vel_batch[0], rotor_vel_single, rtol=1e-5)
+    assert np.all(rotor_vel_batch[1] > rotor_vel_single)
+
+
 # Symmetric force check
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", available_drones)
+@pytest.mark.parametrize("drone", Drone)
 def test_force_torque2rotor_vel_symmetric(drone: str):
     # Pure vertical force with zero torque → X-frame symmetry → all 4 RPMs equal.
     controller = parametrize(force_torque2rotor_vel, drone)

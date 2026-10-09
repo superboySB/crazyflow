@@ -27,7 +27,7 @@ The first-principles dynamics derives forces and torques analytically from motor
 from crazyflow.sim import Sim, Dynamics
 from crazyflow.control import Control
 
-# Force-torque and rotor_vel control modes require first_principles
+# Body rate, force-torque and rotor_vel control modes require first_principles
 sim = Sim(dynamics=Dynamics.first_principles, control=Control.rotor_vel)
 sim.reset()
 ```
@@ -38,11 +38,11 @@ Parameters accessible through `sim.data.params`:
 |---|---|
 | `mass` | Drone mass, kg |
 | `J` | Inertia matrix, kg·m² |
-| `L` | Motor arm length, m |
-| `rpm2thrust` | Thrust coefficient, N/(RPM²) |
-| `rpm2torque` | Torque coefficient, Nm/(RPM²) |
+| `L` | Motor arm length, m, shared `(1,)` or per motor `(4,)` |
+| `rpm2thrust` | Thrust curve coefficients `[a, b, c]` of `f = a + b·rpm + c·rpm²`, shared `(1, 3)` or per motor `(4, 3)` |
+| `rpm2torque` | Torque curve coefficients, shared `(1, 3)` or per motor `(4, 3)` |
 | `mixing_matrix` | Maps rotor RPMs² to [thrust, tx, ty, tz] |
-| `rotor_dyn_coef` | First-order rotor time constant |
+| `rotor_dyn_coef` | Rotor spin-up/down coefficients, shared `(1, 4)` or per motor `(4, 4)` |
 
 ## Fitted dynamics (so_rpy family)
 
@@ -69,15 +69,15 @@ The `so_rpy_rotor_drag` variant includes translational drag, which captures the 
 
 ## Control mode compatibility
 
-| Dynamics | `Control.state` | `Control.attitude` | `Control.force_torque` | `Control.rotor_vel` |
-|---|---|---|---|---|
-| `first_principles` | ✓ | ✓ | ✓ | ✓ |
-| `so_rpy` | ✓ | ✓ | ✗ | ✗ |
-| `so_rpy_rotor` | ✓ | ✓ | ✗ | ✗ |
-| `so_rpy_rotor_drag` | ✓ | ✓ | ✗ | ✗ |
+| Dynamics | `Control.state` | `Control.attitude` | `Control.body_rate` | `Control.force_torque` | `Control.rotor_vel` |
+|---|---|---|---|---|---|
+| `first_principles` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `so_rpy` | ✓ | ✓ | ✗ | ✗ | ✗ |
+| `so_rpy_rotor` | ✓ | ✓ | ✗ | ✗ | ✗ |
+| `so_rpy_rotor_drag` | ✓ | ✓ | ✗ | ✗ | ✗ |
 
 !!! warning
-    Using `Control.force_torque` or `Control.rotor_vel` with a fitted dynamics raises `ConfigError` at construction time.
+    Using `Control.body_rate`, `Control.force_torque` or `Control.rotor_vel` with a fitted dynamics raises `ConfigError` at construction time.
 
 ## Using the dynamics standalone
 

@@ -9,7 +9,9 @@ This section is auto-generated from the Crazyflow source code using [mkdocstring
 | `crazyflow.sim` | Core `Sim` class and simulation pipeline |
 | `crazyflow.sim.pipeline` | `OrderedDict`-based pipeline helpers (`append_fn`, `insert_fn_before`, `replace_fn`, etc.) |
 | `crazyflow.sim.data` | `SimData`, `SimState`, `SimControls`, `SimParams`, `SimCore` pytrees |
+| `crazyflow.sim.dynamics` | Wrap the drone dynamics for compatibility with `SimData` |
 | `crazyflow.sim.functional` | Pure functional control API for use inside `jax.jit` |
+| `crazyflow.sim.sharding` | Placement of the simulation data on multiple devices |
 | `crazyflow.dynamics` | `Dynamics` enum and dynamics implementations |
 | `crazyflow.sim.integration` | `Integrator` enum, Euler, RK4, and symplectic Euler |
 | `crazyflow.sim.sensors` | Raycast depth (`sensors.depth`) and gaussian splat RGB (`sensors.splat`) sensors |

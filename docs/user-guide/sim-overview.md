@@ -25,7 +25,6 @@ All simulation state is stored in `sim.data`, a `SimData` pytree. The main sub-t
 | Field | Type | Description |
 |---|---|---|
 | `states` | `SimState` | Current kinematic state of every drone |
-| `states_deriv` | `SimStateDeriv` | Time derivatives computed by the dynamics |
 | `controls` | `SimControls` | Staged commands and controller state |
 | `params` | `SimParams` | Physical parameters (mass, inertia, motor constants, …) |
 | `core` | `SimCore` | Metadata: step count, frequency, RNG key, device |
@@ -34,7 +33,7 @@ All simulation state is stored in `sim.data`, a `SimData` pytree. The main sub-t
 
 | Field | Shape | Units |
 |---|---|---|
-| `pos` | `(N, M, 3)` | Position in world frame, metres |
+| `pos` | `(N, M, 3)` | Position in world frame, meters |
 | `quat` | `(N, M, 4)` | Orientation quaternion, scalar-last `xyzw` |
 | `vel` | `(N, M, 3)` | Linear velocity, m/s |
 | `ang_vel` | `(N, M, 3)` | Angular velocity in body frame, rad/s |
@@ -72,17 +71,18 @@ This means you can advance multiple dynamics steps in a single `sim.step(n_steps
 import numpy as np
 from crazyflow.sim import Sim
 from crazyflow.control import Control
+from scipy.spatial.transform import Rotation as R
 
 sim = Sim(freq=500, control=Control.state)
-sim.reset()
-cmd = np.zeros((1, 1, 13), dtype=np.float32)
+cmd = np.zeros((1, 1, 16), dtype=np.float32)
+cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
 sim.state_control(cmd)
 sim.step(sim.freq // sim.control_freq)  # 500 // 100 = 5 dynamics steps, controller fires once
 ```
 
 ## The step and reset pipelines
 
-Each call to `sim.step()` runs `sim.step_pipeline`, an ordered collection of named, pure JAX functions that transform `SimData`. By default it contains the control conversion functions, the numerical integrator, a step counter, and a floor clip. Similarly, `sim.reset_pipeline` is applied during `sim.reset()` and is empty by default.
+Each call to `sim.step()` runs `sim.step_pipeline`, an ordered collection of named, pure JAX functions that transform `SimData`. By default it contains the control conversion functions, a clip of the rotor command to the physical motor limits, the numerical integrator, a floor clip, and a step counter. Similarly, `sim.reset_pipeline` is applied during `sim.reset()` and is empty by default.
 
 Both pipelines can be extended with custom functions for disturbances, domain randomization, or logging without modifying the core simulator.
 

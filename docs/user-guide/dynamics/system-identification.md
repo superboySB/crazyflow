@@ -28,7 +28,7 @@ from crazyflow.dynamics.utils.identification import sys_id_translation, sys_id_r
 # Step 1 — assemble raw data dict from your flight log
 data = {
     "time": time_array,  # (N,) seconds
-    "pos": pos_array,  # (N, 3) metres
+    "pos": pos_array,  # (N, 3) meters
     "quat": quat_array,  # (N, 4) xyzw
     "cmd_rpy": cmd_rpy_array,  # (N, 3) radians
     "cmd_f": cmd_f_array,  # (N,)  Newtons
@@ -43,12 +43,12 @@ data = derivatives_svf(data)
 # Step 4 — fit translational parameters
 trans_params = sys_id_translation(
     dynamics="so_rpy_rotor_drag",
-    mass=0.0319,  # drone mass in kg — measure this directly
+    mass=0.0328,  # drone mass in kg — measure this directly
     data=data,
     verbose=0,  # 0 = silent, 1 = progress, 2 = full optimizer output
     plot=True,  # show fit vs. measured plots
 )
-# Returns: {'cmd_f_coef': ..., 'thrust_time_coef': ...,
+# Returns: {'cmd_f_coef': ..., 'thrust_dyn_coef': ...,
 #           'drag_xy_coef': ..., 'drag_z_coef': ...}
 
 # Step 5 — fit rotational parameters
@@ -71,7 +71,7 @@ data_valid = derivatives_svf(data_valid)
 
 trans_params = sys_id_translation(
     dynamics="so_rpy_rotor_drag",
-    mass=0.0319,
+    mass=0.0328,
     data=data,
     data_validation=data_valid,
     plot=True,
@@ -84,14 +84,14 @@ Once you have the identified coefficients, add them to the relevant `params.toml
 
 ```toml
 [my_drone]
-cmd_f_coef       = 0.983        # from trans_params["cmd_f_coef"]
-thrust_time_coef = 0.121        # from trans_params["thrust_time_coef"]
-drag_matrix      = [[-0.0147, 0.0, 0.0],
-                    [0.0, -0.0147, 0.0],
-                    [0.0, 0.0, -0.0128]]  # diag([drag_xy, drag_xy, drag_z])
-rpy_coef         = [-245.67, -245.67, -227.78]  # from rot_params["rpy_coef"]
-rpy_rates_coef   = [-17.32, -17.32, -25.63]     # from rot_params["rpy_rates_coef"]
-cmd_rpy_coef     = [196.18, 196.18, 390.27]     # from rot_params["cmd_rpy_coef"]
+cmd_f_coef       = 1.032        # from trans_params["cmd_f_coef"]
+thrust_dyn_coef  = 6.72         # from trans_params["thrust_dyn_coef"]
+drag_matrix      = [[-0.0150, 0.0, 0.0],
+                    [0.0, -0.0150, 0.0],
+                    [0.0, 0.0, -0.0139]]  # diag([drag_xy, drag_xy, drag_z])
+rpy_coef         = [-485.86, -485.86, -333.24]  # from rot_params["rpy_coef"]
+rpy_rates_coef   = [-33.18, -33.18, -39.54]     # from rot_params["rpy_rates_coef"]
+cmd_rpy_coef     = [448.02, 448.02, 306.32]     # from rot_params["cmd_rpy_coef"]
 ```
 
 !!! note
@@ -114,7 +114,7 @@ Support for new drones can be added to the shared parameter files via a pull req
 Choose based on which physical effects you need to capture:
 
 - **`so_rpy`** — identifies only `cmd_f_coef`; no motor dynamics, no drag. Fastest to calibrate, good for slow flight.
-- **`so_rpy_rotor`** — adds `thrust_time_coef` to model motor spin-up delay. Better for agile maneuvers.
+- **`so_rpy_rotor`** — adds `thrust_dyn_coef` to model motor spin-up delay. Better for agile maneuvers.
 - **`so_rpy_rotor_drag`** — adds `drag_xy_coef` and `drag_z_coef`. Best accuracy at higher speeds where aerodynamic drag is significant.
 
 ---

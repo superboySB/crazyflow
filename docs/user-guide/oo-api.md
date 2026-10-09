@@ -35,7 +35,7 @@ Key constructor arguments:
 |---|---|
 | `n_worlds` | Number of independent parallel environments |
 | `n_drones` | Drones per world |
-| `drone` | Drone configuration (see `crazyflow.available_drones`) |
+| `drone` | Drone configuration (see `crazyflow.Drone`) |
 | `dynamics` | Dynamics |
 | `control` | Control mode |
 | `integrator` | Numerical integrator |
@@ -44,24 +44,29 @@ Key constructor arguments:
 
 See [`Sim`][crazyflow.sim.Sim] in the API reference for the defaults and the full argument list.
 
+!!! warning "Low simulation frequencies"
+    Explicit integrators are only stable if the step is small compared to the fastest time constant of the dynamics. For the drone models this is the rotor dynamics with time constants down to 20 ms. Euler overshoots once the step exceeds the time constant and diverges beyond twice the time constant. Keep `freq` well above 100 Hz.
+
 ## Control methods
 
 All control methods take an array of shape `(n_worlds, n_drones, command_dim)` and stage it for the next `step` call.
 
 ### State control
 
-The highest-level interface. A 13-element command sets desired position, velocity, acceleration, yaw, and angular rates. An internal Mellinger controller converts this to attitude commands.
+The highest-level interface. A 16-element command sets desired position, velocity, acceleration, attitude, and body rates. The yaw part of the attitude commands the heading. The body rate setpoint is forwarded to the attitude controller.
 
 ```python
 import numpy as np
 from crazyflow.sim import Sim
 from crazyflow.control import Control
+from scipy.spatial.transform import Rotation as R
 
 sim = Sim(n_worlds=1, n_drones=1, control=Control.state)
 sim.reset()
 
-# [x, y, z, vx, vy, vz, ax, ay, az, yaw, roll_rate, pitch_rate, yaw_rate]
-cmd = np.zeros((1, 1, 13), dtype=np.float32)
+# [x, y, z, vx, vy, vz, ax, ay, az, qx, qy, qz, qw, wx, wy, wz]
+cmd = np.zeros((1, 1, 16), dtype=np.float32)
+cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
 cmd[0, 0, 2] = 0.5  # hover at 0.5 m
 
 sim.state_control(cmd)
@@ -77,14 +82,34 @@ import numpy as np
 from crazyflow.sim import Sim, Dynamics
 from crazyflow.control import Control
 
-sim = Sim(n_worlds=1, n_drones=1, control=Control.attitude, dynamics=Dynamics.so_rpy)
+sim = Sim(n_worlds=1, n_drones=1, control=Control.attitude)
 sim.reset()
 
 # [roll, pitch, yaw, collective_thrust_N]
 cmd = np.zeros((1, 1, 4), dtype=np.float32)
-cmd[0, 0, 3] = float(sim.data.params.mass[0, 0, 0]) * 9.81  # hover thrust
+cmd[0, 0, 3] = float(sim.data.params.mass[0]) * 9.81  # hover thrust
 
 sim.attitude_control(cmd)
+sim.step(sim.freq // sim.control_freq)
+```
+
+### Body rate control
+
+Commands body-frame angular rates (rad/s) and a collective thrust (N). The Mellinger controller tracks the rates and, as in the firmware, levels the drone with its attitude terms. Set `kR` and `ki_m` to zero for pure rate tracking, see [Control Modes](control/index.md#body-rate-control). Requires `Dynamics.first_principles`.
+
+```python
+import numpy as np
+from crazyflow.sim import Sim, Dynamics
+from crazyflow.control import Control
+
+sim = Sim(n_worlds=1, n_drones=1, control=Control.body_rate)
+sim.reset()
+
+# [body_rate_x, body_rate_y, body_rate_z, collective_thrust_N]
+cmd = np.zeros((1, 1, 4), dtype=np.float32)
+cmd[0, 0, 3] = float(sim.data.params.mass[0]) * 9.81  # hover thrust
+
+sim.body_rate_control(cmd)
 sim.step(sim.freq // sim.control_freq)
 ```
 
@@ -102,7 +127,7 @@ sim.reset()
 
 # [collective_force_N, torque_x_Nm, torque_y_Nm, torque_z_Nm]
 cmd = np.zeros((1, 1, 4), dtype=np.float32)
-cmd[0, 0, 0] = float(sim.data.params.mass[0, 0, 0]) * 9.81  # hover force
+cmd[0, 0, 0] = float(sim.data.params.mass[0]) * 9.81  # hover force
 
 sim.force_torque_control(cmd)
 sim.step(1)
@@ -138,16 +163,20 @@ Passing more steps to a single `step(n_steps)` call is more efficient than multi
 
 `sim.reset()` reinitialises all worlds to their default state. Pass a boolean mask of shape `(n_worlds,)` to reset only selected worlds: `True` resets that world, `False` leaves it unchanged. This is useful in RL training loops where episodes end at different times.
 
+A full reset restores everything except the rng key. A mask selects along the world axis, so it only restores per-world arrays, and leaves parameters shared by all worlds untouched. See [The world axis](world-axis.md) for more details.
+
 ```python
 import numpy as np
 from crazyflow.sim import Sim
 from crazyflow.control import Control
+from scipy.spatial.transform import Rotation as R
 
 sim = Sim(n_worlds=4, n_drones=1, control=Control.state)
 sim.reset()  # reset all worlds
 
 # Stage a command and advance 50 dynamics steps (controllers fire at their rate)
-cmd = np.zeros((4, 1, 13), dtype=np.float32)
+cmd = np.zeros((4, 1, 16), dtype=np.float32)
+cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
 cmd[..., 2] = 0.5
 sim.state_control(cmd)
 sim.step(50)
@@ -167,11 +196,13 @@ Access any state field through `sim.data.states`:
 import numpy as np
 from crazyflow.sim import Sim
 from crazyflow.control import Control
+from scipy.spatial.transform import Rotation as R
 
 sim = Sim(n_worlds=2, n_drones=3, control=Control.state)
 sim.reset()
 
-cmd = np.zeros((2, 3, 13), dtype=np.float32)
+cmd = np.zeros((2, 3, 16), dtype=np.float32)
+cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
 for _ in range(10):
     sim.state_control(cmd)
     sim.step(sim.freq // sim.control_freq)
@@ -214,7 +245,8 @@ from crazyflow.utils import leaf_replace
 
 def randomize_mass(data: SimData, default_data: SimData, mask: Array | None = None) -> SimData:
     key, mass_key = jax.random.split(data.core.rng_key)
-    mass = data.params.mass + jax.random.normal(mass_key, data.params.mass.shape) * 2e-3
+    shape = (data.core.n_worlds, data.core.n_drones, 1)  # One mass per drone
+    mass = default_data.params.mass + jax.random.normal(mass_key, shape) * 2e-3
     params = leaf_replace(data.params, mask, mass=mass)
     return data.replace(params=params, core=data.core.replace(rng_key=key))
 
@@ -225,7 +257,7 @@ sim.build_reset_fn()
 sim.reset()  # randomizes every world
 ```
 
-Passing a boolean mask to `sim.reset(mask=mask)` randomizes only the worlds being reset. See the [domain randomization example](../examples/index.md#domain-randomization) for mass and inertia randomization in a complete simulation.
+Passing a boolean mask to `sim.reset(mask=mask)` randomizes only the worlds being reset. Every parameter of every dynamics model can be randomized per world this way. See [Randomization and disturbances](pipelines.md#randomization-and-disturbances) for the details and the recompilation this might cause, and the [domain randomization example](../examples/index.md#domain-randomization) for a complete simulation.
 
 ## Next steps
 

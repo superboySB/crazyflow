@@ -24,12 +24,14 @@ Because `parametrize` returns a `functools.partial`, the bound parameters are ju
 import numpy as np
 from crazyflow.control import parametrize
 from crazyflow.control.mellinger import state2attitude
+from scipy.spatial.transform import Rotation as R
 
 ctrl = parametrize(state2attitude, "cf2x_L250")
 pos = np.zeros(3)
 quat = np.array([0.0, 0.0, 0.0, 1.0])
 vel = np.zeros(3)
-cmd = np.zeros(13)
+cmd = np.zeros(16)
+cmd[9:13] = R.from_euler("z", 0.0).as_quat()
 
 # Simulate with a heavier drone for this call only.
 rpyt, _ = ctrl(pos, quat, vel, cmd, mass=0.035)
@@ -59,6 +61,7 @@ The following configurations ship with pre-fitted parameters:
 | `"cf2x_P250"` | Crazyflie 2.x, plus propellers |
 | `"cf2x_T350"` | Crazyflie 2.x, thrust upgrade kit |
 | `"cf21B_500"` | Crazyflie 2.1 Brushless |
+| `"hb_x500"` | Holybro X500 V2 |
 
 Pass the drone name as a plain string:
 
@@ -66,24 +69,26 @@ Pass the drone name as a plain string:
 import numpy as np
 from crazyflow.control import parametrize
 from crazyflow.control.mellinger import state2attitude
+from scipy.spatial.transform import Rotation as R
 
 ctrl = parametrize(state2attitude, "cf2x_L250")
 pos = np.zeros(3)
 quat = np.array([0.0, 0.0, 0.0, 1.0])
 vel = np.zeros(3)
-cmd = np.zeros(13)
+cmd = np.zeros(16)
+cmd[9:13] = R.from_euler("z", 0.0).as_quat()
 rpyt, _ = ctrl(pos, quat, vel, cmd)
 ```
 
 ## Loading raw parameters
 
-Use [`load_params`][crazyflow.control.load_params] to inspect or override the values that `parametrize` would bind for a specific controller function:
+Use [`load_fn_params`][crazyflow.control.load_fn_params] to inspect or override the values that `parametrize` would bind for a specific controller function, or [`load_params`][crazyflow.control.load_params] for all sections of a controller:
 
 ```python
-from crazyflow.control import load_params
+from crazyflow.control import load_fn_params
 from crazyflow.control.mellinger import state2attitude
 
-params = load_params(state2attitude, "cf2x_L250")
+params = load_fn_params(state2attitude, "cf2x_L250")
 float(params["mass"])  # 0.029
 ```
 

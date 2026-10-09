@@ -11,12 +11,15 @@ import numpy as np
 import pytest
 from conftest import skip_if_headless
 from jax import Array
+from scipy.spatial.transform import Rotation as R
 
 from crazyflow.control import Control
+from crazyflow.dynamics import supported_dynamics
 from crazyflow.exception import ConfigError
 from crazyflow.sim import Dynamics, Sim
 from crazyflow.sim.data import ControlData, SimData
-from crazyflow.sim.sim import sync_sim2mjx, use_box_collision
+from crazyflow.sim.integration import Integrator
+from crazyflow.sim.sim import rotor_vel_limits, sync_sim2mjx, use_box_collision
 from crazyflow.sim.visualize import change_material
 
 if TYPE_CHECKING:
@@ -57,7 +60,7 @@ def test_sim_init(dynamics: Dynamics, device: str, control: Control, n_worlds: i
     n_drones = 1
 
     if dynamics != Dynamics.first_principles:
-        if control in (Control.force_torque, Control.rotor_vel):
+        if control in (Control.body_rate, Control.force_torque, Control.rotor_vel):
             with pytest.raises(ConfigError):
                 Sim(n_worlds=n_worlds, dynamics=dynamics, device=device, control=control)
             return
@@ -77,8 +80,8 @@ def test_sim_init(dynamics: Dynamics, device: str, control: Control, n_worlds: i
     # Test control buffer shapes
     if control == Control.state:
         assert isinstance(sim.data.controls.state, ControlData)
-        array_meta_assert(sim.data.controls.state.staged_cmd, (n_worlds, n_drones, 13), device)
-        array_meta_assert(sim.data.controls.state.cmd, (n_worlds, n_drones, 13), device)
+        array_meta_assert(sim.data.controls.state.staged_cmd, (n_worlds, n_drones, 16), device)
+        array_meta_assert(sim.data.controls.state.cmd, (n_worlds, n_drones, 16), device)
     else:
         assert sim.data.controls.state is None
     # Test attitude buffer shapes
@@ -88,13 +91,39 @@ def test_sim_init(dynamics: Dynamics, device: str, control: Control, n_worlds: i
         array_meta_assert(sim.data.controls.attitude.cmd, (n_worlds, n_drones, 4), device)
     else:
         assert sim.data.controls.attitude is None
+    # Test body rate buffer shapes
+    if control == Control.body_rate:
+        assert isinstance(sim.data.controls.body_rate, ControlData)
+        array_meta_assert(sim.data.controls.body_rate.staged_cmd, (n_worlds, n_drones, 4), device)
+        array_meta_assert(sim.data.controls.body_rate.cmd, (n_worlds, n_drones, 4), device)
+    else:
+        assert sim.data.controls.body_rate is None
 
     # Test force torque buffer shapes
-    if control in (Control.state, Control.attitude, Control.force_torque):
+    if control in (Control.state, Control.attitude, Control.body_rate, Control.force_torque):
         ft_ctrl = sim.data.controls.force_torque
         assert isinstance(ft_ctrl, ControlData)
         array_meta_assert(ft_ctrl.cmd, (n_worlds, n_drones, 4), device)
         array_meta_assert(ft_ctrl.staged_cmd, (n_worlds, n_drones, 4), device)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("dynamics", Dynamics)
+@pytest.mark.parametrize("control", Control)
+def test_sim_data_buffers_are_distinct(dynamics: Dynamics, control: Control, device: str):
+    """Every leaf of SimData must own its buffer, or XLA refuses to donate the pytree."""
+    if dynamics != Dynamics.first_principles and control in (
+        Control.body_rate,
+        Control.force_torque,
+        Control.rotor_vel,
+    ):
+        return
+    sim = Sim(n_worlds=2, dynamics=dynamics, device=device, control=control)
+    owners: dict[int, str] = {}
+    for path, leaf in jax.tree_util.tree_leaves_with_path(sim.data):
+        name, ptr = jax.tree_util.keystr(path), leaf.unsafe_buffer_pointer()
+        assert ptr not in owners, f"{name} shares its buffer with {owners[ptr]}"
+        owners[ptr] = name
 
 
 @pytest.mark.unit
@@ -114,7 +143,8 @@ def test_reset(device: str, dynamics: Dynamics, n_worlds: int, n_drones: int):
         force_torque=controls.force_torque.replace(cmd=jnp.ones((n_worlds, n_drones, 4)))
     )
     states = states.replace(pos=states.pos.at[:, :, 2].set(1.0))
-    params = params.replace(mass=params.mass.at[:, n_drones - 1].set(1.0))
+    mass = jnp.broadcast_to(params.mass, (n_worlds, n_drones, 1)).at[:, n_drones - 1].set(1.0)
+    params = params.replace(mass=mass)  # Per-drone masses
     sim.data = data.replace(states=states, controls=controls, params=params, core=core)
     sim.reset()
 
@@ -144,12 +174,16 @@ def test_reset_masked(device: str, dynamics: Dynamics):
     # Modify states
     data = sim.data
     states, controls, params, core = data.states, data.controls, data.params, data.core
+    # Use per-drone masses to verify per-world params resets
+    params = params.replace(mass=jnp.broadcast_to(params.mass, (sim.n_worlds, sim.n_drones, 1)))
+    sim.data = data = data.replace(params=params)
+    sim.build_default_data()
     core = core.replace(steps=core.steps + 100)
     controls = controls.replace(state=None)
     controls = controls.replace(force_torque=controls.force_torque.replace(cmd=jnp.ones((2, 1, 4))))
     controls = controls.replace(force_torque=controls.force_torque.replace(steps=jnp.ones((2, 1))))
     states = states.replace(pos=states.pos.at[:, :, 2].set(1.0))
-    params = params.replace(mass=params.mass.at[:, :, 0].set(1.0))
+    params = params.replace(mass=params.mass.at[..., 0].set(1.0))
     sim.data = data.replace(states=states, controls=controls, params=params, core=core)
 
     # Reset only first world
@@ -174,7 +208,7 @@ def test_reset_masked(device: str, dynamics: Dynamics):
     data = sim.data
     assert jnp.all(data.states.pos[1, :, 2] == 1.0), "World 2 pos was reset"
     assert jnp.all(data.controls.force_torque.cmd[1, ...] == 1.0), "World 2 cmd was reset"
-    assert jnp.all(data.params.mass[1, 0] == 1.0), "World 2 mass was reset"
+    assert jnp.all(data.params.mass[1, 0, 0] == 1.0), "World 2 mass was reset"
     assert jnp.all(data.core.steps[1] == 100), "World 2 steps were reset"
     assert data.controls.force_torque.steps[1] == 1, "World 2 force torque steps were reset"
 
@@ -186,13 +220,30 @@ def test_reset_masked(device: str, dynamics: Dynamics):
 @pytest.mark.parametrize("control", Control)
 def test_sim_step(n_worlds: int, n_drones: int, dynamics: Dynamics, control: Control, device: str):
     if dynamics != Dynamics.first_principles:
-        if control in (Control.force_torque, Control.rotor_vel):
+        if control in (Control.body_rate, Control.force_torque, Control.rotor_vel):
             pytest.skip(f"{control} is not supported with non-first-principles dynamics")
 
     sim = Sim(
         n_worlds=n_worlds, n_drones=n_drones, dynamics=dynamics, device=device, control=control
     )
     sim.step(2)
+
+
+@pytest.mark.unit
+def test_state_control_forwards_body_rates():
+    """State control must forward the body rates of the command to the attitude controller."""
+    sim = Sim(n_worlds=2, n_drones=3, control=Control.state)
+    cmd = np.zeros((sim.n_worlds, sim.n_drones, 16))
+    cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
+    cmd[..., 13:16] = np.random.rand(sim.n_worlds, sim.n_drones, 3)
+    sim.state_control(cmd)
+    sim.step()
+    assert np.allclose(sim.data.controls.attitude.ang_vel_des, cmd[..., 13:16])
+    # Attitude control never sets a body rate setpoint
+    sim = Sim(n_worlds=2, n_drones=3, control=Control.attitude)
+    sim.attitude_control(np.random.rand(sim.n_worlds, sim.n_drones, 4))
+    sim.step()
+    assert np.all(sim.data.controls.attitude.ang_vel_des == 0.0)
 
 
 @pytest.mark.unit
@@ -239,23 +290,23 @@ def test_sim_state_control(state_freq: int):
     can_control_1 = np.arange(6) * state_freq % sim.freq < state_freq
     can_control_2 = np.array([0, 0, 1, 2, 3, 4]) * state_freq % sim.freq < state_freq
     for i in range(6):
-        cmd = np.random.rand(sim.n_worlds, sim.n_drones, 13)
+        cmd = np.random.rand(sim.n_worlds, sim.n_drones, 16)
         assert jnp.all(sim.controllable[0] == can_control_1[i]), f"Controllable 1 mismatch at t={i}"
         assert jnp.all(sim.controllable[1] == can_control_2[i]), f"Controllable 2 mismatch at t={i}"
         sim.state_control(cmd)
-        last_attitude = sim.data.controls.attitude.staged_cmd
+        prev_attitude = sim.data.controls.attitude.staged_cmd
         sim.step()
         attitude = sim.data.controls.attitude.staged_cmd
-        last_att, att = last_attitude[0], attitude[0]
+        prev_att, att = prev_attitude[0], attitude[0]
         if can_control_1[i]:
-            assert not jnp.all(att == last_att), f"Controls haven't been applied at t={i}"
+            assert not jnp.all(att == prev_att), f"Controls haven't been applied at t={i}"
         else:
-            assert jnp.all(att == last_att), f"Controls should be unchanged at t={i}"
-        last_att, att = last_attitude[1], attitude[1]
+            assert jnp.all(att == prev_att), f"Controls should be unchanged at t={i}"
+        prev_att, att = prev_attitude[1], attitude[1]
         if can_control_2[i]:
-            assert not jnp.all(att == last_att), f"Controls haven't been applied at t={i}"
+            assert not jnp.all(att == prev_att), f"Controls haven't been applied at t={i}"
         else:
-            assert jnp.all(att == last_att), f"Controls should be unchanged at t={i}"
+            assert jnp.all(att == prev_att), f"Controls should be unchanged at t={i}"
         if i == 0:
             sim.reset(np.array([False, True]))  # Make world 2 asynchronous
 
@@ -263,7 +314,7 @@ def test_sim_state_control(state_freq: int):
 @pytest.mark.unit
 def test_sim_state_control_device(device: str):
     sim = Sim(n_worlds=2, n_drones=3, control=Control.state, device=device)
-    cmd = np.random.rand(sim.n_worlds, sim.n_drones, 13)
+    cmd = np.random.rand(sim.n_worlds, sim.n_drones, 16)
     sim.state_control(cmd)
     controls = sim.data.controls.state
     assert isinstance(controls.cmd, jnp.ndarray), "Buffers must remain JAX arrays"
@@ -316,7 +367,8 @@ def test_control_frequency(dynamics: Dynamics):
     sim_1000 = Sim(freq=1000, dynamics=dynamics, control="state")
 
     # Set same initial state and controls
-    cmd = np.zeros((1, 1, 13))  # Single world, single drone, state control
+    cmd = np.zeros((1, 1, 16))  # Single world, single drone, state control
+    cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
     # Target position of (1, 1, 1). Needs to be off-center to check attitude integration error
     cmd[..., :3] = 1.0
 
@@ -393,6 +445,58 @@ def test_floor_penetration(dynamics: Dynamics):
     # Check that the drone ended up on the floor (very close to z=0)
     final_z_pos = sim.data.states.pos[..., 2]
     assert jnp.all(final_z_pos == -0.001), f"Drone should be on floor but z={final_z_pos}"
+    sim.close()
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("integrator", Integrator)
+def test_rotor_vel_clip(integrator: Integrator):
+    """Test that the first principles rotor command is clipped to the motor limits."""
+    sim = Sim(
+        dynamics=Dynamics.first_principles,
+        control=Control.rotor_vel,
+        integrator=integrator,
+        device="cpu",
+    )
+    lower, upper = rotor_vel_limits(Dynamics.first_principles, sim.drone)
+    assert 0.0 < lower < upper
+
+    for value, target in ((2 * upper, upper), (-upper, lower)):
+        sim.reset()
+        sim.rotor_vel_control(np.full((1, 1, 4), target))
+        sim.step()
+        rotor_vel_ref = sim.data.states.rotor_vel
+        sim.reset()
+        sim.rotor_vel_control(np.full((1, 1, 4), value))
+        sim.step()
+        assert jnp.all(sim.data.controls.rotor_vel == target)
+        assert jnp.allclose(sim.data.states.rotor_vel, rotor_vel_ref)
+    sim.close()
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "dynamics", [Dynamics.so_rpy, Dynamics.so_rpy_rotor, Dynamics.so_rpy_rotor_drag]
+)
+@pytest.mark.parametrize("integrator", Integrator)
+def test_thrust_clip(dynamics: Dynamics, integrator: Integrator):
+    """Test that the so_rpy thrust command is clipped to the motor limits."""
+    sim = Sim(dynamics=dynamics, control=Control.attitude, integrator=integrator, device="cpu")
+    lower, upper = rotor_vel_limits(dynamics, sim.drone)
+    assert 0.0 < lower < upper
+
+    for value, target in ((2 * upper, upper), (-upper, lower)):
+        # so_rpy has no thrust state and applies the command directly, so we compare the velocity
+        sim.reset()
+        sim.attitude_control(np.array([[[0.0, 0.0, 0.0, target]]]))
+        sim.step()
+        vel_ref, rotor_vel_ref = sim.data.states.vel, sim.data.states.rotor_vel
+        sim.reset()
+        sim.attitude_control(np.array([[[0.0, 0.0, 0.0, value]]]))
+        sim.step()
+        assert jnp.all(sim.data.controls.attitude.cmd[..., -1] == target)
+        assert jnp.allclose(sim.data.states.vel, vel_ref)
+        assert jnp.allclose(sim.data.states.rotor_vel, rotor_vel_ref)
     sim.close()
 
 
@@ -530,7 +634,7 @@ def test_data_committed(control: Control, device: str):
         elif isinstance(obj0, (list, tuple)):  # Handle sequences
             for i, item0 in enumerate(obj0):
                 assert_committed(item0, f"{path}[{i}]")
-        elif isinstance(obj0, type(sim.data.core.device)):  # Device objects
+        elif isinstance(obj0, type(sim.device)):  # Device objects
             pass  # Devices themselves don't have committed attribute
         elif isinstance(obj0, dict):
             for key, value0 in obj0.items():
@@ -557,7 +661,8 @@ def test_compile(dynamics: Dynamics, device: str):
 def test_scan_results(dynamics: Dynamics):
     sim = Sim(n_worlds=2, n_drones=3, dynamics=dynamics, control=Control.state, device="cpu")
     sim.reset()
-    cmd = np.zeros((sim.n_worlds, sim.n_drones, 13))
+    cmd = np.zeros((sim.n_worlds, sim.n_drones, 16))
+    cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
     cmd[..., :3] = sim.data.states.pos + np.array([0.3, 0.3, 0.3])
     sim.state_control(cmd)
     n_steps, n_iters = sim.freq // sim.control_freq, 100  # 1 second at 100Hz
@@ -634,9 +739,66 @@ def test_build_data(control: Control):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", ["cf2x_L250", "cf2x_P250", "cf2x_T350", "cf21B_500"])
+@pytest.mark.parametrize("drone", ["cf2x_L250", "cf2x_P250", "cf2x_T350", "cf21B_500", "hb_x500"])
 def test_fused_model(device: str, drone: str):
-    sim = Sim(drone=drone, fused_mjx_model=True, device=device)
+    dynamics = supported_dynamics(drone)[0]  # Test for all drones, but on one available dynamics
+    sim = Sim(drone=drone, dynamics=dynamics, fused_mjx_model=True, device=device)
     sim.reset()
     sim.step(1)
+    sim.close()
+
+
+@pytest.mark.unit
+def test_partial_reset_keeps_shared_arrays():
+    # A partial reset with a world mask must leave shared arrays intact
+    sim = Sim(n_worlds=3)
+    gravity = jnp.array([1.0, 2.0, 3.0])
+    sim.data = sim.data.replace(params=sim.data.params.replace(gravity_vec=gravity))
+    sim.reset(jnp.array([True, False, False]))
+    assert jnp.array_equal(sim.data.params.gravity_vec, gravity)
+
+
+@pytest.mark.unit
+def test_full_reset_restores_shared_arrays():
+    sim = Sim(n_worlds=3)
+    default_gravity, rng_key = sim.default_data.params.gravity_vec, sim.data.core.rng_key
+    sim.data = sim.data.replace(
+        params=sim.data.params.replace(gravity_vec=jnp.array([1.0, 2.0, 3.0]))
+    )
+    sim.reset()
+    assert jnp.array_equal(sim.data.params.gravity_vec, default_gravity)
+    # The random key is the only thing that does not reset
+    assert jnp.array_equal(jax.random.key_data(sim.data.core.rng_key), jax.random.key_data(rng_key))
+
+
+@pytest.mark.unit
+def test_max_geom_pairs_caps_contact_buffer():
+    """Small swarms check all geom pairs, large swarms cap the buffer to stay linear."""
+    sim = Sim(n_drones=32)
+    assert sim.mjx_data._impl.contact.dist.shape[-1] == 32 * 33 // 2
+    sim.close()
+    n_drones = 64
+    sim = Sim(n_drones=n_drones)
+    assert sim.mjx_data._impl.contact.dist.shape[-1] == n_drones + 2 * n_drones  # Drones + floor
+    sim.max_geom_pairs = -1  # applies on the next build
+    sim.build_mjx()
+    assert sim.mjx_data._impl.contact.dist.shape[-1] == n_drones * (n_drones + 1) // 2
+    sim.close()
+
+
+@pytest.mark.unit
+def test_capped_contacts_identify_colliding_drones():
+    """Test that capping the contact buffer still correctly identifies drone collisions by name."""
+    n_drones = 16
+    sim = Sim(n_drones=n_drones)
+    sim.max_geom_pairs = 4
+    sim.build_mjx()
+    sim.reset()
+    pos = np.stack([[i * 2.0, 0.0, 1.0] for i in range(n_drones)])[None]
+    pos[0, 4] = pos[0, 3]  # overlap drones 3 and 4, leave the rest far apart
+    sim.data = sim.data.replace(states=sim.data.states.replace(pos=jnp.array(pos)))
+    sim.step()
+    assert jnp.any(sim.contacts("drone:3")), "Overlapping drones should be in contact"
+    assert jnp.any(sim.contacts("drone:4")), "Overlapping drones should be in contact"
+    assert not jnp.any(sim.contacts("drone:5")), "Distant drones should not be in contact"
     sim.close()

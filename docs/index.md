@@ -86,7 +86,7 @@ Crazyflow is a research simulator for Crazyflie-style quadrotors that runs milli
 ## Supported drones
 
 <!-- DRONE GRID: replace the placeholder image paths once renders are available.
-     The list of available drones comes from crazyflow.available_drones.
+     The list of available drones comes from crazyflow.Drone.
 
 <div class="drone-grid" markdown>
 
@@ -98,7 +98,7 @@ Crazyflow is a research simulator for Crazyflie-style quadrotors that runs milli
 </div>
 -->
 
-All drone configurations are bundled with `crazyflow.dynamics`. Available configurations: `cf2x_L250`, `cf2x_P250`, `cf2x_T350`, `cf21B_500`, and any drone returned by `crazyflow.available_drones`.
+All available drones are members of `crazyflow.Drone`. See [Available drone configurations](user-guide/dynamics/parametrize.md#available-drone-configurations) for the full list and how to select one.
 
 ---
 
@@ -225,12 +225,14 @@ See [Installation](get-started/installation.md) for GPU, developer, and from-sou
 import numpy as np
 from crazyflow.sim import Sim
 from crazyflow.control import Control
+from scipy.spatial.transform import Rotation as R
 
 sim = Sim(n_worlds=1, n_drones=1, control=Control.state)
 sim.reset()
 
-# State command: [x, y, z, vx, vy, vz, ax, ay, az, yaw, roll_rate, pitch_rate, yaw_rate]
-cmd = np.zeros((1, 1, 13), dtype=np.float32)
+# State command: [x, y, z, vx, vy, vz, ax, ay, az, qx, qy, qz, qw, wx, wy, wz]
+cmd = np.zeros((1, 1, 16), dtype=np.float32)
+cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
 cmd[0, 0, 2] = 0.5  # hover at 0.5 m
 
 sim.state_control(cmd)
@@ -244,4 +246,5 @@ pos = sim.data.states.pos[0, 0]  # shape (3,) — position of world 0, drone 0
 - [Quick Start](get-started/quick-start.md) — step-by-step walkthrough of the object-oriented API
 - [Functional API](user-guide/functional-api.md) — JIT compilation, autodiff, and `jax.lax.scan` rollouts
 - [Examples](examples/index.md) — runnable scripts covering hover, gradients, batched simulation, and more
+- [Projects](projects.md) — research and teaching projects built on Crazyflow
 - [API Reference](api/index.md) — full Python API

@@ -30,6 +30,25 @@ def create_uniform_ang_vel(N: int = 1000, scale: float = 10) -> NDArray:
 
 
 @pytest.mark.unit
+def test_ang_vel2quat_dot():
+    N = 1000
+    rot = R.random(N)
+    ang_vels = create_uniform_ang_vel(N)
+    dt = 1e-5
+    quats = rot.as_quat()
+    quat_next = (rot * R.from_rotvec(ang_vels * dt)).as_quat()
+    quat_prev = (rot * R.from_rotvec(-ang_vels * dt)).as_quat()
+    # Pick the sign of ±q closest to quats. Using canonical is not sufficient here, as it
+    # splits quaternions with small signed w differences, but large xyz agreement
+    quat_next *= np.sign(np.sum(quat_next * quats, axis=-1, keepdims=True))
+    quat_prev *= np.sign(np.sum(quat_prev * quats, axis=-1, keepdims=True))
+    quat_dot_fd = (quat_next - quat_prev) / (2 * dt)
+
+    quat_dot = rotation.ang_vel2quat_dot(xp.asarray(quats), xp.asarray(ang_vels))
+    assert np.allclose(quat_dot, quat_dot_fd, atol=tol), "Quaternion derivative is off."
+
+
+@pytest.mark.unit
 def test_ang_vel2rpy_rates_two_way():
     quats = xp.asarray(create_uniform_quats())
     ang_vels = xp.asarray(create_uniform_ang_vel())

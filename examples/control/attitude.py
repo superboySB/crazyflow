@@ -1,58 +1,25 @@
 import os
 
-import numpy as np
-
 os.environ["SCIPY_ARRAY_API"] = "1"
 
+from functools import partial
+
+import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from crazyflow.control import Control
+from crazyflow.control import Control, parametrize
+from crazyflow.control.mellinger import state2attitude
 from crazyflow.sim import Sim
 
-kp = np.array([0.4, 0.4, 1.25])
-ki = np.array([0.05, 0.05, 0.05])
-kd = np.array([0.2, 0.2, 0.4])
-g = 9.81
 
-
-def control(
-    t: float, obs: dict[str, np.ndarray], pos_start: np.ndarray, drone_mass: float
-) -> np.ndarray:
-    des_pos = np.zeros(3)
-    des_pos[..., :2] = pos_start[:2] + np.array([np.cos(t) - 1, np.sin(t)])
-    des_pos[..., 2] = 0.2 * t
-    des_vel = np.zeros_like(des_pos)
-    des_yaw = t
-
-    # Calculate the deviations from the desired trajectory
-    pos_error = des_pos - np.array(obs["pos"])
-    vel_error = des_vel - np.array(obs["vel"])
-
-    # Compute target thrust
-    target_thrust = np.zeros(3)
-    target_thrust += kp * pos_error
-    target_thrust += kd * vel_error
-    target_thrust[2] += drone_mass * g
-
-    # Update z_axis to the current orientation of the drone
-    z_axis = R.from_quat(obs["quat"]).as_matrix()[:, 2]
-
-    # update current thrust
-    thrust_desired = target_thrust.dot(z_axis)
-
-    # update z_axis_desired
-    z_axis_desired = target_thrust / np.linalg.norm(target_thrust)
-    x_c_des = np.array([np.cos(des_yaw), np.sin(des_yaw), 0.0])
-    y_axis_desired = np.cross(z_axis_desired, x_c_des)
-    y_axis_desired /= np.linalg.norm(y_axis_desired)
-    x_axis_desired = np.cross(y_axis_desired, z_axis_desired)
-
-    R_desired = np.vstack([x_axis_desired, y_axis_desired, z_axis_desired]).T
-    euler_desired = R.from_matrix(R_desired).as_euler("xyz", degrees=False)
-
-    action = np.concatenate([euler_desired, [thrust_desired]], dtype=np.float32)
-
-    return action
+def control(t: float, pos_start: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Compute the attitude command to track a circle with a slow climb."""
+    cmd = np.zeros(16)
+    cmd[:3] = pos_start + np.array([np.cos(t) - 1, np.sin(t), 0.2 * t])
+    cmd[3:6] = np.array([-np.sin(t), np.cos(t), 0.2])
+    cmd[6:9] = np.array([-np.cos(t), -np.sin(t), 0.0])
+    cmd[9:13] = R.from_euler("z", t).as_quat()
+    return cmd
 
 
 def main():
@@ -61,17 +28,17 @@ def main():
     duration = 6.5
     fps = 60
 
+    # We use the Mellinger position controller to generate attitude commands. This could be any
+    # controller that outputs [roll, pitch, yaw, thrust], e.g. a learned policy.
+    position_ctrl = partial(parametrize(state2attitude, sim.drone), ctrl_freq=sim.control_freq)
+    pos_err_i = np.zeros(3)
     cmd = np.zeros((sim.n_worlds, sim.n_drones, 4))  # [roll, pitch, yaw, thrust]
-    pos_start = sim.data.states.pos
+    pos_start = np.asarray(sim.data.states.pos[0, 0])
     for i in range(int(duration * sim.control_freq)):
-        obs = {
-            "pos": sim.data.states.pos[0, 0],
-            "vel": sim.data.states.vel[0, 0],
-            "quat": sim.data.states.quat[0, 0],
-        }
-        cmd[0, 0, :] = control(
-            i / sim.control_freq, obs, pos_start[0, 0], sim.data.params.mass[0, 0, 0]
-        )
+        pos, quat = np.asarray(sim.data.states.pos[0, 0]), np.asarray(sim.data.states.quat[0, 0])
+        vel = np.asarray(sim.data.states.vel[0, 0])
+        ref = control(i / sim.control_freq, pos_start)
+        cmd[0, 0, :], pos_err_i = position_ctrl(pos, quat, vel, ref, pos_err_i)
         sim.attitude_control(cmd)
         sim.step(sim.freq // sim.control_freq)
         if ((i * fps) % sim.control_freq) < fps:

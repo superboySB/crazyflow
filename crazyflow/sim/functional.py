@@ -6,7 +6,6 @@ import jax.numpy as jnp
 
 from crazyflow.control import Control
 from crazyflow.control.core import controllable as _controllable
-from crazyflow.utils import to_device
 
 if TYPE_CHECKING:
     from jax import Array
@@ -17,8 +16,8 @@ if TYPE_CHECKING:
 def state_control(data: SimData, controls: Array) -> SimData:
     """State control function."""
     assert data.controls.mode == Control.state, f"control type {data.controls.mode} not enabled"
-    assert controls.shape == (data.core.n_worlds, data.core.n_drones, 13), "controls shape mismatch"
-    controls = to_device(controls, data.core.device)
+    assert controls.shape == (data.core.n_worlds, data.core.n_drones, 16), "controls shape mismatch"
+    controls = jnp.asarray(controls)
     data = data.replace(
         controls=data.controls.replace(state=data.controls.state.replace(staged_cmd=controls))
     )
@@ -36,11 +35,23 @@ def attitude_control(data: SimData, controls: Array) -> SimData:
     """
     assert data.controls.mode == Control.attitude, f"control type {data.controls.mode} not enabled"
     assert controls.shape == (data.core.n_worlds, data.core.n_drones, 4), "controls shape mismatch"
-    controls = to_device(controls, data.core.device)
+    controls = jnp.asarray(controls)
     data = data.replace(
         controls=data.controls.replace(attitude=data.controls.attitude.replace(staged_cmd=controls))
     )
     return data
+
+
+def body_rate_control(data: SimData, controls: Array) -> SimData:
+    """Body rate control function."""
+    assert data.controls.mode == Control.body_rate, f"control type {data.controls.mode} not enabled"
+    assert controls.shape == (data.core.n_worlds, data.core.n_drones, 4), "controls shape mismatch"
+    controls = jnp.asarray(controls)
+    return data.replace(
+        controls=data.controls.replace(
+            body_rate=data.controls.body_rate.replace(staged_cmd=controls)
+        )
+    )
 
 
 def force_torque_control(data: SimData, controls: Array) -> SimData:
@@ -49,7 +60,7 @@ def force_torque_control(data: SimData, controls: Array) -> SimData:
         f"control type {data.controls.mode} not enabled"
     )
     assert controls.shape == (data.core.n_worlds, data.core.n_drones, 4), "controls shape mismatch"
-    controls = to_device(controls, data.core.device)
+    controls = jnp.asarray(controls)
     data = data.replace(
         controls=data.controls.replace(
             force_torque=data.controls.force_torque.replace(staged_cmd=controls)
@@ -65,7 +76,7 @@ def rotor_vel_control(data: SimData, controls: Array) -> SimData:
     """
     assert data.controls.mode == Control.rotor_vel, f"control type {data.controls.mode} not enabled"
     assert controls.shape == (data.core.n_worlds, data.core.n_drones, 4), "controls shape mismatch"
-    controls = to_device(controls, data.core.device)
+    controls = jnp.asarray(controls)
     return data.replace(controls=data.controls.replace(rotor_vel=controls))
 
 
@@ -77,11 +88,13 @@ def controllable(data: SimData) -> Array:
             control_steps, control_freq = controls.state.steps, controls.state.freq
         case Control.attitude:
             control_steps, control_freq = controls.attitude.steps, controls.attitude.freq
+        case Control.body_rate:
+            control_steps, control_freq = controls.body_rate.steps, controls.body_rate.freq
         case Control.force_torque:
             control_steps = controls.force_torque.steps
             control_freq = controls.force_torque.freq
         case Control.rotor_vel:
-            return jnp.ones((data.core.n_worlds, 1), dtype=bool, device=data.core.device)
+            return jnp.ones_like(data.core.steps, dtype=bool)
         case _:
             raise NotImplementedError(f"Control mode {data.controls.mode} not implemented")
     return _controllable(data.core.steps, data.core.freq, control_steps, control_freq)

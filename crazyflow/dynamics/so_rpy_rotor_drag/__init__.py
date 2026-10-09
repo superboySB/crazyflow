@@ -8,33 +8,57 @@ of which only the first enters the dynamics.
 
 \[
 \begin{aligned}
-    \dot{F} &= \frac{1}{\tau}(F_{\mathrm{cmd}} - F), \\
     \dot{\mathbf{p}} &= \mathbf{v}, \\
-    m\dot{\mathbf{v}} &= m\mathbf{g}
-        + (c_{\mathrm{acc}} + c_f F)\,R\,\mathbf{e}_z
-        + R\,D_b\,R^{\top}\mathbf{v}, \\
-    \ddot{\boldsymbol{\psi}} &=
-        c_{\psi}\,\boldsymbol{\psi}
-        + c_{\dot{\psi}}\,\dot{\boldsymbol{\psi}}
-        + c_u\,\mathbf{u}_{\mathrm{rpy}},
+    m\dot{\mathbf{v}} &= \mathbf{f}_\mathrm{g}
+        + \mathbf{R}\,\mathbf{e}_\mathrm{z} (c_\mathrm{acc} + c_\mathrm{f} f_\Sigma)
+        + \mathbf{R}\,{}^{\mathcal{B}}\mathbf{f}_\mathrm{a}, \\
+    \dot{f}_\Sigma &= c_\tau (f_{\Sigma,\mathrm{cmd}} - f_\Sigma), \\
+    \ddot{\boldsymbol{\Psi}} &=
+        \boldsymbol{c}_{\boldsymbol{\Psi},1}\,\boldsymbol{\Psi}
+        + \boldsymbol{c}_{\boldsymbol{\Psi},2}\,\dot{\boldsymbol{\Psi}}
+        + \boldsymbol{c}_{\boldsymbol{\Psi},3}\,\boldsymbol{\Psi}_\mathrm{cmd},
 \end{aligned}
 \]
 
-where \(\tau\) is the thrust time constant, \(\boldsymbol{\psi} = [\phi,\theta,\psi]^{\top}\) are
-the roll/pitch/yaw angles with rates \(\dot{\boldsymbol{\psi}}\),
-\(R = {}^{\mathcal{I}}R_{\mathcal{B}}(\boldsymbol{\psi})\) is the rotation from body to world frame,
-and \(D_b\) is the diagonal body-frame aerodynamic drag matrix.
+where \(\mathbf{f}_\mathrm{g} = m\mathbf{g}\) and
+\({}^{\mathcal{B}}\mathbf{f}_\mathrm{a} = \mathbf{C}_\mathrm{a}\,{}^{\mathcal{B}}\mathbf{v}\).
 
 This is the native Euler-angle form. For how the simulation integrates this state in quaternion +
 angular velocity coordinates, see [so_rpy][crazyflow.dynamics.so_rpy].
+
+| Variable | Name | Description |
+| --- | --- | --- |
+| \(\mathbf{p}\) | `pos` | Position in m |
+| \(\mathbf{v}\) | `vel` | Velocity in m/s |
+| \(\boldsymbol{\Psi} = [\phi,\theta,\psi]^{\top}\) | | Roll, pitch, and yaw in rad, from `quat` |
+| \(\dot{\boldsymbol{\Psi}}\) | | Roll, pitch, and yaw rates in rad/s, from `ang_vel` |
+| \(f_\Sigma\) | `rotor_vel[0]` | Collective thrust in N |
+| \(\boldsymbol{\Psi}_\mathrm{cmd}\) | `cmd[:3]` | Commanded roll, pitch, and yaw in rad |
+| \(f_{\Sigma,\mathrm{cmd}}\) | `cmd[3]` | Commanded collective thrust in N |
+| \(\mathbf{f}_\mathrm{g}\) | | Gravitational force |
+| \({}^{\mathcal{B}}\mathbf{f}_\mathrm{a}\) | | Aerodynamic drag force |
+| \(\mathbf{R}\) | | Rotation from body to world frame |
+| \(\mathbf{e}_\mathrm{z}\) | | Unit vector in z direction |
+| \({}^{\mathcal{B}}(\cdot)\) | | Quantity in the body frame, world frame if unmarked |
+
+| Parameter | Name | Description |
+| --- | --- | --- |
+| \(m\) | `mass` | Mass in kg |
+| \(\mathbf{g}\) | `gravity_vec` | Gravity vector in m/s² |
+| \(c_\tau\) | `thrust_dyn_coef` | Thrust dynamics coefficient in 1/s |
+| \(\mathbf{C}_\mathrm{a}\) | `drag_matrix` | Drag coefficients in matrix form in N/(m/s) |
+| \(c_\mathrm{acc}\) | `acc_coef` | Thrust offset |
+| \(c_\mathrm{f}\) | `cmd_f_coef` | Thrust scaling coefficient |
+| \(\boldsymbol{c}_{\boldsymbol{\Psi},1}\) | `rpy_coef` | Rotational dynamics coefficients |
+| \(\boldsymbol{c}_{\boldsymbol{\Psi},2}\) | `rpy_rates_coef` | Rotational dynamics coefficients |
+| \(\boldsymbol{c}_{\boldsymbol{\Psi},3}\) | `cmd_rpy_coef` | Rotational dynamics coefficients |
 """
 
 from crazyflow.dynamics.so_rpy_rotor_drag.dynamics import (
     Params,
     dynamics,
-    sim_dynamics,
     symbolic_dynamics,
     symbolic_dynamics_euler,
 )
 
-__all__ = ["Params", "dynamics", "sim_dynamics", "symbolic_dynamics", "symbolic_dynamics_euler"]
+__all__ = ["Params", "dynamics", "symbolic_dynamics", "symbolic_dynamics_euler"]

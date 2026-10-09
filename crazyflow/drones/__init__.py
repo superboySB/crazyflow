@@ -1,37 +1,29 @@
 """Hardware descriptions for the supported drone platforms.
 
-This package bundles the physical assets that define each drone configuration: the MuJoCo MJCF scene
-files, their referenced meshes (``assets/``), and the physical parameters shared across all dynamics
-(``params.toml`` with mass, inertia, thrust and torque curves, …). These describe the *hardware* and
-are independent of the dynamics formulation used to simulate it (see [crazyflow.dynamics][]).
+This package bundles the MuJoCo MJCF scene files that define each drone configuration and their
+referenced meshes (``assets/``). For the physical params, see [crazyflow.dynamics.load_params][].
 
-Use ``available_drones`` to enumerate the supported configurations, and ``load_params`` to read all
-physical parameters of a drone.
+Use ``Drone`` to enumerate the supported configurations.
 """
 
-import tomllib
+from enum import StrEnum
 from pathlib import Path
 
-# Currently supported platforms:
-# * **cf2x_L250** — Crazyflie 2.x
-# * **cf2x_P250** — Crazyflie 2.x with plus propellers
-# * **cf2x_T350** — Crazyflie 2.x with thrust upgrade kit
-# * **cf21B_500** — Crazyflie 2.1 Brushless with 500 mAh battery
-available_drones: tuple[str, ...] = ("cf2x_L250", "cf2x_P250", "cf2x_T350", "cf21B_500")
-
-__all__ = ["available_drones", "load_params"]
+__all__ = ["Drone"]
 
 
-def load_params(drone: str) -> dict:
-    """Load all physical parameters of a drone from ``params.toml``.
+class Drone(StrEnum):
+    """Drone configurations. Each member has an MJCF file ``crazyflow/drones/<name>.xml``."""
 
-    Returns the raw values (lists/scalars) for the whole drone.
+    cf21B_500 = "cf21B_500"
+    cf2x_L250 = "cf2x_L250"
+    cf2x_P250 = "cf2x_P250"
+    cf2x_T350 = "cf2x_T350"
+    hb_x500 = "hb_x500"
 
-    Args:
-        drone: Name of the drone configuration, e.g. ``"cf2x_L250"``.
-    """
-    with open(Path(__file__).parent / "params.toml", "rb") as f:
-        params = tomllib.load(f)
-    if drone not in params or drone not in available_drones:
-        raise KeyError(f"Drone `{drone}` not found in drones/params.toml")
-    return params[drone]
+
+# Sanity check at startup
+_mjcf_files = {p.stem for p in Path(__file__).parent.glob("*.xml")}
+assert {d.value for d in Drone} == _mjcf_files, (
+    f"Drone enum {sorted(d.value for d in Drone)} does not match MJCF files {sorted(_mjcf_files)}"
+)
