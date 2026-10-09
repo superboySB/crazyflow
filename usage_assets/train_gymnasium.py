@@ -28,7 +28,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 import crazyflow.envs  # noqa: F401  # register the Gymnasium environments
-from crazyflow.drones import load_params
+from crazyflow.drones import Drone
+from crazyflow.dynamics import Dynamics, load_params
 from crazyflow.envs import NormalizeActions
 
 ENVIRONMENT_IDS = (
@@ -216,7 +217,7 @@ class Agent(nn.Module):
 
 def acceleration_to_action(acceleration: Tensor) -> Tensor:
     """Convert desired world acceleration to a normalized attitude/thrust action."""
-    params = load_params("cf2x_L250")
+    params = load_params(Dynamics.so_rpy, Drone.cf2x_L250)
     mass = float(params["mass"])
     thrust_low = 4.0 * float(params["thrust_min"])
     thrust_high = 4.0 * float(params["thrust_max"])

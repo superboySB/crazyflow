@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-09",
+  "execution_environment": "Docker",
+  "container": "dzp-crazyflow-research-20261009",
+  "hostname": "dzp-MS-7E30",
+  "image": "dzp_crazyflow:0.3.2-research-20261009-cuda12.6-py312-racing-rl",
+  "official_main_commit": "70d09e455859580c45b0e4a06ee4a92efbbc2d6f",
+  "python": "3.12.15",
+  "packages": {
+    "crazyflow": "0.3.2",
+    "jax": "0.11.1",
+    "jaxlib": "0.11.1",
+    "numpy": "2.5.3",
+    "scipy": "1.18.0",
+    "gymnasium": "1.4.0",
+    "mujoco": "3.10.0",
+    "mujoco-mjx": "3.10.0",
+    "flax": "0.12.9",
+    "splax": "0.2.0",
+    "torch": "2.8.0+cu126",
+    "pytest": "9.1.1",
+    "matplotlib": "3.11.2",
+    "nvidia-cudnn-cu12": "9.10.2.21",
+    "nvidia-cublas-cu12": "12.6.4.1"
+  },
+  "jax_gpu_devices": [
+    "NVIDIA GeForce RTX 4070 Ti SUPER"
+  ],
+  "torch_cuda": "12.6",
+  "gpu_matmul_and_bidirectional_dlpack": "passed"
+}

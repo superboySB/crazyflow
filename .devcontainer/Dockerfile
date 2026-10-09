@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6.3-devel-ubuntu22.04
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04 AS dependencies
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -59,31 +59,103 @@ ENV SCIPY_ARRAY_API=1
 USER ${USERNAME}
 
 # Match the Pixi version used by CI and install the repository's exact locked
-# GPU test environment.  The Linux lock also includes splax[viewer].
+# GPU test environment. Its Python 3.12 constraint also supports PyTorch 2.8,
+# and the Linux lock includes splax[viewer].
 RUN curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.76.0 bash
 
 WORKDIR /opt/crazyflow
 COPY --chown=${USERNAME}:${USERNAME} pyproject.toml pixi.lock README.md LICENSE ./
-RUN pixi install --locked -e gpu-tests --skip crazyflow
+# Large concurrent HTTP/2 transfers stall behind some build proxies. Fetch the
+# exact locked wheels with four HTTP/1.1 range transfers, verify their hashes,
+# and check installed versions. Temporary wheels stay in this
+# layer only; other package-manager caches are cleaned in the final layer.
+RUN python3 - <<'PY'
+import concurrent.futures
+import hashlib
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import tempfile
+from urllib.parse import urlsplit
+
+lock = Path("pixi.lock").read_text()
+block = re.search(r"^  gpu-tests:\n(.*?)(?=^  \S|\Z)", lock, re.M | re.S).group(1)
+urls = re.findall(r"^      - pypi: (https://\S+\.whl)$", block, re.M)
+hashes = {
+    url: re.search(r"^  sha256: ([0-9a-f]{64})$", metadata, re.M).group(1)
+    for url, metadata in re.findall(r"^- pypi: ([^\n]+)\n(.*?)(?=^- |\Z)", lock, re.M | re.S)
+    if url in urls
+}
+assert urls and len(hashes) == len(urls), "Every GPU wheel must have a locked SHA256"
+pixi = ["pixi", "install", "--locked", "-e", "gpu-tests", "--skip", "crazyflow"]
+skips = [arg for url in urls for arg in
+         ("--skip", Path(urlsplit(url).path).name.split("-")[0].replace("_", "-").lower())]
+print(f"Install locked Conda packages; fetch {len(urls)} PyPI wheels separately", flush=True)
+subprocess.run(pixi + skips, check=True)
+curl = ["curl", "--http1.1", "--fail", "--location", "--silent", "--show-error",
+        "--retry", "3", "--retry-all-errors", "--connect-timeout", "20", "--max-time", "300"]
+
+def size(url):
+    headers = subprocess.check_output(curl + ["--head", url], text=True)
+    return int(re.findall(r"^content-length: (\d+)", headers, re.M | re.I)[-1])
+
+def fetch(part):
+    url, start, end, path = part
+    subprocess.run(curl + ["--range", f"{start}-{end}", "--output", str(path), url], check=True)
+    assert path.stat().st_size == end - start + 1, f"Incomplete range: {url}"
+
+with tempfile.TemporaryDirectory(prefix="crazyflow-wheels-") as directory:
+    root = Path(directory)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        sizes = list(pool.map(size, urls))
+        parts = [(url, start, min(start + 8 * 1024**2, total) - 1, root / f"{index}-{start}.part")
+                 for index, (url, total) in enumerate(zip(urls, sizes))
+                 for start in range(0, total, 8 * 1024**2)]
+        list(pool.map(fetch, parts))
+    wheels = []
+    for url in urls:
+        path = root / Path(urlsplit(url).path).name
+        with path.open("wb") as destination:
+            for part_url, _, _, segment in parts:
+                if part_url == url:
+                    with segment.open("rb") as source:
+                        shutil.copyfileobj(source, destination)
+                    segment.unlink()
+        digest = hashlib.sha256()
+        with path.open("rb") as source:
+            for chunk in iter(lambda: source.read(1024**2), b""):
+                digest.update(chunk)
+        assert digest.hexdigest() == hashes[url], f"SHA256 mismatch: {path.name}"
+        name, version = path.name.split("-")[:2]
+        wheels.append(f"{name}=={version}")
+        print(f"Verified locked wheel: {path.name}", flush=True)
+    python = "/opt/crazyflow/.pixi/envs/gpu-tests/bin/python"
+    # Pixi deliberately reinstalls pip-owned packages, even with matching versions.
+    # Verify every installed version directly after materializing the locked hashes.
+    subprocess.run([python, "-m", "pip", "install", "--no-index", "--no-deps",
+                    "--find-links", str(root), *wheels], check=True)
+    check = ('from importlib.metadata import version; import sys; '
+             'assert all(version(name) == expected for name, expected in '
+             '(spec.split("==") for spec in sys.argv[1:]))')
+    subprocess.run([python, "-c", check, *wheels], check=True)
+PY
 
 # Keep the environment inside the image.  PYTHONPATH makes a bind-mounted
 # checkout at /workspace/crazyflow take precedence over the build-time copy.
 ENV PATH="/opt/crazyflow/.pixi/envs/gpu-tests/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cublas/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cuda_cupti/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cudnn/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cufft/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cusolver/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/cusparse/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/nccl/lib:/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/nvidia/nvshmem/lib:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
+FROM dependencies AS research
+
 # Source changes are a cheap layer: they do not invalidate the locked CUDA
 # dependency environment above.
 COPY --chown=${USERNAME}:${USERNAME} . .
 RUN python -m pip install --no-deps --no-build-isolation -e .
 
-# Gymnasium 1.3 still calls the six-argument camera API removed in MuJoCo
-# 3.11.  Keep Crazyflow's source untouched by pinning the last compatible
-# MuJoCo/MJX pair inside this container environment.
-ARG MUJOCO_VERSION=3.10.0
-RUN python -m pip install --no-cache-dir --no-deps --force-reinstall \
-        "mujoco==${MUJOCO_VERSION}" \
-        "mujoco-mjx==${MUJOCO_VERSION}" \
-    && python -c 'import mujoco; assert mujoco.__version__ == "3.10.0"'
+# The lock already selects a matching MuJoCo/MJX 3.10 pair. Gymnasium 1.4
+# supplies the updated camera API, so no post-install downgrade is needed.
+RUN python -c 'import sys, gymnasium, mujoco; from importlib.metadata import version; assert sys.version_info[:2] == (3, 12); assert gymnasium.__version__ == "1.4.0"; assert mujoco.__version__ == version("mujoco-mjx") == "3.10.0"'
 
 # Pin the externally maintained racing course so rebuilds do not silently
 # change behavior.  Install its simulation, optional gamepad, and RL packages
@@ -113,7 +185,8 @@ RUN git clone https://github.com/learnsyslab/lsy_drone_racing.git \
 WORKDIR /opt/lsy_drone_racing
 RUN PIXI_PROJECT_ROOT=/opt/lsy_drone_racing bash tools/setup_acados.sh \
     && test -f /opt/lsy_drone_racing/acados/lib/libacados.so \
-    && test -x /opt/lsy_drone_racing/acados/bin/t_renderer
+    && test -x /opt/lsy_drone_racing/acados/bin/t_renderer \
+    && python -m pip check
 
 ENV ACADOS_SOURCE_DIR=/opt/lsy_drone_racing/acados
 ENV ACADOS_INSTALL_DIR=/opt/lsy_drone_racing/acados

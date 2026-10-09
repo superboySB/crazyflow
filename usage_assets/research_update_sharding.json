@@ -1,0 +1,76 @@
+{
+  "environment": {
+    "python": "3.12.15",
+    "execution_environment": "Docker",
+    "hostname": "dzp-MS-7E30",
+    "crazyflow": "0.3.2",
+    "packages": {
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "numpy": "2.5.3",
+      "scipy": "1.18.0",
+      "mujoco": "3.10.0",
+      "mujoco-mjx": "3.10.0",
+      "flax": "0.12.9",
+      "matplotlib": "3.11.2"
+    },
+    "requested_device": "cpu",
+    "devices": [
+      "cpu:0",
+      "cpu:1"
+    ],
+    "device_kinds": [
+      "cpu",
+      "cpu"
+    ],
+    "dtype": "float32",
+    "dynamics_hz": 500,
+    "seed": 0,
+    "official_main_commit": "70d09e4"
+  },
+  "sharding": {
+    "device_kind": "cpu",
+    "devices": [
+      "cpu:0",
+      "cpu:1"
+    ],
+    "n_worlds": 4,
+    "steps": 50,
+    "max_abs_state_differences": {
+      "pos": 1.4551915228366852e-11,
+      "quat": 3.259629011154175e-09,
+      "vel": 1.664739102125168e-08,
+      "ang_vel": 3.8743019104003906e-07,
+      "rotor_vel": 0.0009765625,
+      "force": 0.0,
+      "torque": 0.0
+    },
+    "max_relative_state_differences": {
+      "pos": 1.4551139848290421e-11,
+      "quat": 3.259775705972791e-09,
+      "vel": 2.789974540604353e-06,
+      "ang_vel": 2.0338042038545158e-07,
+      "rotor_vel": 5.58853411632422e-08,
+      "force": 0.0,
+      "torque": 0.0
+    },
+    "comparison_atol": 1e-06,
+    "comparison_rtol": 1e-06,
+    "position_partition_spec": "P('worlds',)",
+    "gravity_partition_spec": "P()",
+    "plugin_counter_partition_spec": "P('worlds',)",
+    "shared_lookup_partition_spec": "P()",
+    "worlds_per_shard": [
+      2,
+      2
+    ],
+    "performance_claim": "Functional correctness only; no multi-GPU timing measurement",
+    "counts_after_sharded_masked_reset": [
+      0,
+      50,
+      0,
+      50
+    ]
+  },
+  "all_assertions_passed": true
+}

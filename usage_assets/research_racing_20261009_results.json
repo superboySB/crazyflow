@@ -1,0 +1,237 @@
+{
+  "date": "2026-10-09",
+  "official_main_commit": "70d09e455859580c45b0e4a06ee4a92efbbc2d6f",
+  "racing_commit": "065a6ecb7a7621f156bdd0bedc70020e3331a3e9",
+  "docker": {
+    "final_image_tag": "dzp_crazyflow:0.3.2-research-20261009-cuda12.6-py312-racing-rl",
+    "final_image_id": "sha256:2cd5fa0c5f833c28c9ded8a31c81019fdbe17a7d1e28ca33087dc09e53b985bf",
+    "experiment_container": "dzp-crazyflow-research-20261009",
+    "experiment_container_base_image": "sha256:bab060fcbb63c4b12d6ccc10d583da27bb3fa564a5e556261fd6d44faf5ac5f6",
+    "build_note": "The running container received the render flag change before CLI evaluation. The final rebuilt image passed package, GPU, reverse-patch and source-hash checks.",
+    "runtime_flags": [
+      "--gpus all",
+      "--network host",
+      "--ipc host",
+      "--user 1000:1000",
+      "X11 bind mounts",
+      "workspace bind mount",
+      "validation cache read-only"
+    ]
+  },
+  "environment": {
+    "python": "3.12.15",
+    "packages": {
+      "crazyflow": "0.3.2",
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "torch": "2.8.0+cu126",
+      "gymnasium": "1.4.0",
+      "mujoco": "3.10.0",
+      "mujoco-mjx": "3.10.0",
+      "flax": "0.12.9",
+      "acados-template": "0.1"
+    },
+    "torch_cuda": "12.6",
+    "gpu_and_driver": "NVIDIA GeForce RTX 4070 Ti SUPER, 580.126.09",
+    "compat_patch_sha256": "34309c89f3e5d0bb897d0d7b0f1bc9f8b5f90f01caee0a1c8d79a950e1bfb89c",
+    "pixi_lock_sha256": "c8bfe850736458471ed67c37de40c091e91c8c9c56fe2ffe3afcb83b24f61f2c"
+  },
+  "working_directory": "/opt/lsy_drone_racing",
+  "ppo": {
+    "train_command": "python -m lsy_drone_racing.control.train_rl --wandb-enabled False",
+    "requested_transitions": 1500000,
+    "actual_transitions": 1499136,
+    "updates": 183,
+    "training_seconds": 119.39,
+    "seed": 42,
+    "jax_device": "gpu",
+    "policy_device": "cuda",
+    "num_envs": 1024,
+    "rollout_steps": 8,
+    "checkpoint_path": "/opt/lsy_drone_racing/lsy_drone_racing/control/ppo_drone_racing.ckpt",
+    "checkpoint_sha256": "60b3a02bde2b851b9dea898a1a915ebc68cf176bab49ecbdc1c3eb35fb1cbb43",
+    "checkpoint_committed": false,
+    "default_gui_evaluation": {
+      "reward": 704.75,
+      "steps": 750,
+      "exit_code": 0
+    },
+    "reload_command": "python -m lsy_drone_racing.control.train_rl --wandb-enabled False --train False --eval 5 --render False",
+    "reload_episodes": [
+      {
+        "episode": 1,
+        "reward": 704.75,
+        "steps": 750
+      },
+      {
+        "episode": 2,
+        "reward": 699.76,
+        "steps": 750
+      },
+      {
+        "episode": 3,
+        "reward": 695.77,
+        "steps": 750
+      },
+      {
+        "episode": 4,
+        "reward": 702.92,
+        "steps": 750
+      },
+      {
+        "episode": 5,
+        "reward": 714.94,
+        "steps": 750
+      }
+    ],
+    "reward_precision": "The official CLI prints per-episode rewards to two decimal places.",
+    "mean_reward_printed": 703.63,
+    "mean_steps": 750.0,
+    "reload_exit_code": 0,
+    "render_default": true,
+    "headless_method": "The formal CLI sets render=False; no mocks or render-function replacement are used in this run.",
+    "raw_reload_cli_output": [
+      "Episode 1: Reward = 704.75, Length = 750",
+      "Episode 2: Reward = 699.76, Length = 750",
+      "Episode 3: Reward = 695.77, Length = 750",
+      "Episode 4: Reward = 702.92, Length = 750",
+      "Episode 5: Reward = 714.94, Length = 750",
+      "Average Reward = 703.63, Length = 750.0"
+    ],
+    "equivalent_api_probe": {
+      "script": "/tmp/research-validation/racing-ppo-reload.py",
+      "call": "evaluate_ppo(Args.create(), 5, checkpoint)",
+      "render_method": "This earlier API probe temporarily disabled RandTrajEnv.render. The later formal CLI run uses --render False without mocks and reproduces all five rounded rewards.",
+      "rewards_full_precision": [
+        704.7457747459412,
+        699.762549996376,
+        695.7695454955101,
+        702.9192497134209,
+        714.9354662299156
+      ],
+      "steps": [
+        750,
+        750,
+        750,
+        750,
+        750
+      ],
+      "mean_reward_full_precision": 703.6265172362328,
+      "seed": 42,
+      "jax_device": "gpu",
+      "policy_device": "cuda",
+      "reproduce_with_current_patch": [
+        "from pathlib import Path",
+        "from lsy_drone_racing.control.train_rl import Args, evaluate_ppo",
+        "checkpoint = Path(\"/opt/lsy_drone_racing/lsy_drone_racing/control/ppo_drone_racing.ckpt\")",
+        "print(evaluate_ppo(Args.create(), 5, checkpoint, render=False))"
+      ]
+    }
+  },
+  "races": {
+    "config_seed": -1,
+    "single_state": {
+      "command": "python scripts/sim.py --config level0.toml --render False",
+      "seconds": 16.5,
+      "gates_passed": 4,
+      "gates_total": 4,
+      "finished": true,
+      "exit_code": 0
+    },
+    "multi_attitude": {
+      "command": "python scripts/multi_sim.py --config multi_level0.toml --render False",
+      "controllers": [
+        {
+          "name": "attitude_controller_multi.py",
+          "seconds": 10.1,
+          "gates_passed": 4,
+          "finished": true
+        },
+        {
+          "name": "attitude_mpc_multi.py",
+          "seconds": 13.43,
+          "gates_passed": 4,
+          "finished": true
+        }
+      ],
+      "gates_total": 4,
+      "exit_code": 0
+    },
+    "trained_rl_attitude": {
+      "config_preparation": "Copy config/level0.toml to /tmp/research-validation/level0-attitude.toml and change only env.control_mode from state to attitude.",
+      "command": "python scripts/sim.py --config /tmp/research-validation/level0-attitude.toml --controller attitude_rl.py --render False",
+      "seconds": 13.34,
+      "gates_passed": 4,
+      "gates_total": 4,
+      "finished": true,
+      "exit_code": 0
+    }
+  },
+  "compatibility_checks": {
+    "state_yaw_tracking": {
+      "cwd": "/opt/lsy_drone_racing",
+      "command": "JAX_PLATFORMS=cpu python -m pytest -q tests/integration/test_controllers.py -k trajectory_controller_finish",
+      "test_source": "Tests are included by the pinned racing clone in the Docker image.",
+      "passed": 4,
+      "deselected": 13,
+      "seconds": 11.36
+    },
+    "vector_randomization_and_render": {
+      "cwd": "/opt/lsy_drone_racing",
+      "command": "JAX_PLATFORMS=cpu python -m pytest -q tests/integration/test_envs.py -k \"vector_envs_randomization or test_render\"",
+      "test_source": "Tests are included by the pinned racing clone in the Docker image; DISPLAY/XAUTHORITY and X11 mounts enable both GUI tests.",
+      "passed": 4,
+      "deselected": 40,
+      "seconds": 37.43
+    },
+    "array_conversion": {
+      "cwd": "/workspace/crazyflow",
+      "command": "python usage_assets/research_racing_20261009_checks.py",
+      "original_probe_command": "python /tmp/research-validation/racing-array-fallback.py",
+      "checked_combinations": [
+        "JAX CPU -> Torch CPU",
+        "JAX GPU -> Torch CPU"
+      ],
+      "num_envs": 2,
+      "observation_shape": [
+        2,
+        73
+      ],
+      "reward_shape": [
+        2
+      ],
+      "passed": 2,
+      "repository_script_rerun": {
+        "exit_code": 0,
+        "raw_output": [
+          "JAX cpu -> Torch CPU passed: obs=(2, 73), reward=(2,)",
+          "JAX gpu -> Torch CPU passed: obs=(2, 73), reward=(2,)"
+        ]
+      }
+    },
+    "ruff": {
+      "affected_racing_python_files": 10,
+      "passed": true
+    },
+    "compileall": {
+      "passed": true
+    },
+    "patch_forward_apply": {
+      "passed_during_final_build": true
+    },
+    "patch_reverse_check": {
+      "passed_in_final_image": true
+    },
+    "locked_wheel_sha256": {
+      "verified_wheels": 69
+    },
+    "final_image_pip_check": {
+      "passed": true,
+      "message": "No broken requirements found."
+    },
+    "final_image_devices": {
+      "jax": "CudaDevice(id=0)",
+      "torch_cuda_available": true
+    }
+  }
+}

@@ -1,0 +1,378 @@
+{
+  "environment": {
+    "python": "3.12.15",
+    "execution_environment": "Docker",
+    "hostname": "dzp-MS-7E30",
+    "crazyflow": "0.3.2",
+    "packages": {
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "numpy": "2.5.3",
+      "scipy": "1.18.0",
+      "mujoco": "3.10.0",
+      "mujoco-mjx": "3.10.0",
+      "flax": "0.12.9",
+      "matplotlib": "3.11.2"
+    },
+    "requested_device": "gpu",
+    "devices": [
+      "cuda:0"
+    ],
+    "device_kinds": [
+      "NVIDIA GeForce RTX 4070 Ti SUPER"
+    ],
+    "dtype": "float32",
+    "dynamics_hz": 500,
+    "seed": 0,
+    "official_main_commit": "70d09e4"
+  },
+  "hover": {
+    "duration_s": 8.0,
+    "sample_s": 1.0,
+    "models": {
+      "cf21B_500": {
+        "dynamics": "first_principles",
+        "state_command_shape": [
+          1,
+          1,
+          16
+        ],
+        "model_mass_kg": 0.04340000078082085,
+        "controller_mass_kg": 0.03929999843239784,
+        "model_weight_N": 0.4257540258712176,
+        "mean_height_m": 1.0810579061508179,
+        "max_height_error_final_second_m": 0.08105790615081787,
+        "mean_thrust_command_N": 0.42575394332408906,
+        "final_rotor_state": [
+          15899.8681640625,
+          15899.8681640625,
+          15899.8681640625,
+          15899.8681640625
+        ],
+        "rotor_state_unit": "RPM"
+      },
+      "hb_x500": {
+        "dynamics": "so_rpy_rotor_drag",
+        "state_command_shape": [
+          1,
+          1,
+          16
+        ],
+        "model_mass_kg": 2.2799999713897705,
+        "controller_mass_kg": 2.2799999713897705,
+        "model_weight_N": 22.36680067605971,
+        "mean_height_m": 0.9567039132118225,
+        "max_height_error_final_second_m": 0.04391556978225708,
+        "mean_thrust_command_N": 24.221425075531005,
+        "final_rotor_state": [
+          24.221294403076172,
+          24.221294403076172,
+          24.221294403076172,
+          24.221294403076172
+        ],
+        "rotor_state_unit": "N"
+      }
+    }
+  },
+  "state_feedforward": {
+    "duration_s": 6.0,
+    "radius_m": 0.2,
+    "angular_frequency_rad_s": 0.5,
+    "yaw_rate_reference_rad_s": 0.1,
+    "position_rmse_m": 0.0840141698718071,
+    "max_position_error_m": 0.09266155958175659,
+    "final_yaw_rad": 0.599600076675415
+  },
+  "body_rate": {
+    "duration_s": 2.0,
+    "body_rate_hz": 250,
+    "command": [
+      0.0,
+      0.0,
+      0.4000000059604645,
+      0.42575404047966003
+    ],
+    "mean_final_half_second_rates_rad_s": [
+      5.683863832928182e-07,
+      1.228971342470686e-07,
+      0.39999887347221375
+    ],
+    "final_yaw_rad": 0.7774603366851807,
+    "final_height_m": 1.0025287866592407
+  },
+  "world_axis_reset": {
+    "mask": [
+      true,
+      false,
+      true
+    ],
+    "counts_after_masked_reset": [
+      0,
+      7,
+      0
+    ],
+    "steps_after_masked_reset": [
+      0,
+      7,
+      0
+    ],
+    "shared_lookup_after_masked_reset": 99,
+    "shared_gravity_z_after_masked_reset_m_s2": -8.0,
+    "counter_has_world_axis": true,
+    "lookup_has_world_axis": false,
+    "gravity_has_world_axis": false,
+    "full_reset_restores_shared_fields": true
+  },
+  "ground_effect": {
+    "setpoint_heights_m": [
+      0.5,
+      0.20000000298023224,
+      0.10000000149011612,
+      0.05000000074505806
+    ],
+    "duration_s": 10.0,
+    "sample_s": 1.0,
+    "weight_N": 0.4257540258712176,
+    "thrust_reduction_percent": [
+      0.028013622096237922,
+      0.11939712188327277,
+      0.28663149128664206,
+      0.5410844508656764
+    ],
+    "runs": {
+      "baseline": {
+        "mean_measured_heights_m": [
+          0.5810539126396179,
+          0.2810516655445099,
+          0.1810506284236908,
+          0.13105078041553497
+        ],
+        "height_std_m": [
+          4.172325134277344e-07,
+          2.9802322387695312e-08,
+          8.940696716308594e-08,
+          1.043081283569336e-07
+        ],
+        "mean_thrust_commands_N": [
+          0.4257532060146332,
+          0.4257541596889496,
+          0.4257541596889496,
+          0.425754189491272
+        ],
+        "mean_external_force_z_N": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "ground_effect": {
+        "mean_measured_heights_m": [
+          0.5811121463775635,
+          0.28130394220352173,
+          0.18165582418441772,
+          0.13219423592090607
+        ],
+        "height_std_m": [
+          4.172325134277344e-07,
+          2.980232238769531e-07,
+          1.341104507446289e-07,
+          1.9371509552001953e-07
+        ],
+        "mean_thrust_commands_N": [
+          0.4256339371204376,
+          0.42524582147598267,
+          0.42453381419181824,
+          0.4234504997730255
+        ],
+        "mean_external_force_z_N": [
+          0.00011918722884729505,
+          0.0005086053279228508,
+          0.0012196138268336654,
+          0.002303064800798893
+        ]
+      }
+    }
+  },
+  "downwash": {
+    "method": "Frozen equal hover RPM; plugin evaluation, no trajectory integration",
+    "upper_height_m": 1.2,
+    "lower_height_m": 0.5,
+    "horizontal_offsets_m": [
+      0.0,
+      0.10000000149011612,
+      0.25,
+      0.5
+    ],
+    "upper_force_z_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "lower_force_z_N": [
+      -0.16555707156658173,
+      -0.08885693550109863,
+      -0.014079093933105469,
+      -0.0013631789479404688
+    ],
+    "lower_torque_Nm": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        2.9103830456733704e-11,
+        -0.0006439461139962077,
+        0.0
+      ],
+      [
+        0.0,
+        -0.00010763591853901744,
+        0.0
+      ],
+      [
+        0.0,
+        -6.732167094014585e-06,
+        0.0
+      ]
+    ],
+    "baseline_force_z_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "clipping": {
+    "probe_commands_rpm": [
+      0.0,
+      14493.6669921875,
+      31660.71875
+    ],
+    "limits_rpm": [
+      7326.615849488047,
+      21660.71783311243
+    ],
+    "runs": {
+      "default_clip": {
+        "effective_motor_commands_rpm": [
+          7326.61572265625,
+          14493.6669921875,
+          21660.71875
+        ],
+        "next_rotor_state_rpm": [
+          15670.8974609375,
+          15855.8798828125,
+          16109.142578125
+        ],
+        "lookahead_vertical_acceleration_m_s2": [
+          -0.28703823685646057,
+          -0.05548381805419922,
+          0.2660488784313202
+        ],
+        "d_acc_z_d_command": [
+          0.0,
+          3.8269430660875514e-05,
+          0.0
+        ]
+      },
+      "straight_through_clip": {
+        "effective_motor_commands_rpm": [
+          7326.61572265625,
+          14493.6669921875,
+          21660.71875
+        ],
+        "next_rotor_state_rpm": [
+          15670.8974609375,
+          15855.8798828125,
+          16109.142578125
+        ],
+        "lookahead_vertical_acceleration_m_s2": [
+          -0.28703823685646057,
+          -0.05548381805419922,
+          0.2660488784313202
+        ],
+        "d_acc_z_d_command": [
+          2.6415567845106125e-05,
+          3.8269430660875514e-05,
+          4.812690167455003e-05
+        ]
+      },
+      "no_clip": {
+        "effective_motor_commands_rpm": [
+          0.0,
+          14493.6669921875,
+          31660.71875
+        ],
+        "next_rotor_state_rpm": [
+          15549.6552734375,
+          15855.8798828125,
+          16507.36328125
+        ],
+        "lookahead_vertical_acceleration_m_s2": [
+          -0.43729686737060547,
+          -0.05548381805419922,
+          0.7821550369262695
+        ],
+        "d_acc_z_d_command": [
+          1.4647791431343649e-05,
+          3.8269430660875514e-05,
+          5.516607780009508e-05
+        ]
+      }
+    }
+  },
+  "derivatives": {
+    "steps": 50,
+    "duration_s": 0.1,
+    "runs": {
+      "euler": {
+        "vel": {
+          "max_abs_difference": 5.94407320022583e-05,
+          "max_relative_difference": 0.00019813576546765305
+        },
+        "ang_vel": {
+          "max_abs_difference": 1.430511474609375e-06,
+          "max_relative_difference": 1.7126754323774012e-06
+        },
+        "acc": {
+          "max_abs_difference": 7.3015689849853516e-06,
+          "max_relative_difference": 1.6599789839885202e-05
+        },
+        "ang_acc": {
+          "max_abs_difference": 1.1444091796875e-05,
+          "max_relative_difference": 8.564309794779867e-07
+        },
+        "rotor_acc": {
+          "max_abs_difference": 0.46533203125,
+          "max_relative_difference": 3.3234997728999944e-05
+        }
+      },
+      "rk4": {
+        "vel": {
+          "max_abs_difference": 0.00045743584632873535,
+          "max_relative_difference": 0.0015247860938395622
+        },
+        "ang_vel": {
+          "max_abs_difference": 0.013309180736541748,
+          "max_relative_difference": 0.01583457345095215
+        },
+        "acc": {
+          "max_abs_difference": 0.008101195096969604,
+          "max_relative_difference": 0.017915242359720637
+        },
+        "ang_acc": {
+          "max_abs_difference": 0.27238988876342773,
+          "max_relative_difference": 0.020520485640800563
+        },
+        "rotor_acc": {
+          "max_abs_difference": 242.4765625,
+          "max_relative_difference": 0.01731818886908661
+        }
+      }
+    }
+  },
+  "all_assertions_passed": true
+}

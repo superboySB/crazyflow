@@ -1,3 +1,25 @@
+diff --git a/lsy_drone_racing/control/attitude_controller.py b/lsy_drone_racing/control/attitude_controller.py
+index 3790ab6..5a37822 100644
+--- a/lsy_drone_racing/control/attitude_controller.py
++++ b/lsy_drone_racing/control/attitude_controller.py
+@@ -14,7 +14,7 @@ import math
+ from typing import TYPE_CHECKING
+
+ import numpy as np
+-from crazyflow.drones import load_params as load_hardware_params
++from crazyflow.dynamics import load_params as load_hardware_params
+ from scipy.interpolate import CubicSpline
+ from scipy.spatial.transform import Rotation as R
+
+@@ -40,7 +40,7 @@ class AttitudeController(Controller):
+         self._freq = config.env.freq
+
+         # For more info on the models, check out https://github.com/learnsyslab/crazyflow
+-        drone_params = load_hardware_params(config.sim.drone)
++        drone_params = load_hardware_params(config.sim.dynamics, config.sim.drone)
+         self.drone_mass = drone_params["mass"]
+
+         self.kp = np.array([0.4, 0.4, 1.25])
 diff --git a/lsy_drone_racing/control/attitude_controller_multi.py b/lsy_drone_racing/control/attitude_controller_multi.py
 index 29ba999..ad6d03e 100644
 --- a/lsy_drone_racing/control/attitude_controller_multi.py
@@ -11,8 +33,76 @@ index 29ba999..ad6d03e 100644
          t = np.linspace(0, self._t_total, len(waypoints))
          self._des_pos_spline = CubicSpline(t, waypoints)
          self._des_vel_spline = self._des_pos_spline.derivative()
+diff --git a/lsy_drone_racing/control/attitude_input.py b/lsy_drone_racing/control/attitude_input.py
+index 0e7f791..9216d87 100644
+--- a/lsy_drone_racing/control/attitude_input.py
++++ b/lsy_drone_racing/control/attitude_input.py
+@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
+
+ import numpy as np
+ import pygame
+-from crazyflow.drones import load_params as load_hardware_params
++from crazyflow.dynamics import load_params as load_hardware_params
+ from scipy.spatial.transform import Rotation as R
+
+ from lsy_drone_racing.control import Controller
+@@ -36,7 +36,7 @@ class AttitudeController(Controller):
+         self.freq = config.env.freq
+
+         # For more info on the models, check out https://github.com/learnsyslab/crazyflow
+-        drone_params = load_hardware_params(config.sim.drone)
++        drone_params = load_hardware_params(config.sim.dynamics, config.sim.drone)
+         self.drone_mass = drone_params["mass"]
+         self.thrust_min = drone_params["thrust_min"] * 4
+         self.thrust_max = drone_params["thrust_max"] * 4
+diff --git a/lsy_drone_racing/control/attitude_mpc.py b/lsy_drone_racing/control/attitude_mpc.py
+index 97e087d..5085f79 100644
+--- a/lsy_drone_racing/control/attitude_mpc.py
++++ b/lsy_drone_racing/control/attitude_mpc.py
+@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING
+ import numpy as np
+ import scipy
+ from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
+-from crazyflow.drones import load_params as load_hardware_params
+-from crazyflow.dynamics.core import load_params as load_dynamics_params
++from crazyflow.dynamics import load_params as load_hardware_params
++from crazyflow.dynamics.core import load_fn_params as load_dynamics_params
+ from crazyflow.dynamics.so_rpy import dynamics, symbolic_dynamics_euler
+ from crazyflow.dynamics.utils.rotation import ang_vel2rpy_rates
+ from scipy.interpolate import CubicSpline
+@@ -211,7 +211,7 @@ class AttitudeMPC(Controller):
+         self._waypoints_yaw = self._waypoints_pos[:, 0] * 0
+
+         self.drone_params = load_dynamics_params(dynamics, config.sim.drone)
+-        thrust_params = load_hardware_params(config.sim.drone)
++        thrust_params = load_hardware_params(config.sim.dynamics, config.sim.drone)
+         self.drone_params["thrust_min"] = 4 * thrust_params["thrust_min"]
+         self.drone_params["thrust_max"] = 4 * thrust_params["thrust_max"]
+         self._acados_ocp_solver, self._ocp = create_ocp_solver(
+diff --git a/lsy_drone_racing/control/attitude_rl.py b/lsy_drone_racing/control/attitude_rl.py
+index 783f7f1..86f46ba 100644
+--- a/lsy_drone_racing/control/attitude_rl.py
++++ b/lsy_drone_racing/control/attitude_rl.py
+@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
+
+ import numpy as np
+ import torch
+-from crazyflow.drones import load_params as load_hardware_params
++from crazyflow.dynamics import load_params as load_hardware_params
+ from scipy.interpolate import CubicSpline
+
+ from lsy_drone_racing.control import Controller
+@@ -41,7 +41,7 @@ class AttitudeRL(Controller):
+         self.freq = config.env.freq
+
+         # For more info on the models, check out https://github.com/learnsyslab/crazyflow
+-        drone_params = load_hardware_params(config.sim.drone)
++        drone_params = load_hardware_params(config.sim.dynamics, config.sim.drone)
+         self.drone_mass = drone_params["mass"]
+         self.thrust_min = drone_params["thrust_min"] * 4  # min total thrust
+         self.thrust_max = drone_params["thrust_max"] * 4  # max total thrust
 diff --git a/lsy_drone_racing/control/train_rl.py b/lsy_drone_racing/control/train_rl.py
-index 62e031a..af78cbf 100644
+index 62e031a..d62fab7 100644
 --- a/lsy_drone_racing/control/train_rl.py
 +++ b/lsy_drone_racing/control/train_rl.py
 @@ -26,6 +26,7 @@ from gymnasium import spaces
@@ -30,18 +120,18 @@ index 62e031a..af78cbf 100644
 -            insert_fn_before(self.sim.step_pipeline, "integrate", disturbance_fn)
 +            insert_fn_before(self.sim.step_pipeline, "integration", disturbance_fn)
              self.sim.build_step_fn()
- 
+
          # Update observation space
 @@ -308,18 +309,24 @@ class RandTrajEnv(DroneEnv):
          terminate = jp.any((pos[:, 0, :] < lower_bounds) | (pos[:, 0, :] > upper_bounds), axis=-1)
          return terminate
- 
+
 -    def build_reset_randomization_fn(self, dynamics: str) -> Callable[[SimData, Array], SimData]:
 +    def build_reset_randomization_fn(
 +        self, dynamics: str
 +    ) -> Callable[[SimData, SimData, Array], SimData]:
          """Reset randomization."""
- 
+
          # Spin up rotors to help takeoff
 -        def _reset_randomization_so_rpy(data: SimData, mask: Array) -> SimData:
 +        def _reset_randomization_so_rpy(
@@ -52,7 +142,7 @@ index 62e031a..af78cbf 100644
              )
              data = data.replace(states=leaf_replace(data.states, mask, rotor_vel=rotor_vel))
              return data
- 
+
 -        def _reset_randomization_first_principles(data: SimData, mask: Array) -> SimData:
 +        def _reset_randomization_first_principles(
 +            data: SimData, _default_data: SimData, mask: Array
@@ -76,10 +166,16 @@ index 62e031a..af78cbf 100644
 +    else:
 +        env = JaxToTorch(env, torch_device)
      return env
- 
- 
-@@ -758,19 +774,21 @@ def train_ppo(
- def evaluate_ppo(args: Args, n_eval: int, model_path: Path) -> tuple[float, float]:
+
+
+@@ -755,10 +771,12 @@ def train_ppo(
+
+
+ # region Evaluate
+-def evaluate_ppo(args: Args, n_eval: int, model_path: Path) -> tuple[float, float]:
++def evaluate_ppo(
++    args: Args, n_eval: int, model_path: Path, render: bool = True
++) -> tuple[float, float]:
      """Evaluate."""
      set_seeds(args.seed)
 -    device = torch.device("cpu")
@@ -87,7 +183,7 @@ index 62e031a..af78cbf 100644
      r_coefs = {
          "n_obs": args.n_obs,
          "rpy_coef": args.rpy_coef,
-         "d_act_xy_coef": args.d_act_xy_coef,
+@@ -766,11 +784,13 @@ def evaluate_ppo(args: Args, n_eval: int, model_path: Path) -> tuple[float, floa
          "d_act_th_coef": args.d_act_th_coef,
          "act_coef": args.act_coef,
      }
@@ -103,3 +199,176 @@ index 62e031a..af78cbf 100644
      with torch.no_grad():
          episode_rewards = []
          episode_lengths = []
+@@ -784,7 +804,8 @@ def evaluate_ppo(args: Args, n_eval: int, model_path: Path) -> tuple[float, floa
+             while not done.any():
+                 act, _, _, _ = agent.get_action_and_value(obs, deterministic=True)
+                 obs, reward, terminated, truncated, info = eval_env.step(act)
+-                eval_env.render()
++                if render:
++                    eval_env.render()
+                 done = terminated | truncated
+                 episode_reward += reward[0].item()
+                 steps += 1
+@@ -801,7 +822,9 @@ def evaluate_ppo(args: Args, n_eval: int, model_path: Path) -> tuple[float, floa
+
+
+ # region Main
+-def main(wandb_enabled: bool = True, train: bool = True, eval: int = 1):
++def main(
++    wandb_enabled: bool = True, train: bool = True, eval: int = 1, render: bool = True
++):
+     """Main."""
+     args = Args.create()
+     model_path = Path(__file__).parent / "ppo_drone_racing.ckpt"
+@@ -812,7 +835,7 @@ def main(wandb_enabled: bool = True, train: bool = True, eval: int = 1):
+         train_ppo(args, model_path, device, jax_device, wandb_enabled)
+
+     if eval > 0:  # use "--eval <N>" to perform N evaluation episodes
+-        episode_rewards, episode_lengths = evaluate_ppo(args, eval, model_path)
++        episode_rewards, episode_lengths = evaluate_ppo(args, eval, model_path, render=render)
+         if wandb_enabled and train:
+             wandb.log(
+                 {
+diff --git a/lsy_drone_racing/envs/drone_race.py b/lsy_drone_racing/envs/drone_race.py
+index cd4cd03..899f5bf 100644
+--- a/lsy_drone_racing/envs/drone_race.py
++++ b/lsy_drone_racing/envs/drone_race.py
+@@ -65,7 +65,7 @@ class DroneRaceEnv(RaceCoreEnv, Env):
+             max_episode_steps=max_episode_steps,
+             device=device,
+         )
+-        self.action_space = build_action_space(control_mode, sim_config.drone)
++        self.action_space = build_action_space(control_mode, sim_config.drone, sim_config.dynamics)
+         n_gates, n_obstacles = len(track.gates), len(track.obstacles)
+         self.observation_space = build_observation_space(
+             n_gates, n_obstacles, self.data.gate_sequence.shape[0]
+@@ -153,7 +153,9 @@ class VecDroneRaceEnv(RaceCoreEnv, VectorEnv):
+             device=device,
+         )
+         self.num_envs = num_envs
+-        self.single_action_space = build_action_space(control_mode, sim_config.drone)
++        self.single_action_space = build_action_space(
++            control_mode, sim_config.drone, sim_config.dynamics
++        )
+         self.action_space = batch_space(self.single_action_space, num_envs)
+         n_gates, n_obstacles = len(track.gates), len(track.obstacles)
+         self.single_observation_space = build_observation_space(
+diff --git a/lsy_drone_racing/envs/multi_drone_race.py b/lsy_drone_racing/envs/multi_drone_race.py
+index a9e0330..95ffdac 100644
+--- a/lsy_drone_racing/envs/multi_drone_race.py
++++ b/lsy_drone_racing/envs/multi_drone_race.py
+@@ -71,7 +71,7 @@ class MultiDroneRaceEnv(RaceCoreEnv, Env):
+             device=device,
+         )
+         self.action_space = batch_space(
+-            build_action_space(control_mode, sim_config.drone), n_drones
++            build_action_space(control_mode, sim_config.drone, sim_config.dynamics), n_drones
+         )
+         self.observation_space = batch_space(
+             build_observation_space(n_gates, n_obstacles, self.data.gate_sequence.shape[0]),
+@@ -167,7 +167,7 @@ class VecMultiDroneRaceEnv(RaceCoreEnv, VectorEnv):
+         )
+         self.num_envs = num_envs
+         self.single_action_space = batch_space(
+-            build_action_space(control_mode, sim_config.drone), n_drones
++            build_action_space(control_mode, sim_config.drone, sim_config.dynamics), n_drones
+         )
+         self.action_space = batch_space(batch_space(self.single_action_space), num_envs)
+         self.single_observation_space = batch_space(
+diff --git a/lsy_drone_racing/envs/race_core.py b/lsy_drone_racing/envs/race_core.py
+index d5d2b92..0e5149f 100644
+--- a/lsy_drone_racing/envs/race_core.py
++++ b/lsy_drone_racing/envs/race_core.py
+@@ -31,7 +31,7 @@ import jax
+ import jax.numpy as jp
+ import mujoco
+ import numpy as np
+-from crazyflow.drones import load_params as load_hardware_params
++from crazyflow.dynamics import load_params as load_hardware_params
+ from crazyflow.sim import Sim
+ from crazyflow.sim.pipeline import append_fn, insert_fn_before
+ from crazyflow.sim.sim import seed_sim, sync_sim2mjx, use_box_collision
+@@ -221,7 +221,9 @@ class EnvSettings:
+         )
+
+
+-def build_action_space(control_mode: Literal["state", "attitude"], drone: str) -> spaces.Box:
++def build_action_space(
++    control_mode: Literal["state", "attitude"], drone: str, dynamics: str = "so_rpy"
++) -> spaces.Box:
+     """Create the action space for the environment.
+
+     Args:
+@@ -235,7 +237,7 @@ def build_action_space(control_mode: Literal["state", "attitude"], drone: str) -
+     if control_mode == "state":
+         return spaces.Box(low=-np.inf, high=np.inf, shape=(13,))
+     if control_mode == "attitude":
+-        params = load_hardware_params(drone)
++        params = load_hardware_params(dynamics, drone)
+         thrust_min, thrust_max = params["thrust_min"] * 4, params["thrust_max"] * 4
+         return spaces.Box(
+             np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, thrust_min], dtype=np.float32),
+@@ -570,7 +572,7 @@ class RaceCoreEnv:
+
+     def build_apply_action_fn(self) -> Callable[[Array, EnvData, EnvSettings], EnvData]:
+         """Build a function that applies the action to the simulation."""
+-        action_space = build_action_space(self.sim.control, self.sim.drone)
++        action_space = build_action_space(self.sim.control, self.sim.drone, self.sim.dynamics)
+         if self.sim.control == "state":
+             ctrl_fn = F.state_control
+         elif self.sim.control == "attitude":
+@@ -588,6 +590,12 @@ class RaceCoreEnv:
+                 action += disturbances["action"](subkey, action.shape)
+                 sim_data = data.sim_data.replace(core=data.sim_data.core.replace(rng_key=key))
+                 data = data.replace(sim_data=sim_data)
++            if self.sim.control == "state":
++                # Preserve the course/hardware 13D action API while Crazyflow uses a quaternion.
++                half_yaw = action[..., 9:10] / 2.0
++                zeros = jp.zeros_like(half_yaw)
++                quat = jp.concatenate((zeros, zeros, jp.sin(half_yaw), jp.cos(half_yaw)), axis=-1)
++                action = jp.concatenate((action[..., :9], quat, action[..., 10:13]), axis=-1)
+             return data.replace(sim_data=ctrl_fn(data.sim_data, action))
+
+         return apply_action
+@@ -657,7 +665,15 @@ class RaceCoreEnv:
+         vel = self.sim.data.states.vel.at[...].set(drones["vel"])
+         ang_vel = self.sim.data.states.ang_vel.at[...].set(drones["ang_vel"])
+         states = self.sim.data.states.replace(pos=pos, quat=quat, vel=vel, ang_vel=ang_vel)
+-        self.sim.data = self.sim.data.replace(states=states)
++        # Racing randomizes mass/inertia independently per world and drone. Upstream now
++        # stores nominal parameters without batch axes, so allocate the explicit world axes.
++        n, d = self.sim.n_worlds, self.sim.n_drones
++        params = self.sim.data.params.replace(
++            mass=jp.broadcast_to(self.sim.data.params.mass, (n, d, 1)),
++            J=jp.broadcast_to(self.sim.data.params.J, (n, d, 3, 3)),
++            J_inv=jp.broadcast_to(self.sim.data.params.J_inv, (n, d, 3, 3)),
++        )
++        self.sim.data = self.sim.data.replace(states=states, params=params)
+         self.sim.build_default_data()
+         # Build the reset randomizations and disturbances into the sim itself
+         append_fn(self.sim.reset_pipeline, build_reset_fn(randomizations))
+diff --git a/lsy_drone_racing/envs/real_race_env.py b/lsy_drone_racing/envs/real_race_env.py
+index b635322..d7f69fa 100644
+--- a/lsy_drone_racing/envs/real_race_env.py
++++ b/lsy_drone_racing/envs/real_race_env.py
+@@ -15,7 +15,8 @@ from typing import TYPE_CHECKING, Literal
+ import jax
+ import numpy as np
+ import rclpy
+-from crazyflow.drones import load_params as load_hardware_params
++from crazyflow.dynamics import Dynamics
++from crazyflow.dynamics import load_params as load_hardware_params
+ from drone_estimators.ros_nodes.ros2_connector import ROSConnector
+ from gymnasium import Env
+ from scipy.spatial.transform import Rotation as R
+@@ -110,7 +111,9 @@ class RealRaceCoreEnv:
+         self.control_mode = control_mode
+         self.randomizations = randomizations
+         drone_config = drones[rank]
+-        self.drone_parameters = load_hardware_params(drone_config["drone"])
++        self.drone_parameters = load_hardware_params(
++            Dynamics.first_principles, drone_config["drone"]
++        )
+         self.drone = Crazyflie.from_radio(
+             radio_id=self.rank,
+             radio_channel=drone_config["channel"],
