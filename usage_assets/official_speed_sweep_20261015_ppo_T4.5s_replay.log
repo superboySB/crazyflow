@@ -1,0 +1,3 @@
+/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/subprocess.py:1885: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = _fork_exec(
+Rendered /workspace/crazyflow/usage_assets/official_speed_sweep_20261015_ppo_T4.5s.mp4; outcome=completed evaluation horizon; replay max difference 7.09e-05m

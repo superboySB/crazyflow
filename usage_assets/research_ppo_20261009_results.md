@@ -1,5 +1,13 @@
 # Docker 四 Gym PPO 增量复验（2026-10-09）
 
+> 2026-10-15评估协议修正：旧ReachPos/ReachVel复用仿真与goal的PRNG key，
+> ReachPos目标实际恒为初态下方0.5m，不能据此声称独立随机三维目标泛化。
+> 旧表transitions实际为vector-step slots，未排除NEXT_STEP自动reset槽位。
+> 此表保留为历史数据；旧跨reset误差不与新的首episode误差直接比较。
+> 四个旧checkpoint均已在独立goal协议下复评，并已完成21次完整200M训练对照。
+> 当前结果见[完整研究](fulltrain_20261015/README.md)，旧协议不允许混续训。
+
+
 原始配置、全部训练 history、优化日志、11 项评估指标、checkpoint SHA256 见 `research_ppo_20261009_results.json`。所有训练与评估在 `dzp-crazyflow-research-20261009` 内使用 CUDA 执行，seed 7。
 
 4096 worlds × 64 steps = 262,144 transitions/update。预算只取完整 update：10,000,000 实际为 9,961,472；20,000,000 实际为 19,922,944。ReachPos/Landing 另有 4,096,000 教师 BC samples，PPO 内 imitation coefficient 10；ReachVel/Figure8 使用原配置，无教师 BC。

@@ -6,7 +6,8 @@
 画面是什么、什么时候应该使用它。2026-08-12 至 2026-08-18 的 CUDA 实测、训练结果和图片
 作为历史记录保留；2026-10-09 增量同步官方 main 至
 [`70d09e4`](https://github.com/learnsyslab/crazyflow/commit/70d09e4)。API 片段已按当前源码更新，
-历史数值并不代表新模型参数下的结果；本轮新增用法、实验方法和验证结果见第 15 节。
+历史数值并不代表新模型参数下的结果；2026-10-15已进一步同步官方0.4.0，完整预算训练、
+最佳演示及能力边界见第16节。旧随机目标耦合成绩的修正说明也见该节。
 
 > 镜像构建、容器启动和常用命令见 [`note.md`](note.md)。本文专注 Crazyflow API、示例、可视化和 drone racing 的具体用法。
 
@@ -25,7 +26,8 @@
 | 跑官方全部示例 | 11 | 每个示例的入口、目的和实测输出 |
 | 运行 drone racing | 12 | 赛道配置、控制器、PPO 训练语义和实际过门结果 |
 | 查模块或交付状态 | 13、14 | API 速查和完整验证矩阵 |
-| 使用本轮 main 新功能 | 15 | 32 个提交、X500、body rate、sharding、地效/下洗及复现实验 |
+| 使用10月9日 main 新功能 | 15 | 32个提交、X500、body rate、sharding、地效/下洗 |
+| 查看充分训练后的最佳演示与边界 | 16 | 0.4.0、完整多种子训练、高速八字、直接电机和真赛道 |
 
 文中的数值有三种含义：代码注释里的旧数值是 8 月版本的代表性输出；“实测”表格是标注日期的完整运行结果；
 训练结果则同时给出 observation、action、reward、终止条件和评估口径，避免只给一张曲线却无法解释。
@@ -1259,6 +1261,8 @@ terminated，且最后 1 秒的每环境 RMSE 小于 `0.10 m`；ReachVel 单位�
 
 ### 10.7 四个 Gymnasium 任务的训练、评估与收敛结果（2026 年 8 月）
 
+> 2026-10-15修正：旧ReachPos/ReachVel的任务目标与仿真初态复用PRNG key，这些历史成绩不能证明独立随机目标泛化。旧跨reset误差也不与首episode指标直接比较。新协议从头完整重训、旧权重复评及最佳演示见第16节。Landing/Figure8没有同样的随机goal耦合，本轮也统一完整重训。
+
 [`usage_assets/train_gymnasium.py`](usage_assets/train_gymnasium.py) 是四个任务共用的可复现
 CUDA PPO 训练器。它不修改环境、reward 或 Crazyflow 核心源码：4096 个 JAX/CUDA 环境负责
 仿真，PyTorch/CUDA 在同一张 GPU 上训练策略。训练器还显式播种仿真 RNG 和任务目标 RNG，
@@ -2220,6 +2224,8 @@ RPM 最大绝对差 `0.0009765625`（相对差 `5.589e-8`）；速度相对差 `
 
 #### 15.9.2 本轮 PPO 与完整回归
 
+> 2026-10-15修正：旧ReachPos/ReachVel的任务目标与仿真初态复用PRNG key，这些历史成绩不能证明独立随机目标泛化。旧跨reset误差也不与首episode指标直接比较。新协议从头完整重训、旧权重复评及最佳演示见第16节。Landing/Figure8没有同样的随机goal耦合，本轮也统一完整重训。
+
 回归检查均使用上述 Docker 镜像，结果与第 14 节历史计数独立：
 
 | 检查 | 本轮结果 | 运行口径 |
@@ -2354,3 +2360,181 @@ python usage_assets/research_racing_20261009_checks.py
 该轻量检查使用 2 个 env，覆盖 JAX CPU/GPU 与 Torch CPU 的设备桥接；它补充上述完整
 训练/实赛验证。历史 racing、PPO、splat 图片仍保留；本轮没有重新生成第 9 节的
 GUI/web viewer 截图，不用旧图证明当前图形界面的检查结果。
+
+## 16. 2026-10-15：官方0.4.0与完整预算的最佳可验证演示
+
+本节在全部训练、独立测试和冻结回放完成后更新。权重及原始误差已随research保存，
+入口为[模型清单](trained_models/README.md)。旧章节的短预算结果保留作历史记录；
+当前能力判断以本节及所链接的完整研究为准。
+
+### 16.1 官方同步与运行环境
+
+官方main从70d09e4同步至
+[c95f69b](https://github.com/learnsyslab/crazyflow/commit/c95f69bc54f830e859fee4ac5734bf571acd81f3)，
+本地main已快进，research合入该版本。新增3提交：
+9e288ea文档机型图、876eb1c IMU完整示例、c95f69b发布0.4.0。
+GPU依赖锁保持原research环境，文档环境补入EGL/Mesa；pixi lock --check通过。
+镜像为dzp_crazyflow:0.4.0-research-20261015-cuda12.6-py312-racing-rl，构建/启动见[note.md](note.md)。
+
+本轮GPU为RTX4070Ti SUPER16GB；Python3.12.15、JAX0.11.1、PyTorch2.8.0+cu126、
+MuJoCo/MJX3.10.0、Gymnasium1.4.0。并发训练计时含编译，不用于论文速度排名。
+
+### 16.2 先看实际飞行状态的演示
+
+| 演示 | 已验证表现 | 视频/完整证据 |
+|---|---|---|
+| 专门训练的高速八字PPO | 3.5s周期、峰速约2.539m/s；独立位置扰动64/64完整20s且每world全程RMSE<5cm，RMSE19.63mm | [实际MuJoCo视频](usage_assets/official_frontier_20261015/ppo_T3.5s_position_holdout.mp4)、[完整扩展](usage_assets/official_frontier_20261015/README.md) |
+| 高速八字BPTT | 同周期验证RMSE8.56mm；位置holdout61/64、全体RMSE52.25mm | [固定test world0](usage_assets/official_frontier_20261015/best_dedicated_speed.mp4) |
+| 直接四电机TD3到点 | 40M预算；独立固定目标任务63/64到达，平均首episode时长约1.143s（含未到达案例） | [实际MuJoCo视频](usage_assets/official_td3_rotor_reach_budget2_20261015_seed42_holdout_hover.mp4)、[官方配方研究](usage_assets/official_policy_20261015_results.md) |
+| 随机三维到点/近地/八字 | 各任务三种子完整200M；位置/近地再加校准三种子 | [演示与全部成绩](usage_assets/fulltrain_20261015/README.md) |
+| 真赛道PPO | 15M权重：名义快速四门64/64、平均6.6591s；完整15M×2对照 | [赛道报告和视频](usage_assets/racing_fulltrain_20261015.md) |
+
+视频固定预先声明的测试seed/world0，不按好看的轨迹选择案例。权重仅由validation选择。
+这些是名义/扰动仿真的真实状态回放，没有以参考曲线伪造飞行，也没有实飞结论。
+
+### 16.3 四个Gym任务的完整训练
+
+12个原配方run加6个校准教师配方run、3个gamma0.995完整晋级run，每次762 updates、199,753,728 vector-step slots，
+同时保留best及last权重。200M是完成的对照run预算，best实际训练量由选中update列决定，
+不能把后续优化算到较早best；位置/近地另有4,096,000 BC样本。近地校准三seed的最佳均为最终update762。
+忽略reset槽位后的有效transitions、额外BC样本单独记录。
+另2个50M gamma筛选仅看validation，没有冒充完整训练结果。
+每个模型三组独立测试共3072首episode，失败不移除。
+
+| 任务 | 验证集选中的配方/seed | 选中update | 独立成功数 | 全程RMSE | 最后观测秒RMSE |
+|---|---|---:|---:|---:|---:|
+| 三维到点 | reach_pos_s19_g0.99_200000000_calibrated | 100 (26,214,400 PPO slots) | 3071/3072 | 0.280591 | 0.027283 |
+| 默认三维速度 | reach_vel_s7_g0.99_200000000 | 100 (26,214,400 PPO slots) | 1825/3072 | 0.164383 | 0.110298 |
+| 近地悬停 | landing_s43_g0.99_200000000_calibrated | 762 (199,753,728 PPO slots) | 3072/3072 | 0.392864 | 0.023727 |
+| 八字跟踪 | figure8_s43_g0.99_200000000 | 762 (199,753,728 PPO slots) | 3072/3072 | 0.024366 | 0.001376 |
+
+ReachVel单位m/s，其余m；全程RMSE包括初始到点过渡，最后观测秒包括提前失败的末秒，
+应与成功率一起读。全部三种子及均值/std、Wilson区间、完整配置和收敛/退化曲线见
+[研究README](usage_assets/fulltrain_20261015/README.md)及
+[summary.json](usage_assets/fulltrain_20261015/summary.json)。
+
+配方：独立actor/critic 2×128 Tanh；4096env×64steps；16minibatches×4epochs；
+LR3e-4线性退火，主配方gamma0.99（速度晋级对照0.995）、GAE0.95、clip0.2、entropy0.002、value0.5、
+grad norm0.5、KL0.03。ReachPos/Landing另有1000次×4096 BC samples及imitation权重10。
+校准配方反解官方拟合推力偏置/增益与稳态姿态增益；其余环境/奖励/PPO参数不变。
+[物理公式核验](usage_assets/teacher_calibration_audit_20261015.json)保留4099个样本，
+加速度逆解最大误差3.05e-6m/s²。原配方及延长后变差的结果仍保留，避免只展示最后一次训练。
+
+另测纯校准PD解析控制器：到点与近地各3072/3072成功，尾秒误差分别约13微米/1.4微米；
+到点全程RMSE0.34818m，高于选中神经策略的0.28059m，体现过渡速度与尾部精度的差异。
+[解析参照](usage_assets/teacher_reference_20261015.py)不需要训练、不参与神经checkpoint选择，
+也不能用名义仿真微米数声称实飞精度。
+
+本轮修复旧研究reset的PRNG复用：ReachPos旧goal恒为初始位置下方0.5m，
+ReachVel目标也与初态耦合。旧成绩不能证明独立随机三维目标泛化。
+采用独立GOAL随机流后，从头重跑全矩阵；
+[1024world审计](usage_assets/goal_rng_audit_20261015.json)同时检查初态不变和同seed可复现。
+旧权重已按新协议重新评估，旧协议checkpoint可推理但禁止混协议恢复训练。
+
+默认3D速度任务仍是明确边界：选中模型1825/3072成功（59.41%）；vz<−0.5为0/804，−0.5≤vz<0为296/739，vz≥0为1529/1529。水平vz=0子集3066/3072成功、RMSE0.12343m/s；水平子集不能替换默认任务成绩。
+[默认失败视频](usage_assets/fulltrain_20261015/best_reach_vel.mp4)与
+[水平子集视频](usage_assets/fulltrain_20261015/best_reach_vel_horizontal.mp4)分别标记。
+Landing目标是离地0.1m悬停，未验证接触式降落。
+
+![独立目标下的固定world演示](usage_assets/fulltrain_20261015/gallery.png)
+
+### 16.4 官方论文配方与更快轨迹的专门训练
+
+采用[官方实验源码bfc6414](https://github.com/learnsyslab/crazyflow_experiments/tree/bfc6414da1f4405e4e41e3a3d0656bb5f38e09e3)
+和[论文](https://arxiv.org/html/2606.01478v1)的参数。
+官方未提供预训练权重；本轮30次从头训练覆盖PPO/BPTT慢10s、快5.5s及TD3直接电机到点，
+各三种子、完整官方预算与2倍预算，实际296,016,384 transitions。
+慢PPO/BPTT原预算2M/100k，快任务10M/800k，TD3 20M；
+训练更久并不总是更好，全部结果和失败种子保留在
+[官方配方研究](usage_assets/official_policy_20261015_results.md)。
+
+不能把冻结5.5s策略在3.5s失败当作项目上限。
+因此又从头完整训练3.5/3.0/2.5s，每档PPO20M、BPTT1.6M各三种子，
+只改参考周期；按训练尾段改善再加一个独立PPO40M对照。
+额外19run实际234,268,672 transitions，33个64world场景独立核验。
+
+| 专训策略/周期 | validation RMSE mm / 每world RMSE<5cm | 位置holdout RMSE mm / 每world RMSE<5cm | 真初速holdout RMSE mm / 每world RMSE<5cm |
+|---|---|---|---|
+| PPO3.5s | 13.58 /64 | 19.63 /64 | 65.48 /58 |
+| BPTT3.5s | 8.56 /64 | 52.25 /61 | 132.50 /47 |
+| PPO3.0s | 48.81 /41 | 52.24 /38 | 60.74 /30 |
+| BPTT3.0s | 33.20 /63 | 38.27 /55 | 48.25 /44 |
+| PPO2.5s | 151.71 /0 | 153.46 /0 | 156.34 /0 |
+| BPTT2.5s | 128.96 /0 | 130.86 /0 | 133.11 /0 |
+
+每项64world、20s；精度成功要求完整时长且每world全程RMSE<5cm。3.5s真实初速扰动下PPO61/64完成、BPTT49/64；
+BPTT3.5s位置项61/64完成。2.5s全部存活但精度全部未通过，存活不能包装成成功。
+[全部配方、种子、曲线、哈希、物理包络线索与一键复现](usage_assets/official_frontier_20261015/README.md)
+保留了泛化差异与有限预算限制。BPTT名义初始化更准，PPO在所测初态扰动下更稳健。
+
+官方Figure8 reset会把抽取的速度覆盖为参考速度，本轮另加真正初速±0.5m/s和姿态±15°压力测试；
+不会把原初始化描述为已验证初速泛化。
+强DR1.0有19/64惯量违反刚体三角不等式，不能用其失败率解释真实硬件极限，
+详见[物理性审计](usage_assets/official_dr_physical_audit_20261015.json)。
+
+### 16.5 Racing完整训练与真赛道边界
+
+完成15M×2是对照研究预算。验证最终选中的权重为trained_models/racing_s42_15000000_20261015.ckpt，
+该权重实际预算为14,999,552 transitions，实现为truncations-and-not-terminations。
+候选包含严格新run、明确标记的legacy对照和历史baseline，不把后续预算算到较早选中的权重。
+
+[独立赛道报告](usage_assets/racing_fulltrain_20261015.md)记录两个完整15M训练、
+1.5M/5M/15M预算曲线、128验证样条、256冻结测试及64world的实赛level0/1/2。
+修复轨迹/动作噪声共用key，独立salt后重新完整训练；
+time-limit bootstrap使用truncated且非terminated，旧实现仅保留为明确标记对照。
+原生level1/2把惯量噪声错误加到完整3×3矩阵，已用独立late补丁改为配置规定的三个对角主惯量扰动，
+核查对称/正定/刚体三角约束后重评；旧非对称惯量结果不当作物理鲁棒性证据。
+训练用level0无惯量随机化，已有训练和名义速度测试无需重训。
+随机参考有少数穿地样本，整体与“参考未穿地”子集分别报告；后者不等于物理可行性认证。
+固定规划器的赛道通关与离散时长扫描是策略迁移实验，不是端到端最速赛道优化。
+选中seed42/15M权重的独立256样条误差1.5966cm（历史baseline3.5612cm），
+253/256存活，3个失败恰好对应预先识别的穿地参考。
+原生level0为64/64通关，level1为64/64，level2为16/64；固定规划器没有适应全部门框随机化。
+预定义15/12/10/7.5/5/4/3/2s八档扫描仅用16validation worlds选最快全过档，
+7.5s参考通过，5s参考失败；独立64world快速测试均完成四门，平均6.6591s。
+[实际冻结飞行视频](usage_assets/racing_fulltrain_20261015_fast_course.mp4)保留真实状态。
+完整JSON、冻结checkpoint、视频、初始化及所有失败保留在同一报告中。
+
+### 16.6 哪些模型训练过，哪些是物理/API演示
+
+| 机型 | 本轮已训练策略 | 仓库支持与演示性质 |
+|---|---|---|
+| cf2x_L250 | Gym四任务、官方TD3直接四电机 | so_rpy与first_principles，32.8g |
+| cf21B_500 | 官方PPO/BPTT、专门高速扩展、racing | first_principles，43.4g |
+| cf2x_P250 | 无专门学习策略 | 公开参数、MJCF/API及材质测试，31.8g |
+| cf2x_T350 | 无专门学习策略 | 公开参数、API和历史相机演示，37.9g |
+| hb_x500 | 无RL策略 | 历史解析state演示及三种拟合动力学；无first_principles参数，2.28kg |
+
+动力学参数辨识、解析控制器和策略训练是不同工作。采用官方固定版本公开参数，
+不声称五种机型全部参数已独立重标定；源码仍有借用惯量/近似及TODO。
+标准四旋翼是6自由度、4输入欠驱动系统；本轮没验证固定翼、损失旋翼恢复、视觉导航或实机迁移。
+毫米级名义误差依赖精确状态观测及指定仿真条件。
+这是本轮充分训练后测到的表现与失败边界，不是所有参数/算法的全局最优证明。
+
+### 16.7 复现与核验
+
+所有下列命令在Docker的/workspace/crazyflow内执行：
+
+~~~bash
+python usage_assets/fulltrain_20261015.py suite
+python usage_assets/fulltrain_20261015.py suite --tasks reach_pos landing --teacher-model calibrated
+python usage_assets/fulltrain_20261015.py suite --tasks reach_vel --gamma 0.995
+python usage_assets/summarize_fulltrain_20261015.py
+MUJOCO_GL=egl python usage_assets/build_gym_gallery_20261015.py watch --once
+python usage_assets/verify_fulltrain_20261015.py --require-complete
+bash usage_assets/official_frontier_20261015/reproduce.sh
+~~~
+
+原30run的6组完整重训命令见[官方报告](usage_assets/official_policy_20261015_results.md)，
+赛车命令见[赛道报告](usage_assets/racing_fulltrain_20261015.md)。
+Gym的best用于冻结推理，_last保存优化器、随机流和仿真状态用于同配置精确恢复；
+历史旧协议与不同教师配方不允许混续训。训练所有权重、完整参数和SHA256见[模型目录](trained_models/README.md)。
+
+本次官方core CPU回归761 passed/50 skipped/12 render deselected；
+research训练器8项单元测试另测通过；EGL render子集12 passed/819 deselected；
+可执行Markdown103 passed。CUDA小规模恢复核验连续与断点结果逐元素相同，
+fused/官方环境状态奖励差<1e-6。具体环境与命令见
+[集成记录](usage_assets/fulltrain_20261015_integration.txt)。
+原始NPZ独立重算RMSE/成功率，检查best/last哈希和完整预算，
+[核验结果](usage_assets/fulltrain_20261015/artifact_verification.json)覆盖全部21完整Gym run。
+跳过项不记作通过，GPU小测试与科学训练预算分开报告。

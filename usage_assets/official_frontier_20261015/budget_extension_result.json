@@ -1,0 +1,37 @@
+{
+  "chosen_by": {
+    "selection_rule": "Maximum mean training reward improvement from prior 10% to final 10% across 18 baseline runs; no test results used.",
+    "scope": "One finite independent from-scratch doubled-budget comparison, not exhaustive hyperparameter search.",
+    "algorithm": "ppo",
+    "reference_period_s": 3.5,
+    "seed": 43,
+    "baseline_actual_transitions": 19988480,
+    "training_reward_last_10pct_delta": 0.027840852737426758,
+    "extended_requested_transitions": 40000000
+  },
+  "baseline_actual_transitions": 19988480,
+  "extended_actual_transitions": 39976960,
+  "baseline_validation_rmse_m": 0.03137854370783909,
+  "extended_validation_rmse_m": 0.013578752653378885,
+  "baseline_late_learning": {
+    "prior_quarter_mean_step_reward": 0.5920443534851074,
+    "last_quarter_mean_step_reward": 0.8838772177696228,
+    "last_minus_prior": 0.2918328642845154,
+    "last_quarter_reward_std": 0.02627783641219139,
+    "last_10pct_mean_step_reward": 0.9082930684089661,
+    "prior_10pct_mean_step_reward": 0.8804522156715393,
+    "last_10pct_minus_prior": 0.027840852737426758,
+    "last_10pct_reward_std": 0.006014193408191204
+  },
+  "extended_late_learning": {
+    "prior_quarter_mean_step_reward": 0.8878448009490967,
+    "last_quarter_mean_step_reward": 0.9170804619789124,
+    "last_minus_prior": 0.029235661029815674,
+    "last_quarter_reward_std": 0.01402920763939619,
+    "last_10pct_mean_step_reward": 0.9234282970428467,
+    "prior_10pct_mean_step_reward": 0.9157349467277527,
+    "last_10pct_minus_prior": 0.007693350315093994,
+    "last_10pct_reward_std": 0.0078297583386302
+  },
+  "independent_from_scratch": true
+}

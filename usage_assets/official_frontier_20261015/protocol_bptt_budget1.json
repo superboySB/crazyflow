@@ -1,0 +1,24 @@
+{
+  "study": "local speed-specific extension",
+  "periods": [
+    3.5,
+    3.0,
+    2.5
+  ],
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "budgets": {
+    "ppo": 20000000,
+    "bptt": 1600000
+  },
+  "budget_multiplier": 1,
+  "validation_seed": 9001,
+  "test_position_seed": 14001,
+  "test_velocity_seed": 14002,
+  "eval_worlds": 64,
+  "eval_seconds": 20,
+  "official_commit": "bfc6414da1f4405e4e41e3a3d0656bb5f38e09e3"
+}

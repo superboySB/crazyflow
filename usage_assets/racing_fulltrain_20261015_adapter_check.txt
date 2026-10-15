@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "trajectory_stream_salt": 1414676810,
+  "first_trajectory_action_dynamics_keys": [
+    [
+      90346023,
+      421099241
+    ],
+    [
+      2095235069,
+      2959038751
+    ],
+    [
+      1188447079,
+      1832623004
+    ]
+  ],
+  "future_subkeys_checked_per_stream": 128,
+  "same_seed_reproduces_initial_and_auto_reset": true,
+  "different_seeds_change_trajectories": true,
+  "across_world_tail_position_std_m": [
+    0.6213698387145996,
+    0.5168606042861938,
+    0.3325604796409607
+  ]
+}

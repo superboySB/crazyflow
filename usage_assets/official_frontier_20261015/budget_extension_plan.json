@@ -1,0 +1,10 @@
+{
+  "selection_rule": "Maximum mean training reward improvement from prior 10% to final 10% across 18 baseline runs; no test results used.",
+  "scope": "One finite independent from-scratch doubled-budget comparison, not exhaustive hyperparameter search.",
+  "algorithm": "ppo",
+  "reference_period_s": 3.5,
+  "seed": 43,
+  "baseline_actual_transitions": 19988480,
+  "training_reward_last_10pct_delta": 0.027840852737426758,
+  "extended_requested_transitions": 40000000
+}

@@ -1,0 +1,211 @@
+[
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T2.5s_budget1_seed42.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T2.5s_budget1_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T2.5s_budget1_seed44.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed42.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed44.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T3s_budget1_seed42.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T3s_budget1_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_bptt_T3s_budget1_seed44.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T2.5s_budget1_seed42.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T2.5s_budget1_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T2.5s_budget1_seed44.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget1_seed42.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget1_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget1_seed44.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget2_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3s_budget1_seed42.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3s_budget1_seed43.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  },
+  {
+    "checkpoint": "trained_models/official_frontier_ppo_T3s_budget1_seed44.ckpt",
+    "preset": "5_5s",
+    "unexpected_changes": [],
+    "permitted_changes": [
+      "num_iterations",
+      "seed",
+      "total_timesteps",
+      "trajectory_time"
+    ]
+  }
+]

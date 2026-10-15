@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "kind": "analytic_controller_reference",
+  "controller": {
+    "name": "calibrated PD teacher",
+    "teacher_model": "calibrated",
+    "desired_acceleration": "4 * position_error - 4 * velocity, component-clipped to +/-4 m/s^2",
+    "action_mapping": "Exact steady-state inverse of fitted L250 so_rpy thrust/attitude gains.",
+    "training_samples": 0,
+    "neural_policy": false
+  },
+  "eligible_for_neural_checkpoint_selection": false,
+  "protocol": "Analytic control reference only. No training and no checkpoint selection.",
+  "goal_rng_protocol": "independent_goal_rng_v1",
+  "env_backend": "fused",
+  "torch_matmul_allow_tf32": true,
+  "config": {
+    "env_id": "DroneReachPos-v0",
+    "freq": 50,
+    "episode_time": 10.0,
+    "eval_envs": 1024,
+    "teacher_model": "calibrated"
+  },
+  "seed_list": [
+    31001,
+    31002,
+    31003
+  ],
+  "populations": [
+    {
+      "seed": 31001,
+      "episodes": 1024,
+      "successes": 1024,
+      "survivors": 1024,
+      "metrics": {
+        "mean_reward": 0.8671825528144836,
+        "episode_return": 433.59124755859375,
+        "mean_error": 0.13053257763385773,
+        "rmse": 0.35024240612983704,
+        "last_second_rmse": 1.292373508476885e-05,
+        "final_mean_error": 1.2607754797500093e-05,
+        "median_env_rmse": 0.3170435130596161,
+        "p95_error": 0.8948490023612976,
+        "max_error": 3.038757562637329,
+        "survival_rate": 1.0,
+        "success_rate": 1.0,
+        "mean_episode_steps": 500.0,
+        "evaluation_seed": 31001.0
+      },
+      "raw_per_world": "usage_assets/fulltrain_20261015/teacher_reference_reach_pos_test31001.npz",
+      "raw_sha256": "17a74098959489133b87b4b1c7ad44f455968673854b8e33ce6fc4bf6f886124"
+    },
+    {
+      "seed": 31002,
+      "episodes": 1024,
+      "successes": 1024,
+      "survivors": 1024,
+      "metrics": {
+        "mean_reward": 0.8674131035804749,
+        "episode_return": 433.70654296875,
+        "mean_error": 0.1294994205236435,
+        "rmse": 0.34649229049682617,
+        "last_second_rmse": 1.2857960427936632e-05,
+        "final_mean_error": 1.2531463653431274e-05,
+        "median_env_rmse": 0.31206029653549194,
+        "p95_error": 0.8808435201644897,
+        "max_error": 2.63794207572937,
+        "survival_rate": 1.0,
+        "success_rate": 1.0,
+        "mean_episode_steps": 500.0,
+        "evaluation_seed": 31002.0
+      },
+      "raw_per_world": "usage_assets/fulltrain_20261015/teacher_reference_reach_pos_test31002.npz",
+      "raw_sha256": "38948ad082b051344ef7b837e0cf4e0b7be037637da0c13645fc0da6e5eeb4e9"
+    },
+    {
+      "seed": 31003,
+      "episodes": 1024,
+      "successes": 1024,
+      "survivors": 1024,
+      "metrics": {
+        "mean_reward": 0.8682942986488342,
+        "episode_return": 434.1471252441406,
+        "mean_error": 0.1290006786584854,
+        "rmse": 0.3478001654148102,
+        "last_second_rmse": 1.2786969818989746e-05,
+        "final_mean_error": 1.2447719200281426e-05,
+        "median_env_rmse": 0.31254979968070984,
+        "p95_error": 0.8737996220588684,
+        "max_error": 2.6514344215393066,
+        "survival_rate": 1.0,
+        "success_rate": 1.0,
+        "mean_episode_steps": 500.0,
+        "evaluation_seed": 31003.0
+      },
+      "raw_per_world": "usage_assets/fulltrain_20261015/teacher_reference_reach_pos_test31003.npz",
+      "raw_sha256": "9efc5f1a811125962c7c750dda3508450b28be24ae2fa5b16e3a5d3f462a3113"
+    }
+  ],
+  "aggregate": {
+    "episodes": 3072,
+    "successes": 3072,
+    "survivors": 3072,
+    "success_rate": 1.0,
+    "survival_rate": 1.0,
+    "first_episode_sample_weighted_rmse": 0.3481817475597328,
+    "last_observed_second_sample_weighted_rmse": 1.2856343756445339e-05,
+    "first_episode_observed_steps": 1536000
+  },
+  "scope": "Official fitted-attitude model, near-ground hover for Landing. This analytic controller reference is not evidence of neural-policy performance, direct rotor control, fixed-wing flight, or real-world transfer.",
+  "source_sha256": {
+    "usage_assets/teacher_reference_20261015.py": "ea11c908d7e2660de187b5270480a810efd37265c356c86e14300b22b6adbc0b",
+    "usage_assets/train_gymnasium.py": "529991412acd14c4d84b46c3c228708c0f306d990827f1b931334ece5e148a7b",
+    "usage_assets/fast_gymnasium_20261015.py": "6405f25d39751539549833d1a3e66142345e3c8707744bd5d2aca479abca8c4b",
+    "crazyflow/dynamics/so_rpy/dynamics.py": "c48c2624732a26da1302ab79d176d9a14df9abae0ff15994eeacc17b9862887b"
+  }
+}

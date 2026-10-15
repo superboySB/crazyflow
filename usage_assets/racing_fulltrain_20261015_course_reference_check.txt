@@ -1,0 +1,3 @@
+Per-world start correction vs independent official controller, samples 750 max error 4.440892098500626e-16
+Per-world start correction vs independent official controller, samples 500 max error 5.300529570817503e-09
+Per-world start correction vs independent official controller, samples 250 max error 1.9559810437996816e-09

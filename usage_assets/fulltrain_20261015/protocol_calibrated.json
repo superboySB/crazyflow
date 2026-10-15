@@ -1,0 +1,58 @@
+{
+  "goal_rng_protocol": "independent_goal_rng_v1",
+  "tasks": {
+    "reach_pos": "DroneReachPos-v0",
+    "landing": "DroneLanding-v0"
+  },
+  "teacher_model": "calibrated",
+  "gamma": 0.99,
+  "training_seeds": [
+    7,
+    19,
+    43
+  ],
+  "validation_seed": 20007,
+  "test_seeds": [
+    31001,
+    31002,
+    31003
+  ],
+  "requested_vector_step_slots_per_run": 200000000,
+  "complete_updates_per_run": 762,
+  "actual_vector_step_slots_per_run": 199753728,
+  "transition_count_note": "Ignored NEXT_STEP reset slots are excluded by each run valid_transition counter; BC samples are additional.",
+  "jobs": [
+    [
+      "reach_pos",
+      7,
+      0.99
+    ],
+    [
+      "reach_pos",
+      19,
+      0.99
+    ],
+    [
+      "reach_pos",
+      43,
+      0.99
+    ],
+    [
+      "landing",
+      7,
+      0.99
+    ],
+    [
+      "landing",
+      19,
+      0.99
+    ],
+    [
+      "landing",
+      43,
+      0.99
+    ]
+  ],
+  "frozen_test_protocol": "No model or hyperparameter choice based on test seeds.",
+  "budget_rationale": "Requested 200,000,000 slots, 762 complete PPO updates. Main 200M budget is 10-20 times historical budgets; compare complete validation histories and separately specified recipes, retaining regressions. Finite-budget evidence, without a global upper-bound claim."
+}

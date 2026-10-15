@@ -1,9 +1,19 @@
 # Crazyflow Docker 用户手册
 
-本次增量同步于 2026-10-09：`research` 合入官方 `main` 从 `58e8fb4` 到
-[`70d09e4`](https://github.com/learnsyslab/crazyflow/commit/70d09e4) 的全部 32 个提交。
-Crazyflow 当前版本为 0.3.2；完整提交清单、新接口、实验方法和本次结果见
-[`usage.md` 第 15 节](usage.md#15-2026-10-09-官方-main-增量同步)。已有 8 月实验记录和图片保留作历史对照。
+2026-10-15已同步官方main至[c95f69b / 0.4.0](https://github.com/learnsyslab/crazyflow/commit/c95f69bc54f830e859fee4ac5734bf571acd81f3)，
+并回到research完成多种子、完整预算训练与独立测试。
+先看[3.5秒高速八字PPO视频](usage_assets/official_frontier_20261015/ppo_T3.5s_position_holdout.mp4)、
+[直接四电机TD3视频](usage_assets/official_td3_rotor_reach_budget2_20261015_seed42_holdout_hover.mp4)、
+[四任务画廊](usage_assets/fulltrain_20261015/README.md)及
+[真赛道报告](usage_assets/racing_fulltrain_20261015.md)。
+参数、完整预算、历史RNG问题修正和能力边界见[usage.md第16节](usage.md)；
+可加载权重见[trained_models](trained_models/README.md)。已有历史实验和图片保留，不用旧成绩代替新测试。
+
+本地已重建并在没有源码bind mount的新容器中验收该镜像，
+image ID为`sha256:3291a9fe23c293c1e9f8c22f2b889a719f13b5ae27147baaf978cdb49274972d`。
+CUDA、全部110权重哈希、精确续训、赛道播种/惯量和实际电机策略EGL视频逐帧读回均通过；
+[镜像核验原始日志](usage_assets/fulltrain_20261015/fresh_image_checks.txt)与
+[集成测试记录](usage_assets/fulltrain_20261015_integration.txt)可查看。
 
 开发、依赖安装、测试、实验和 Git 操作均在 Docker 容器内进行；宿主机只负责构建、启动和进入容器。
 
@@ -19,7 +29,7 @@ cd /home/dzp/projects/crazyflow
 
 ```bash
 docker build -f .devcontainer/Dockerfile \
-  -t dzp_crazyflow:0.3.2-research-20261009-cuda12.6-py312-racing-rl \
+  -t dzp_crazyflow:0.4.0-research-20261015-cuda12.6-py312-racing-rl \
   --progress=plain .
 ```
 
@@ -30,7 +40,7 @@ Dockerfile 会在构建开始和结束时访问 `https://www.google.com/`；HTTP
 ```bash
 test -f "$XAUTHORITY"
 
-docker run --name dzp-crazyflow-research-20261009 -itd \
+docker run --name dzp-crazyflow-research-20261015 -itd \
   --gpus all \
   --network host \
   --ipc host \
@@ -40,13 +50,13 @@ docker run --name dzp-crazyflow-research-20261009 -itd \
   -v "$XAUTHORITY:/tmp/.Xauthority:ro" \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /home/dzp/projects/crazyflow:/workspace/crazyflow \
-  dzp_crazyflow:0.3.2-research-20261009-cuda12.6-py312-racing-rl
+  dzp_crazyflow:0.4.0-research-20261015-cuda12.6-py312-racing-rl
 ```
 
 进入容器：
 
 ```bash
-docker exec -it dzp-crazyflow-research-20261009 bash
+docker exec -it dzp-crazyflow-research-20261015 bash
 cd /workspace/crazyflow
 ```
 
@@ -366,7 +376,7 @@ python scripts/sim.py \
 
 ```bash
 docker cp \
-  dzp-crazyflow-research-20261009:/opt/lsy_drone_racing/lsy_drone_racing/control/ppo_drone_racing.ckpt \
+  dzp-crazyflow-research-20261015:/opt/lsy_drone_racing/lsy_drone_racing/control/ppo_drone_racing.ckpt \
   ./ppo_drone_racing.ckpt
 ```
 
@@ -437,10 +447,10 @@ Racing 默认 PPO 完成 1,499,136 个 transitions；重载五局平均奖励 70
 ## 常用操作
 
 ```bash
-docker stop dzp-crazyflow-research-20261009
-docker start dzp-crazyflow-research-20261009
-docker exec -it dzp-crazyflow-research-20261009 bash
-docker rm -f dzp-crazyflow-research-20261009
+docker stop dzp-crazyflow-research-20261015
+docker start dzp-crazyflow-research-20261015
+docker exec -it dzp-crazyflow-research-20261015 bash
+docker rm -f dzp-crazyflow-research-20261015
 ```
 
 Crazyflow 源码和示例在 `/workspace/crazyflow`；镜像内 drone racing 项目在 `/opt/lsy_drone_racing`。修改 Crazyflow Python 代码后无需重建镜像，重新启动对应程序即可；修改系统依赖或 drone racing 安装补丁后需要重建镜像。

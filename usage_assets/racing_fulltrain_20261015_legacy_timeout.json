@@ -1,0 +1,996 @@
+{
+  "date": "2026-10-15",
+  "racing_commit": "065a6ecb7a7621f156bdd0bedc70020e3331a3e9",
+  "crazyflow_version": "0.4.0",
+  "seeds": [
+    41,
+    42
+  ],
+  "requested_budgets": [
+    1500000,
+    5000000,
+    15000000
+  ],
+  "protocol": "Continuous training to the largest budget, official linear LR schedule over that full horizon; each earlier checkpoint is a point on that same run. SAME_STEP corrected episode handling, timeout bootstrap, reset histories, fresh splines and configured action noise.",
+  "validation": {
+    "seed": 123401,
+    "episodes": 128
+  },
+  "holdout": {
+    "seed": 987651,
+    "episodes": 256
+  },
+  "args": {
+    "seed": 42,
+    "torch_deterministic": true,
+    "cuda": true,
+    "jax_device": "gpu",
+    "wandb_project_name": "ADR-PPO-Racing",
+    "wandb_entity": null,
+    "total_timesteps": 15000000,
+    "learning_rate": 0.0015,
+    "num_envs": 1024,
+    "num_steps": 8,
+    "anneal_lr": true,
+    "gamma": 0.94,
+    "gae_lambda": 0.97,
+    "num_minibatches": 8,
+    "update_epochs": 10,
+    "norm_adv": true,
+    "clip_coef": 0.26,
+    "clip_vloss": true,
+    "ent_coef": 0.007,
+    "vf_coef": 0.7,
+    "max_grad_norm": 1.5,
+    "target_kl": null,
+    "batch_size": 8192,
+    "minibatch_size": 1024,
+    "num_iterations": 1831,
+    "n_obs": 2,
+    "rpy_coef": 0.06,
+    "d_act_th_coef": 0.4,
+    "d_act_xy_coef": 1.0,
+    "act_coef": 0.02
+  },
+  "checkpoints": [
+    {
+      "training_seed": 41,
+      "requested_budget": 1500000,
+      "actual_transitions": 1499136,
+      "iterations": 183,
+      "checkpoint": "trained_models/racing_legacy_timeout_s41_1500000_20261015.ckpt",
+      "sha256": "3c71e82189380994a928c1e087a0a6dd4a4aed9a7b62d2ad0c502cc8dd40698b",
+      "validation": {
+        "seed": 123401,
+        "episodes": 128,
+        "return_mean": 722.2152334370185,
+        "return_std": 6.34569311938184,
+        "return_ci95": 1.103654850863142,
+        "survival_rate": 0.9921875,
+        "crashes": 1,
+        "mean_episode_steps": 749.53125,
+        "position_mae_m": 0.014743469353496803,
+        "position_rmse_m": 0.021804213711603924,
+        "episode_return_quantiles": [
+          660.4091992974281,
+          718.3480357408523,
+          723.1213277578354,
+          726.4502509057522,
+          728.1939152479172
+        ]
+      },
+      "timeout_bootstrap": "truncations-including-terminal"
+    },
+    {
+      "training_seed": 41,
+      "requested_budget": 5000000,
+      "actual_transitions": 4997120,
+      "iterations": 610,
+      "checkpoint": "trained_models/racing_legacy_timeout_s41_5000000_20261015.ckpt",
+      "sha256": "1236908e7bdc20448b956f2603fd7b62b57e8cd39bb9ded3864731adf257306d",
+      "validation": {
+        "seed": 123401,
+        "episodes": 128,
+        "return_mean": 720.487375900615,
+        "return_std": 6.024158908273824,
+        "return_ci95": 1.047733017718714,
+        "survival_rate": 0.9921875,
+        "crashes": 1,
+        "mean_episode_steps": 749.546875,
+        "position_mae_m": 0.015920320595493004,
+        "position_rmse_m": 0.021534976377618732,
+        "episode_return_quantiles": [
+          662.9994280338287,
+          716.417613965273,
+          721.0723167657852,
+          724.8285591125489,
+          726.6582213044167
+        ]
+      },
+      "timeout_bootstrap": "truncations-including-terminal"
+    },
+    {
+      "training_seed": 41,
+      "requested_budget": 15000000,
+      "actual_transitions": 14999552,
+      "iterations": 1831,
+      "checkpoint": "trained_models/racing_legacy_timeout_s41_15000000_20261015.ckpt",
+      "sha256": "cdef86be68b4708038f983c7b98d13f55023f8d72a6cb7e08157f00effece22f",
+      "validation": {
+        "seed": 123401,
+        "episodes": 128,
+        "return_mean": 727.8150731176138,
+        "return_std": 5.6820430725512825,
+        "return_ci95": 0.9882315898133787,
+        "survival_rate": 0.9921875,
+        "crashes": 1,
+        "mean_episode_steps": 749.5390625,
+        "position_mae_m": 0.010579891596887577,
+        "position_rmse_m": 0.01605465657052516,
+        "episode_return_quantiles": [
+          669.2045475840569,
+          724.9999710261822,
+          728.6241228580475,
+          730.9806217074395,
+          732.960940182209
+        ]
+      },
+      "timeout_bootstrap": "truncations-including-terminal"
+    },
+    {
+      "training_seed": 42,
+      "requested_budget": 1500000,
+      "actual_transitions": 1499136,
+      "iterations": 183,
+      "checkpoint": "trained_models/racing_legacy_timeout_s42_1500000_20261015.ckpt",
+      "sha256": "39876d3319c5d08e62f8cb51e6b48de99052b357a41bd5e06c1eac6fb892feb0",
+      "validation": {
+        "seed": 123401,
+        "episodes": 128,
+        "return_mean": 718.8573437237646,
+        "return_std": 6.481850948564638,
+        "return_ci95": 1.1273356759256732,
+        "survival_rate": 0.9921875,
+        "crashes": 1,
+        "mean_episode_steps": 749.53125,
+        "position_mae_m": 0.017138299928227615,
+        "position_rmse_m": 0.023153465813370844,
+        "episode_return_quantiles": [
+          657.748189330101,
+          714.6319021821022,
+          719.5682303309441,
+          723.4868384242058,
+          726.7010623216629
+        ]
+      },
+      "timeout_bootstrap": "truncations-including-terminal"
+    }
+  ],
+  "training_curve": [
+    {
+      "seed": 41,
+      "steps": 204800,
+      "completed_episodes": 7251,
+      "recent_episode_return": -1.5568975022033555,
+      "explained_variance": 0.9078673124313354,
+      "approx_kl": 0.049949876964092255,
+      "lr": 0.0014803386127799016
+    },
+    {
+      "seed": 41,
+      "steps": 409600,
+      "completed_episodes": 8471,
+      "recent_episode_return": 13.73648694070468,
+      "explained_variance": 0.9811962246894836,
+      "approx_kl": 0.07742765545845032,
+      "lr": 0.0014598580010922993
+    },
+    {
+      "seed": 41,
+      "steps": 614400,
+      "completed_episodes": 8585,
+      "recent_episode_return": 16.833061287953313,
+      "explained_variance": 0.9938573241233826,
+      "approx_kl": 0.12414202839136124,
+      "lr": 0.001439377389404697
+    },
+    {
+      "seed": 41,
+      "steps": 819200,
+      "completed_episodes": 8596,
+      "recent_episode_return": 17.389258374112245,
+      "explained_variance": 0.9860789179801941,
+      "approx_kl": 0.12080520391464233,
+      "lr": 0.0014188967777170945
+    },
+    {
+      "seed": 41,
+      "steps": 1024000,
+      "completed_episodes": 8952,
+      "recent_episode_return": 180.09038494053277,
+      "explained_variance": 0.9827761054039001,
+      "approx_kl": 0.12868325412273407,
+      "lr": 0.0013984161660294922
+    },
+    {
+      "seed": 41,
+      "steps": 1228800,
+      "completed_episodes": 9530,
+      "recent_episode_return": 501.96583857794417,
+      "explained_variance": 0.9864979982376099,
+      "approx_kl": 0.11779466271400452,
+      "lr": 0.0013779355543418897
+    },
+    {
+      "seed": 41,
+      "steps": 1433600,
+      "completed_episodes": 9617,
+      "recent_episode_return": 557.0261862588651,
+      "explained_variance": 0.9743912220001221,
+      "approx_kl": 0.10543448477983475,
+      "lr": 0.0013574549426542872
+    },
+    {
+      "seed": 41,
+      "steps": 1499136,
+      "completed_episodes": 9618,
+      "recent_episode_return": 557.6495045365888,
+      "explained_variance": 0.9582897424697876,
+      "approx_kl": 0.0984743982553482,
+      "lr": 0.0013509011469142545
+    },
+    {
+      "seed": 41,
+      "steps": 1638400,
+      "completed_episodes": 9621,
+      "recent_episode_return": 559.4292270483396,
+      "explained_variance": 0.9274381399154663,
+      "approx_kl": 0.17488256096839905,
+      "lr": 0.001336974330966685
+    },
+    {
+      "seed": 41,
+      "steps": 1843200,
+      "completed_episodes": 10349,
+      "recent_episode_return": 692.6867538657025,
+      "explained_variance": 0.9871271848678589,
+      "approx_kl": 0.10807323455810547,
+      "lr": 0.0013164937192790827
+    },
+    {
+      "seed": 41,
+      "steps": 2048000,
+      "completed_episodes": 10585,
+      "recent_episode_return": 710.7995617844135,
+      "explained_variance": 0.9880341291427612,
+      "approx_kl": 0.1860985904932022,
+      "lr": 0.0012960131075914802
+    },
+    {
+      "seed": 41,
+      "steps": 2252800,
+      "completed_episodes": 10642,
+      "recent_episode_return": 711.8607675766834,
+      "explained_variance": 0.9522349834442139,
+      "approx_kl": 0.14043031632900238,
+      "lr": 0.0012755324959038777
+    },
+    {
+      "seed": 41,
+      "steps": 2457600,
+      "completed_episodes": 10647,
+      "recent_episode_return": 711.8798937571846,
+      "explained_variance": 0.9614346623420715,
+      "approx_kl": 0.09595933556556702,
+      "lr": 0.0012550518842162754
+    },
+    {
+      "seed": 41,
+      "steps": 2662400,
+      "completed_episodes": 11502,
+      "recent_episode_return": 712.7602311130468,
+      "explained_variance": 0.9843578934669495,
+      "approx_kl": 0.06348840892314911,
+      "lr": 0.0012345712725286729
+    },
+    {
+      "seed": 41,
+      "steps": 2867200,
+      "completed_episodes": 11634,
+      "recent_episode_return": 713.0781533069967,
+      "explained_variance": 0.9671420454978943,
+      "approx_kl": 0.08071763813495636,
+      "lr": 0.0012140906608410706
+    },
+    {
+      "seed": 41,
+      "steps": 3072000,
+      "completed_episodes": 11666,
+      "recent_episode_return": 713.2161878625338,
+      "explained_variance": 0.9215331673622131,
+      "approx_kl": 0.05636157840490341,
+      "lr": 0.001193610049153468
+    },
+    {
+      "seed": 41,
+      "steps": 3276800,
+      "completed_episodes": 11713,
+      "recent_episode_return": 713.2536261269415,
+      "explained_variance": 0.9785866737365723,
+      "approx_kl": 0.3091273307800293,
+      "lr": 0.0011731294374658656
+    },
+    {
+      "seed": 41,
+      "steps": 3481600,
+      "completed_episodes": 12567,
+      "recent_episode_return": 716.7397037149931,
+      "explained_variance": 0.9673725366592407,
+      "approx_kl": 0.046997055411338806,
+      "lr": 0.0011526488257782633
+    },
+    {
+      "seed": 41,
+      "steps": 3686400,
+      "completed_episodes": 12681,
+      "recent_episode_return": 717.050007156824,
+      "explained_variance": 0.9728695750236511,
+      "approx_kl": 0.07839154452085495,
+      "lr": 0.001132168214090661
+    },
+    {
+      "seed": 41,
+      "steps": 3891200,
+      "completed_episodes": 12692,
+      "recent_episode_return": 717.1157180416922,
+      "explained_variance": 0.9252796173095703,
+      "approx_kl": 0.0703253522515297,
+      "lr": 0.0011116876024030585
+    },
+    {
+      "seed": 41,
+      "steps": 4096000,
+      "completed_episodes": 13056,
+      "recent_episode_return": 719.034282163746,
+      "explained_variance": 0.9880735874176025,
+      "approx_kl": 0.11567641794681549,
+      "lr": 0.001091206990715456
+    },
+    {
+      "seed": 41,
+      "steps": 4300800,
+      "completed_episodes": 13627,
+      "recent_episode_return": 721.4330992649484,
+      "explained_variance": 0.9853318929672241,
+      "approx_kl": 0.07576078176498413,
+      "lr": 0.0010707263790278537
+    },
+    {
+      "seed": 41,
+      "steps": 4505600,
+      "completed_episodes": 13713,
+      "recent_episode_return": 721.662269804423,
+      "explained_variance": 0.9667810201644897,
+      "approx_kl": 0.06160257011651993,
+      "lr": 0.0010502457673402512
+    },
+    {
+      "seed": 41,
+      "steps": 4710400,
+      "completed_episodes": 13717,
+      "recent_episode_return": 721.6609985261166,
+      "explained_variance": 0.9244848489761353,
+      "approx_kl": 0.05597569793462753,
+      "lr": 0.001029765155652649
+    },
+    {
+      "seed": 41,
+      "steps": 4915200,
+      "completed_episodes": 14447,
+      "recent_episode_return": 721.1339529524994,
+      "explained_variance": 0.8698842525482178,
+      "approx_kl": 0.07615549862384796,
+      "lr": 0.0010092845439650465
+    },
+    {
+      "seed": 41,
+      "steps": 4997120,
+      "completed_episodes": 14603,
+      "recent_episode_return": 721.0373333319585,
+      "explained_variance": 0.9854800701141357,
+      "approx_kl": 0.0377226322889328,
+      "lr": 0.0010010922992900054
+    },
+    {
+      "seed": 41,
+      "steps": 5120000,
+      "completed_episodes": 14681,
+      "recent_episode_return": 721.0436989291193,
+      "explained_variance": 0.9833449721336365,
+      "approx_kl": 0.05929500609636307,
+      "lr": 0.000988803932277444
+    },
+    {
+      "seed": 41,
+      "steps": 5324800,
+      "completed_episodes": 14738,
+      "recent_episode_return": 720.9567539021809,
+      "explained_variance": 0.9464758634567261,
+      "approx_kl": 0.057327739894390106,
+      "lr": 0.0009683233205898416
+    },
+    {
+      "seed": 41,
+      "steps": 5529600,
+      "completed_episodes": 14743,
+      "recent_episode_return": 720.9444517365628,
+      "explained_variance": 0.9745473265647888,
+      "approx_kl": 0.07598825544118881,
+      "lr": 0.0009478427089022394
+    },
+    {
+      "seed": 41,
+      "steps": 5734400,
+      "completed_episodes": 15598,
+      "recent_episode_return": 721.1871610972739,
+      "explained_variance": 0.9930800199508667,
+      "approx_kl": 0.06905856728553772,
+      "lr": 0.0009273620972146368
+    },
+    {
+      "seed": 41,
+      "steps": 5939200,
+      "completed_episodes": 15730,
+      "recent_episode_return": 721.2075931477884,
+      "explained_variance": 0.9685143232345581,
+      "approx_kl": 0.042132388800382614,
+      "lr": 0.0009068814855270343
+    },
+    {
+      "seed": 41,
+      "steps": 6144000,
+      "completed_episodes": 15762,
+      "recent_episode_return": 721.3036016019178,
+      "explained_variance": 0.9646190404891968,
+      "approx_kl": 0.06251760572195053,
+      "lr": 0.0008864008738394321
+    },
+    {
+      "seed": 41,
+      "steps": 6348800,
+      "completed_episodes": 15817,
+      "recent_episode_return": 721.2699749665917,
+      "explained_variance": 0.9895172119140625,
+      "approx_kl": 0.19916148483753204,
+      "lr": 0.0008659202621518296
+    },
+    {
+      "seed": 41,
+      "steps": 6553600,
+      "completed_episodes": 16663,
+      "recent_episode_return": 720.9542889187869,
+      "explained_variance": 0.9876308441162109,
+      "approx_kl": 0.04066874831914902,
+      "lr": 0.0008454396504642271
+    },
+    {
+      "seed": 41,
+      "steps": 6758400,
+      "completed_episodes": 16777,
+      "recent_episode_return": 720.7062746312004,
+      "explained_variance": 0.9697951078414917,
+      "approx_kl": 0.03490370139479637,
+      "lr": 0.0008249590387766249
+    },
+    {
+      "seed": 41,
+      "steps": 6963200,
+      "completed_episodes": 16788,
+      "recent_episode_return": 720.6895478978986,
+      "explained_variance": 0.9473994970321655,
+      "approx_kl": 0.07340645045042038,
+      "lr": 0.0008044784270890224
+    },
+    {
+      "seed": 41,
+      "steps": 7168000,
+      "completed_episodes": 17161,
+      "recent_episode_return": 721.542647177208,
+      "explained_variance": 0.8561436533927917,
+      "approx_kl": 0.06794336438179016,
+      "lr": 0.0007839978154014199
+    },
+    {
+      "seed": 41,
+      "steps": 7372800,
+      "completed_episodes": 17724,
+      "recent_episode_return": 722.6663456115639,
+      "explained_variance": 0.9855937957763672,
+      "approx_kl": 0.048761770129203796,
+      "lr": 0.0007635172037138177
+    },
+    {
+      "seed": 41,
+      "steps": 7577600,
+      "completed_episodes": 17809,
+      "recent_episode_return": 722.9021961068793,
+      "explained_variance": 0.9413140416145325,
+      "approx_kl": 0.05675594136118889,
+      "lr": 0.0007430365920262152
+    },
+    {
+      "seed": 41,
+      "steps": 7782400,
+      "completed_episodes": 17813,
+      "recent_episode_return": 722.9137766374915,
+      "explained_variance": 0.9257256984710693,
+      "approx_kl": 0.070625901222229,
+      "lr": 0.0007225559803386129
+    },
+    {
+      "seed": 41,
+      "steps": 7987200,
+      "completed_episodes": 18546,
+      "recent_episode_return": 724.0908398835163,
+      "explained_variance": 0.9940646886825562,
+      "approx_kl": 0.0671672448515892,
+      "lr": 0.0007020753686510104
+    },
+    {
+      "seed": 41,
+      "steps": 8192000,
+      "completed_episodes": 18778,
+      "recent_episode_return": 724.490783116984,
+      "explained_variance": 0.9876758456230164,
+      "approx_kl": 0.05758851021528244,
+      "lr": 0.000681594756963408
+    },
+    {
+      "seed": 41,
+      "steps": 8396800,
+      "completed_episodes": 18834,
+      "recent_episode_return": 724.5898138674384,
+      "explained_variance": 0.9382134675979614,
+      "approx_kl": 0.047798577696084976,
+      "lr": 0.0006611141452758057
+    },
+    {
+      "seed": 41,
+      "steps": 8601600,
+      "completed_episodes": 18839,
+      "recent_episode_return": 724.6060303577397,
+      "explained_variance": 0.9428533315658569,
+      "approx_kl": 0.0930306613445282,
+      "lr": 0.0006406335335882032
+    },
+    {
+      "seed": 41,
+      "steps": 8806400,
+      "completed_episodes": 19695,
+      "recent_episode_return": 724.8126629646868,
+      "explained_variance": 0.9883859753608704,
+      "approx_kl": 0.04323551058769226,
+      "lr": 0.0006201529219006008
+    },
+    {
+      "seed": 41,
+      "steps": 9011200,
+      "completed_episodes": 19826,
+      "recent_episode_return": 724.9079022233782,
+      "explained_variance": 0.9841701984405518,
+      "approx_kl": 0.06666534394025803,
+      "lr": 0.0005996723102129984
+    },
+    {
+      "seed": 41,
+      "steps": 9216000,
+      "completed_episodes": 19858,
+      "recent_episode_return": 724.9441483809205,
+      "explained_variance": 0.9578416347503662,
+      "approx_kl": 0.03018523007631302,
+      "lr": 0.0005791916985253959
+    },
+    {
+      "seed": 41,
+      "steps": 9420800,
+      "completed_episodes": 19915,
+      "recent_episode_return": 724.9526106171252,
+      "explained_variance": 0.9913436770439148,
+      "approx_kl": 0.12133146077394485,
+      "lr": 0.0005587110868377936
+    },
+    {
+      "seed": 41,
+      "steps": 9625600,
+      "completed_episodes": 20760,
+      "recent_episode_return": 725.1239240102004,
+      "explained_variance": 0.982570230960846,
+      "approx_kl": 0.023314859718084335,
+      "lr": 0.0005382304751501912
+    },
+    {
+      "seed": 41,
+      "steps": 9830400,
+      "completed_episodes": 20873,
+      "recent_episode_return": 725.0131148650544,
+      "explained_variance": 0.9801949858665466,
+      "approx_kl": 0.038766805082559586,
+      "lr": 0.0005177498634625887
+    },
+    {
+      "seed": 41,
+      "steps": 10035200,
+      "completed_episodes": 20884,
+      "recent_episode_return": 725.0144936194993,
+      "explained_variance": 0.9372591376304626,
+      "approx_kl": 0.07760441303253174,
+      "lr": 0.0004972692517749864
+    },
+    {
+      "seed": 41,
+      "steps": 10240000,
+      "completed_episodes": 21262,
+      "recent_episode_return": 724.7901462661684,
+      "explained_variance": 0.9925702214241028,
+      "approx_kl": 0.03679831326007843,
+      "lr": 0.0004767886400873839
+    },
+    {
+      "seed": 41,
+      "steps": 10444800,
+      "completed_episodes": 21820,
+      "recent_episode_return": 724.5153886866756,
+      "explained_variance": 0.9847856163978577,
+      "approx_kl": 0.023840945214033127,
+      "lr": 0.00045630802839978155
+    },
+    {
+      "seed": 41,
+      "steps": 10649600,
+      "completed_episodes": 21905,
+      "recent_episode_return": 724.5458037196659,
+      "explained_variance": 0.9434181451797485,
+      "approx_kl": 0.0603131428360939,
+      "lr": 0.0004358274167121792
+    },
+    {
+      "seed": 41,
+      "steps": 10854400,
+      "completed_episodes": 21909,
+      "recent_episode_return": 724.5542156419833,
+      "explained_variance": 0.9604007005691528,
+      "approx_kl": 0.03527611866593361,
+      "lr": 0.00041534680502457665
+    },
+    {
+      "seed": 41,
+      "steps": 11059200,
+      "completed_episodes": 22643,
+      "recent_episode_return": 724.9183263480663,
+      "explained_variance": 0.9968799352645874,
+      "approx_kl": 0.04901377484202385,
+      "lr": 0.0003948661933369743
+    },
+    {
+      "seed": 41,
+      "steps": 11264000,
+      "completed_episodes": 22875,
+      "recent_episode_return": 725.0794432388793,
+      "explained_variance": 0.9795668721199036,
+      "approx_kl": 0.0499391034245491,
+      "lr": 0.000374385581649372
+    },
+    {
+      "seed": 41,
+      "steps": 11468800,
+      "completed_episodes": 22930,
+      "recent_episode_return": 725.2005154876679,
+      "explained_variance": 0.9345390200614929,
+      "approx_kl": 0.021949339658021927,
+      "lr": 0.0003539049699617695
+    },
+    {
+      "seed": 41,
+      "steps": 11673600,
+      "completed_episodes": 22938,
+      "recent_episode_return": 725.3051120175805,
+      "explained_variance": 0.9753330945968628,
+      "approx_kl": 0.04859156906604767,
+      "lr": 0.00033342435827416714
+    },
+    {
+      "seed": 41,
+      "steps": 11878400,
+      "completed_episodes": 23794,
+      "recent_episode_return": 726.4755921538454,
+      "explained_variance": 0.9938676357269287,
+      "approx_kl": 0.03154744952917099,
+      "lr": 0.00031294374658656475
+    },
+    {
+      "seed": 41,
+      "steps": 12083200,
+      "completed_episodes": 23923,
+      "recent_episode_return": 726.5260479289864,
+      "explained_variance": 0.9794324636459351,
+      "approx_kl": 0.030936937779188156,
+      "lr": 0.00029246313489896225
+    },
+    {
+      "seed": 41,
+      "steps": 12288000,
+      "completed_episodes": 23954,
+      "recent_episode_return": 726.4836438692,
+      "explained_variance": 0.9450370669364929,
+      "approx_kl": 0.028604378923773766,
+      "lr": 0.0002719825232113599
+    },
+    {
+      "seed": 41,
+      "steps": 12492800,
+      "completed_episodes": 24017,
+      "recent_episode_return": 726.4335368220054,
+      "explained_variance": 0.9882851243019104,
+      "approx_kl": 0.044581785798072815,
+      "lr": 0.0002515019115237576
+    },
+    {
+      "seed": 41,
+      "steps": 12697600,
+      "completed_episodes": 24856,
+      "recent_episode_return": 725.4438858768553,
+      "explained_variance": 0.9897531270980835,
+      "approx_kl": 0.021582134068012238,
+      "lr": 0.00023102129983615505
+    },
+    {
+      "seed": 41,
+      "steps": 12902400,
+      "completed_episodes": 24969,
+      "recent_episode_return": 725.4825106828648,
+      "explained_variance": 0.9855493903160095,
+      "approx_kl": 0.0242018960416317,
+      "lr": 0.0002105406881485527
+    },
+    {
+      "seed": 41,
+      "steps": 13107200,
+      "completed_episodes": 24980,
+      "recent_episode_return": 725.4975446170138,
+      "explained_variance": 0.9261640310287476,
+      "approx_kl": 0.025757521390914917,
+      "lr": 0.00019006007646095037
+    },
+    {
+      "seed": 41,
+      "steps": 13312000,
+      "completed_episodes": 25370,
+      "recent_episode_return": 726.0660578801471,
+      "explained_variance": 0.9936006665229797,
+      "approx_kl": 0.03194203972816467,
+      "lr": 0.00016957946477334784
+    },
+    {
+      "seed": 41,
+      "steps": 13516800,
+      "completed_episodes": 25916,
+      "recent_episode_return": 726.772026955412,
+      "explained_variance": 0.9890756607055664,
+      "approx_kl": 0.022765956819057465,
+      "lr": 0.0001490988530857455
+    },
+    {
+      "seed": 41,
+      "steps": 13721600,
+      "completed_episodes": 26001,
+      "recent_episode_return": 726.820265030372,
+      "explained_variance": 0.9649126529693604,
+      "approx_kl": 0.015179077163338661,
+      "lr": 0.00012861824139814314
+    },
+    {
+      "seed": 41,
+      "steps": 13926400,
+      "completed_episodes": 26005,
+      "recent_episode_return": 726.815351040219,
+      "explained_variance": 0.9762112498283386,
+      "approx_kl": 0.022564221173524857,
+      "lr": 0.00010813762971054064
+    },
+    {
+      "seed": 41,
+      "steps": 14131200,
+      "completed_episodes": 26742,
+      "recent_episode_return": 726.5501896358037,
+      "explained_variance": 0.9969244003295898,
+      "approx_kl": 0.023680998012423515,
+      "lr": 8.765701802293829e-05
+    },
+    {
+      "seed": 41,
+      "steps": 14336000,
+      "completed_episodes": 26972,
+      "recent_episode_return": 726.6573354350112,
+      "explained_variance": 0.9879786372184753,
+      "approx_kl": 0.018276508897542953,
+      "lr": 6.717640633533595e-05
+    },
+    {
+      "seed": 41,
+      "steps": 14540800,
+      "completed_episodes": 27026,
+      "recent_episode_return": 726.7164622881392,
+      "explained_variance": 0.9113754630088806,
+      "approx_kl": 0.008425128646194935,
+      "lr": 4.669579464773344e-05
+    },
+    {
+      "seed": 41,
+      "steps": 14745600,
+      "completed_episodes": 27036,
+      "recent_episode_return": 726.7879277747998,
+      "explained_variance": 0.9835094213485718,
+      "approx_kl": 0.008468602783977985,
+      "lr": 2.621518296013109e-05
+    },
+    {
+      "seed": 41,
+      "steps": 14950400,
+      "completed_episodes": 27890,
+      "recent_episode_return": 727.2824482716969,
+      "explained_variance": 0.9928934574127197,
+      "approx_kl": 0.007080559618771076,
+      "lr": 5.7345712725287435e-06
+    },
+    {
+      "seed": 41,
+      "steps": 14999552,
+      "completed_episodes": 27928,
+      "recent_episode_return": 727.3100899711135,
+      "explained_variance": 0.9901724457740784,
+      "approx_kl": 0.001986099174246192,
+      "lr": 8.192244675041539e-07
+    },
+    {
+      "seed": 42,
+      "steps": 204800,
+      "completed_episodes": 8574,
+      "recent_episode_return": 1.0741156172459796,
+      "explained_variance": 0.8754703998565674,
+      "approx_kl": 0.050378359854221344,
+      "lr": 0.0014803386127799016
+    },
+    {
+      "seed": 42,
+      "steps": 409600,
+      "completed_episodes": 10191,
+      "recent_episode_return": 24.502428242956853,
+      "explained_variance": 0.9858359694480896,
+      "approx_kl": 0.05980203300714493,
+      "lr": 0.0014598580010922993
+    },
+    {
+      "seed": 42,
+      "steps": 614400,
+      "completed_episodes": 10255,
+      "recent_episode_return": 28.11000241520003,
+      "explained_variance": 0.9781928062438965,
+      "approx_kl": 0.06583990156650543,
+      "lr": 0.001439377389404697
+    },
+    {
+      "seed": 42,
+      "steps": 819200,
+      "completed_episodes": 10255,
+      "recent_episode_return": 28.11000241520003,
+      "explained_variance": 0.9697991013526917,
+      "approx_kl": 0.06825752556324005,
+      "lr": 0.0014188967777170945
+    },
+    {
+      "seed": 42,
+      "steps": 1024000,
+      "completed_episodes": 10308,
+      "recent_episode_return": 51.781931394354444,
+      "explained_variance": 0.963036060333252,
+      "approx_kl": 0.11048872768878937,
+      "lr": 0.0013984161660294922
+    },
+    {
+      "seed": 42,
+      "steps": 1228800,
+      "completed_episodes": 11269,
+      "recent_episode_return": 570.0164830119531,
+      "explained_variance": 0.9516578316688538,
+      "approx_kl": 0.06469730287790298,
+      "lr": 0.0013779355543418897
+    },
+    {
+      "seed": 42,
+      "steps": 1433600,
+      "completed_episodes": 11279,
+      "recent_episode_return": 575.9046948033856,
+      "explained_variance": 0.912893533706665,
+      "approx_kl": 0.07617347687482834,
+      "lr": 0.0013574549426542872
+    },
+    {
+      "seed": 42,
+      "steps": 1499136,
+      "completed_episodes": 11279,
+      "recent_episode_return": 575.9046948033856,
+      "explained_variance": 0.9281579256057739,
+      "approx_kl": 0.12538373470306396,
+      "lr": 0.0013509011469142545
+    },
+    {
+      "seed": 42,
+      "steps": 1638400,
+      "completed_episodes": 11281,
+      "recent_episode_return": 576.8063134272406,
+      "explained_variance": 0.9165332317352295,
+      "approx_kl": 0.09100760519504547,
+      "lr": 0.001336974330966685
+    }
+  ],
+  "official_trainer_sha256": "61b948033c737fb3fa3263623c65d37a425e81e374d1e81b5876f386143995f0",
+  "adapter_sha256": "59ca6f9f8f71f7f2a47df2b6ea3aa48486ec93848850df947557f669f3cd74c9",
+  "trajectory_stream_salt": 1414676810,
+  "rng_regression": {
+    "passed": true,
+    "trajectory_stream_salt": 1414676810,
+    "first_trajectory_action_dynamics_keys": [
+      [
+        90346023,
+        421099241
+      ],
+      [
+        2095235069,
+        2959038751
+      ],
+      [
+        1188447079,
+        1832623004
+      ]
+    ],
+    "future_subkeys_checked_per_stream": 128,
+    "same_seed_reproduces_initial_and_auto_reset": true,
+    "different_seeds_change_trajectories": true,
+    "across_world_tail_position_std_m": [
+      0.6213698387145996,
+      0.5168606042861938,
+      0.3325604796409607
+    ]
+  },
+  "previous_checkpoint_sha256": "60b3a02bde2b851b9dea898a1a915ebc68cf176bab49ecbdc1c3eb35fb1cbb43",
+  "previous_validation": {
+    "seed": 123401,
+    "episodes": 128,
+    "return_mean": 701.2513168102596,
+    "return_std": 8.790728100300933,
+    "return_ci95": 1.5288999212525993,
+    "survival_rate": 0.9921875,
+    "crashes": 1,
+    "mean_episode_steps": 749.5859375,
+    "position_mae_m": 0.029696715986178113,
+    "position_rmse_m": 0.036251229885856315,
+    "episode_return_quantiles": [
+      645.6699426174164,
+      692.4966896533966,
+      701.4089375138283,
+      710.5716385304928,
+      718.2424102425575
+    ]
+  },
+  "instrumented_trainer_sha256": "fdef82261b202b944eb4b6781643fd1d237b5191447d858088cb43c6b0c1147f",
+  "training_seconds": {
+    "41": 1317.6825432777405
+  },
+  "timeout_bootstrap": "truncations-including-terminal",
+  "completed_training_seeds": [
+    41
+  ],
+  "interrupted_training_seed": 42,
+  "reproduce": "python usage_assets/racing_fulltrain_20261015.py --legacy-terminal-bootstrap --seeds 41 --budgets 1500000,5000000,15000000",
+  "known_limit": "Terminal+time-limit coincidences were bootstrapped; coincidence counts were not logged in this legacy training run."
+}

@@ -1,0 +1,108 @@
+{
+  "checkpoint_sha256": "2a16383489f321cd12ea483aa490e003299f50c5c7f5d0f481369a98e119618f",
+  "config": {
+    "env_id": "DroneReachPos-v0",
+    "seed": 7,
+    "total_timesteps": 10000000,
+    "num_envs": 4096,
+    "num_steps": 64,
+    "learning_rate": 0.0003,
+    "anneal_lr": true,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "num_minibatches": 16,
+    "update_epochs": 4,
+    "clip_coef": 0.2,
+    "ent_coef": 0.002,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "target_kl": 0.03,
+    "freq": 50,
+    "episode_time": 10.0,
+    "n_samples": 10,
+    "samples_dt": 0.1,
+    "eval_envs": 1024,
+    "position_bc_steps": 1000,
+    "position_bc_coef": 10.0,
+    "velocity_bc_steps": 0,
+    "velocity_bc_coef": 0.0,
+    "eval_interval": 50,
+    "validation_seed": 20007,
+    "teacher_model": "legacy"
+  },
+  "validation": {
+    "mean_reward": 0.8351548910140991,
+    "episode_return": 417.57745361328125,
+    "mean_error": 0.13784389197826385,
+    "rmse": 0.3277733623981476,
+    "last_second_rmse": 0.04077524319291115,
+    "final_mean_error": 0.040636494755744934,
+    "median_env_rmse": 0.290300577878952,
+    "p95_error": 0.795539379119873,
+    "max_error": 2.7825372219085693,
+    "survival_rate": 1.0,
+    "success_rate": 1.0,
+    "mean_episode_steps": 500.0,
+    "evaluation_seed": 20007.0
+  },
+  "checkpoint": "trained_models/baseline_20261009_reach_pos.pt",
+  "tests": [
+    {
+      "seed": 31001,
+      "metrics": {
+        "mean_reward": 0.8354042172431946,
+        "episode_return": 417.70208740234375,
+        "mean_error": 0.1362372636795044,
+        "rmse": 0.3211611807346344,
+        "last_second_rmse": 0.0407913438975811,
+        "final_mean_error": 0.04063589870929718,
+        "median_env_rmse": 0.29155951738357544,
+        "p95_error": 0.7799651026725769,
+        "max_error": 3.0274784564971924,
+        "survival_rate": 1.0,
+        "success_rate": 1.0,
+        "mean_episode_steps": 500.0,
+        "evaluation_seed": 31001.0
+      }
+    },
+    {
+      "seed": 31002,
+      "metrics": {
+        "mean_reward": 0.8351377844810486,
+        "episode_return": 417.5688781738281,
+        "mean_error": 0.13570742309093475,
+        "rmse": 0.31801238656044006,
+        "last_second_rmse": 0.04100462794303894,
+        "final_mean_error": 0.04085648059844971,
+        "median_env_rmse": 0.2892131507396698,
+        "p95_error": 0.7708162069320679,
+        "max_error": 2.6338393688201904,
+        "survival_rate": 1.0,
+        "success_rate": 1.0,
+        "mean_episode_steps": 500.0,
+        "evaluation_seed": 31002.0
+      }
+    },
+    {
+      "seed": 31003,
+      "metrics": {
+        "mean_reward": 0.8355218768119812,
+        "episode_return": 417.7608947753906,
+        "mean_error": 0.13553039729595184,
+        "rmse": 0.3191165626049042,
+        "last_second_rmse": 0.04081433638930321,
+        "final_mean_error": 0.04066286236047745,
+        "median_env_rmse": 0.29024192690849304,
+        "p95_error": 0.7660124897956848,
+        "max_error": 2.65134859085083,
+        "survival_rate": 1.0,
+        "success_rate": 1.0,
+        "mean_episode_steps": 500.0,
+        "evaluation_seed": 31003.0
+      }
+    }
+  ],
+  "protocol": "Historical weights reevaluated; first episodes only, same test seeds.",
+  "evaluation_env_backend": "python",
+  "evaluation_torch_matmul_allow_tf32": false
+}

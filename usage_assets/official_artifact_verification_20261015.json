@@ -1,0 +1,9 @@
+{
+  "stress_scenarios": 10,
+  "speed_scenarios": 10,
+  "official_training_records": 30,
+  "checked_official_scenarios": 126,
+  "all_extra_metrics_hashes_saturation_and_reference_peaks_match": true,
+  "official_assets_MB": 38.25825500488281,
+  "official_checkpoint_MB": 0.4104881286621094
+}

@@ -1,0 +1,74 @@
+{
+  "adapter_used_by_formal_study": false,
+  "conditions": "Shared GPU with ongoing workers; diagnostic wall times, not hardware rankings.",
+  "verification": [
+    {
+      "env_id": "DroneReachPos-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneReachVel-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 1.1920928955078125e-07,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneLanding-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneFigureEightTrajectory-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    }
+  ],
+  "timing": [
+    {
+      "fused": false,
+      "worlds": 4096,
+      "rollout_steps": 64,
+      "env_only_seconds": 0.0909659080007259,
+      "env_only_slots_per_second": 2881782.9202332385,
+      "rollout_including_inference_and_boundary_sync_seconds": 0.5473988319990895,
+      "ppo_four_epochs_seconds": 0.28903057699972123,
+      "rollout_plus_ppo_slots_per_second": 313408.39666766516,
+      "env_fraction_of_rollout": 0.1661784839191568,
+      "ppo_fraction_of_rollout_plus_ppo": 0.34555286302723986
+    },
+    {
+      "fused": true,
+      "worlds": 4096,
+      "rollout_steps": 64,
+      "env_only_seconds": 0.03324874899954011,
+      "env_only_slots_per_second": 7884326.715679616,
+      "rollout_including_inference_and_boundary_sync_seconds": 0.48120589400059544,
+      "ppo_four_epochs_seconds": 0.20835117899878242,
+      "rollout_plus_ppo_slots_per_second": 380162.87594549335,
+      "env_fraction_of_rollout": 0.06909464205253266,
+      "ppo_fraction_of_rollout_plus_ppo": 0.302152188929792
+    }
+  ],
+  "env_speedup": 2.7359197184226125,
+  "rollout_plus_ppo_speedup": 1.2129951845183458
+}

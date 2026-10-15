@@ -1,0 +1,119 @@
+RNG_REGRESSION {'passed': True, 'trajectory_stream_salt': 1414676810, 'first_trajectory_action_dynamics_keys': [(90346023, 421099241), (2095235069, 2959038751), (1188447079, 1832623004)], 'future_subkeys_checked_per_stream': 128, 'same_seed_reproduces_initial_and_auto_reset': True, 'different_seeds_change_trajectories': True, 'across_world_tail_position_std_m': [0.6213698387145996, 0.5168606042861938, 0.3325604796409607]}
+PREVIOUS_VALIDATION {'seed': 123401, 'episodes': 128, 'return_mean': 701.2513168102596, 'return_std': 8.790728100300933, 'return_ci95': 1.5288999212525993, 'survival_rate': 0.9921875, 'crashes': 1, 'simultaneous_terminal_time_limits': 0, 'crashed_episode_indices': [74], 'references_below_ground': 1, 'reference_below_ground_indices': [74], 'reference_min_height_m': -0.06753048300743103, 'ground_valid_reference_survival_rate': 1.0, 'ground_valid_reference_position_rmse_m': 0.036242608578338255, 'mean_episode_steps': 749.5859375, 'position_mae_m': 0.029696715986178113, 'position_rmse_m': 0.036251229885856315, 'episode_return_quantiles': [645.6699426174164, 692.4966896533966, 701.4089375138283, 710.5716385304928, 718.2424102425575]}
+Training on device: cuda | Environment device: gpu
+Iter 25/1831, steps=204800, seconds=29.4
+Iter 50/1831, steps=409600, seconds=57.2
+Iter 75/1831, steps=614400, seconds=85.1
+Iter 100/1831, steps=819200, seconds=112.8
+Iter 125/1831, steps=1024000, seconds=140.5
+Iter 150/1831, steps=1228800, seconds=168.3
+Iter 175/1831, steps=1433600, seconds=196.1
+CHECKPOINT {"training_seed": 42, "requested_budget": 1500000, "actual_transitions": 1499136, "iterations": 183, "checkpoint": "trained_models/racing_s42_1500000_20261015.ckpt", "sha256": "39876d3319c5d08e62f8cb51e6b48de99052b357a41bd5e06c1eac6fb892feb0", "validation": {"seed": 123401, "episodes": 128, "return_mean": 718.8573437237646, "return_std": 6.481850948564638, "return_ci95": 1.1273356759256732, "survival_rate": 0.9921875, "crashes": 1, "simultaneous_terminal_time_limits": 0, "crashed_episode_indices": [74], "references_below_ground": 1, "reference_below_ground_indices": [74], "reference_min_height_m": -0.06753048300743103, "ground_valid_reference_survival_rate": 1.0, "ground_valid_reference_position_rmse_m": 0.02316544865788099, "mean_episode_steps": 749.53125, "position_mae_m": 0.017138299928227615, "position_rmse_m": 0.023153465813370844, "episode_return_quantiles": [657.748189330101, 714.6319021821022, 719.5682303309441, 723.4868384242058, 726.7010623216629]}, "timeout_bootstrap": "truncations-and-not-terminations"}
+Iter 200/1831, steps=1638400, seconds=229.5
+Iter 225/1831, steps=1843200, seconds=257.3
+Iter 250/1831, steps=2048000, seconds=285.0
+Iter 275/1831, steps=2252800, seconds=312.6
+Iter 300/1831, steps=2457600, seconds=340.3
+Iter 325/1831, steps=2662400, seconds=368.1
+Iter 350/1831, steps=2867200, seconds=396.1
+Iter 375/1831, steps=3072000, seconds=423.6
+Iter 400/1831, steps=3276800, seconds=451.4
+Iter 425/1831, steps=3481600, seconds=479.0
+Iter 450/1831, steps=3686400, seconds=506.7
+Iter 475/1831, steps=3891200, seconds=534.5
+Iter 500/1831, steps=4096000, seconds=561.1
+Iter 525/1831, steps=4300800, seconds=583.0
+Iter 550/1831, steps=4505600, seconds=610.1
+Iter 575/1831, steps=4710400, seconds=638.9
+Iter 600/1831, steps=4915200, seconds=666.7
+CHECKPOINT {"training_seed": 42, "requested_budget": 5000000, "actual_transitions": 4997120, "iterations": 610, "checkpoint": "trained_models/racing_s42_5000000_20261015.ckpt", "sha256": "082a53a541c1eea9412b1c9a123d6c11b4b2627b8dfbf3bcde416ba5e9c14eef", "validation": {"seed": 123401, "episodes": 128, "return_mean": 714.5878623188473, "return_std": 6.103136681049893, "return_ci95": 1.061468980110032, "survival_rate": 0.9921875, "crashes": 1, "simultaneous_terminal_time_limits": 0, "crashed_episode_indices": [74], "references_below_ground": 1, "reference_below_ground_indices": [74], "reference_min_height_m": -0.06753048300743103, "ground_valid_reference_survival_rate": 1.0, "ground_valid_reference_position_rmse_m": 0.024211161684624973, "mean_episode_steps": 749.5390625, "position_mae_m": 0.019250909095463786, "position_rmse_m": 0.0241806715789096, "episode_return_quantiles": [659.6307621598244, 709.8619418084621, 715.4301151037216, 719.462357711792, 722.7952089905739]}, "timeout_bootstrap": "truncations-and-not-terminations"}
+Iter 625/1831, steps=5120000, seconds=700.1
+Iter 650/1831, steps=5324800, seconds=727.8
+Iter 675/1831, steps=5529600, seconds=755.5
+Iter 700/1831, steps=5734400, seconds=784.9
+Iter 725/1831, steps=5939200, seconds=813.1
+Iter 750/1831, steps=6144000, seconds=842.9
+Iter 775/1831, steps=6348800, seconds=870.6
+Iter 800/1831, steps=6553600, seconds=898.5
+Iter 825/1831, steps=6758400, seconds=926.3
+Iter 850/1831, steps=6963200, seconds=954.1
+Iter 875/1831, steps=7168000, seconds=981.5
+Iter 900/1831, steps=7372800, seconds=1003.0
+Iter 925/1831, steps=7577600, seconds=1018.4
+Iter 950/1831, steps=7782400, seconds=1034.1
+Iter 975/1831, steps=7987200, seconds=1050.0
+Iter 1000/1831, steps=8192000, seconds=1065.0
+Iter 1025/1831, steps=8396800, seconds=1077.4
+Iter 1050/1831, steps=8601600, seconds=1090.0
+Iter 1075/1831, steps=8806400, seconds=1102.5
+Iter 1100/1831, steps=9011200, seconds=1115.0
+Iter 1125/1831, steps=9216000, seconds=1127.4
+Iter 1150/1831, steps=9420800, seconds=1140.1
+Iter 1175/1831, steps=9625600, seconds=1152.8
+Iter 1200/1831, steps=9830400, seconds=1165.3
+Iter 1225/1831, steps=10035200, seconds=1178.0
+Iter 1250/1831, steps=10240000, seconds=1190.6
+Iter 1275/1831, steps=10444800, seconds=1203.1
+Iter 1300/1831, steps=10649600, seconds=1215.5
+Iter 1325/1831, steps=10854400, seconds=1227.8
+Iter 1350/1831, steps=11059200, seconds=1240.3
+Iter 1375/1831, steps=11264000, seconds=1252.8
+Iter 1400/1831, steps=11468800, seconds=1265.1
+Iter 1425/1831, steps=11673600, seconds=1277.8
+Iter 1450/1831, steps=11878400, seconds=1298.4
+Iter 1475/1831, steps=12083200, seconds=1323.2
+Iter 1500/1831, steps=12288000, seconds=1348.0
+Iter 1525/1831, steps=12492800, seconds=1372.8
+Iter 1550/1831, steps=12697600, seconds=1397.6
+Iter 1575/1831, steps=12902400, seconds=1420.6
+Iter 1600/1831, steps=13107200, seconds=1435.4
+Iter 1625/1831, steps=13312000, seconds=1450.1
+Iter 1650/1831, steps=13516800, seconds=1463.4
+Iter 1675/1831, steps=13721600, seconds=1477.0
+Iter 1700/1831, steps=13926400, seconds=1490.4
+Iter 1725/1831, steps=14131200, seconds=1503.8
+Iter 1750/1831, steps=14336000, seconds=1517.3
+Iter 1775/1831, steps=14540800, seconds=1530.8
+Iter 1800/1831, steps=14745600, seconds=1544.1
+Iter 1825/1831, steps=14950400, seconds=1557.4
+CHECKPOINT {"training_seed": 42, "requested_budget": 15000000, "actual_transitions": 14999552, "iterations": 1831, "checkpoint": "trained_models/racing_s42_15000000_20261015.ckpt", "sha256": "a735efafee28bb9269cf96348573ab6068329af891e4a46176a3ec9d6e405bc5", "validation": {"seed": 123401, "episodes": 128, "return_mean": 727.9899972300045, "return_std": 5.618545167909791, "return_ci95": 0.9771879151258682, "survival_rate": 0.9921875, "crashes": 1, "simultaneous_terminal_time_limits": 0, "crashed_episode_indices": [74], "references_below_ground": 1, "reference_below_ground_indices": [74], "reference_min_height_m": -0.06753048300743103, "ground_valid_reference_survival_rate": 1.0, "ground_valid_reference_position_rmse_m": 0.016258343092191124, "mean_episode_steps": 749.5390625, "position_mae_m": 0.010443904979076726, "position_rmse_m": 0.01623566714373993, "episode_return_quantiles": [670.0256492495537, 725.1470510959625, 728.6346444487572, 731.1060996770859, 732.9992168545723]}, "timeout_bootstrap": "truncations-and-not-terminations"}
+Training for 14999552 steps took 1563.80 seconds.
+Traceback (most recent call last):
+  File "/workspace/crazyflow/saves/racing_parallel42_20261015/usage_assets/racing_fulltrain_20261015.py", line 954, in <module>
+    main()
+  File "/workspace/crazyflow/saves/racing_parallel42_20261015/usage_assets/racing_fulltrain_20261015.py", line 911, in main
+    results["holdout_result"] = evaluate(
+                                ^^^^^^^^^
+  File "/workspace/crazyflow/saves/racing_parallel42_20261015/usage_assets/racing_fulltrain_20261015.py", line 389, in evaluate
+    positions.append(np.asarray(core.last_position[0]).copy())
+                                ~~~~~~~~~~~~~~~~~~^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/array.py", line 342, in __getitem__
+    return indexing.rewriting_take(self, idx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/numpy/indexing.py", line 1131, in rewriting_take
+    return _static_slice(arr, static_slice_indexer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/numpy/indexing.py", line 1168, in _static_slice
+    result = slicing.slice(arr, indexer.start_indices,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/lax/slicing.py", line 111, in slice
+    return slice_p.bind(operand, start_indices=tuple(start_indices),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/core.py", line 724, in bind
+    return self.bind_with_trace(prev_trace, args, avals, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/core.py", line 732, in bind_with_trace
+    return trace.process_primitive(self, args, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/core.py", line 1306, in process_primitive
+    return primitive.impl(*args, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/lax/slicing.py", line 1494, in _slice_impl
+    return dispatch.apply_primitive(dynamic_slice_p, x, *start_indices,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/dispatch.py", line 88, in apply_primitive
+    outs = fun(*args)
+           ^^^^^^^^^^
+KeyboardInterrupt
+
+CONTROLLED STOP: seed 42 completed all 14,999,552 transitions and all three checkpoint validations; stopped before worker-local final evaluations to select across both seeds together.

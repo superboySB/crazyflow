@@ -1,0 +1,64 @@
+2026-10-15 research integration checks after official main c95f69b (Crazyflow 0.4.0)
+Container: dzp-crazyflow-research-20261009
+Checkout: /workspace/crazyflow
+
+Manifest/lock:
+- Retained research GPU Python constraint: python = "3.12.*".
+- Retained upstream Linux documentation dependencies: libegl and mesalib.
+- Resolved pixi.lock by running Pixi 0.76.0 `pixi lock --no-progress --concurrent-solves 2`.
+- Follow-up `pixi lock --check --no-progress`: Lock-file was already up-to-date.
+- gpu, gpu-tests and benchmark environment package lists are byte-identical to the previous research lock; no GPU dependency upgrades.
+- Documentation environment gains EGL/Mesa and their transitive libraries; default solve-group has small libexpat/libxml2 patch updates.
+
+Installed runtime:
+Python 3.12.15; Crazyflow 0.4.0 (source and installed metadata); JAX/JAXlib 0.11.1;
+MuJoCo/MJX 3.10.0; Gymnasium 1.4.0; NumPy 2.5.3; SciPy 1.18.0;
+PyTorch 2.8.0+cu126; Flax 0.12.9; pytest 9.1.1; pytest-markdown-docs 0.9.2.
+
+Tests:
+Command: JAX_PLATFORMS=cpu MPLBACKEND=Agg python -m pytest -q tests
+Result: 761 passed, 50 skipped, 12 deselected, 7 warnings in 235.98s.
+Failures: 0. CPU run includes the newly added full-duration IMU example.
+Skipped/deselected: GPU-dependent/splat and headless cases; 12 render-marker tests excluded by the project's default pytest options.
+Warnings: existing JAX cast overflow and expected non-interactive Agg plt.show warnings; no failed assertions.
+
+Command: JAX_PLATFORMS=cpu MPLBACKEND=Agg python -m pytest -q --markdown-docs --markdown-docs-syntax=superfences --doctest-glob="*.md" crazyflow/ docs/
+Result: 103 passed in 31.53s. Failures: 0.
+The documentation generation scripts are correctly excluded by upstream docs/conftest.py.
+Documentation site build was not run: properdocs is not installed in the GPU test image.
+
+Video dependency:
+Dockerfile pins imageio-ffmpeg==0.6.0 so training/evaluation MP4 export works after a clean rebuild.
+Runtime smoke check successfully encoded and decoded five 64x64 H.264 MP4 frames (1722 bytes); temporary MP4 removed.
+
+Dependency compatibility:
+After updating installed Crazyflow metadata to 0.4.0, lsy-drone-racing's old <0.4.0 bound was detected by pip check.
+The parent agent extended the maintained compatibility patch to <0.5.0 and reinstalled its editable metadata.
+Final python -m pip check: No broken requirements found.
+The final research Docker image was subsequently rebuilt successfully, reusing locked dependency/native layers.
+The late principal-inertia correction is applied and reverse-checked after the source/model copy.
+
+pixi.lock SHA256: 5c697a433ab661f934e5b9d26b4f645051cea52e8d4204212aa2587318e8c792
+
+Additional racing compatibility regression:
+- Updated maintained patch reverse-check passes against the installed pinned racing checkout.
+- Explicit VecDroneRaceEnv reset(seed=123) succeeds for two CPU worlds; repeated reset gives identical finite positions.
+- Two-world legacy-policy gate-course smoke check finishes all four gates in both worlds, mean 13.32 seconds.
+- Formal multi-seed racing training/evaluation is recorded separately in racing_fulltrain_20261015.json.
+
+Final research validation:
+- Additional trainer unit tests: 8 passed (legacy arithmetic unchanged; independent goals; physics-calibrated teacher).
+- EGL rendering: 12 passed, 819 deselected in 24.98s. Command:
+  MUJOCO_GL=egl JAX_PLATFORMS=cpu MPLBACKEND=Agg python -m pytest -q tests -m render --override-ini="addopts="
+- Full artifact verifier: 12 main + 6 calibrated + 3 promoted-gamma complete runs;
+  93 Gym first-episode populations, 30 original official policies / 126 scenarios; hashes and recomputed scores match.
+- Dedicated official frontier: 19 full training runs / 33 independently checked scenarios.
+- Racing: two strict full 14,999,552-step runs; independent keyed streams;
+  both runs had zero simultaneous terminal/time-limit events, and the strict seed41 weights match the legacy-timeout comparison exactly.
+- Native racing inertia correction: three configured diagonal uniform perturbations, 4096 samples;
+  symmetric positive definite, rigid-body triangle inequalities and inverse consistency all passed.
+- Fresh image has no workspace source bind mount: installed Crazyflow0.4.0, JAX/Torch CUDA,
+  all110 delivered weight hashes, calibrated exact policy/simulator recovery,
+  seeded two-world racing and 4096-sample inertia checks were exercised.
+  Final frozen-rotor EGL MP4 encoding and streaming frame-readback results are retained in
+  fulltrain_20261015/fresh_image_checks.txt, generated after image construction.

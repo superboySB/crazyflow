@@ -1,0 +1,385 @@
+{
+  "schema": 1,
+  "study_date": "2026-10-15",
+  "worlds_per_check": 1024,
+  "seed": 31001,
+  "device": "cpu",
+  "goal_rng_protocol": "independent_goal_rng_v1",
+  "goal_rng_fold_in": 1196376396,
+  "fix": "Only goal RNG is domain-separated with fold_in(key(seed), GOAL); simulator seed unchanged.",
+  "legacy_consequence": "ReachPos targets had initial x/y and z-0.5; ReachVel targets were [initial_x, initial_y, 2*initial_z-3], including autoreset.",
+  "cpu_pytest_regressions_passed": 6,
+  "trainer_source_sha256": "f6a7d3980c508dac56fe62c375d7c34366aec01b6d6ac5e4cbfdd0d2b859420b",
+  "checks": {
+    "DroneReachPos-v0": {
+      "legacy_shared_key_initial": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "first_world_target": [
+          0.18708324432373047,
+          0.060381174087524414,
+          0.6732958555221558
+        ],
+        "goal_minus_initial_position_axis_span": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            1.0,
+            0.032660367051695345,
+            0.047762757782786595
+          ],
+          [
+            0.032660367051695345,
+            1.0,
+            -0.01625428177247053
+          ],
+          [
+            0.04776275778278659,
+            -0.01625428177247053,
+            1.0
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 0.0,
+        "max_abs_velocity_goal_minus_affine_position": null,
+        "goal_and_simulator_rng_key_equal": true
+      },
+      "legacy_shared_key_autoreset": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.5114874839782715,
+          0.805056095123291,
+          1.2596815824508667
+        ],
+        "first_world_target": [
+          0.5114874839782715,
+          0.805056095123291,
+          0.7596815824508667
+        ],
+        "goal_minus_initial_position_axis_span": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            1.0,
+            0.0007261651514617343,
+            0.01686645408540388
+          ],
+          [
+            0.0007261651514617343,
+            1.0,
+            0.010814875053979364
+          ],
+          [
+            0.01686645408540388,
+            0.010814875053979362,
+            0.9999999999999998
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 0.0,
+        "max_abs_velocity_goal_minus_affine_position": null,
+        "goal_and_simulator_rng_key_equal": true
+      },
+      "independent_goal_rng_v1_initial": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "first_world_target": [
+          0.6908657550811768,
+          -0.9079506397247314,
+          0.7542779445648193
+        ],
+        "goal_minus_initial_position_axis_span": [
+          3.86614990234375,
+          3.8355119228363037,
+          1.9017812013626099
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            -0.03576907016118762,
+            -0.05700379732939059,
+            0.0013388477169667225
+          ],
+          [
+            -0.03345216975840943,
+            -0.006113360923201463,
+            0.0019287835659902316
+          ],
+          [
+            -0.029583635433375194,
+            -0.019971529070018278,
+            -0.02407022890847064
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 1.9546620845794678,
+        "max_abs_velocity_goal_minus_affine_position": null,
+        "goal_and_simulator_rng_key_equal": false
+      },
+      "independent_goal_rng_v1_autoreset": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.5114874839782715,
+          0.805056095123291,
+          1.2596815824508667
+        ],
+        "first_world_target": [
+          -0.6847853660583496,
+          -0.32004570960998535,
+          1.1188596487045288
+        ],
+        "goal_minus_initial_position_axis_span": [
+          3.891174793243408,
+          3.9109041690826416,
+          1.857228398323059
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            -0.037293259152590984,
+            0.013004746321694608,
+            0.04276328815250971
+          ],
+          [
+            -0.021903339214314883,
+            -0.00473944764061064,
+            -0.03291253212846695
+          ],
+          [
+            -0.022440755061416073,
+            -0.025907540286160526,
+            -0.008075281774903978
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 1.9895963668823242,
+        "max_abs_velocity_goal_minus_affine_position": null,
+        "goal_and_simulator_rng_key_equal": false
+      },
+      "simulator_initial_position_max_change_after_fix": 0.0,
+      "same_seed_initial_and_autoreset_observation_max_replay_difference": 0.0
+    },
+    "DroneReachVel-v0": {
+      "legacy_shared_key_initial": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "first_world_target": [
+          0.18708324432373047,
+          0.060381174087524414,
+          -0.6534082889556885
+        ],
+        "goal_minus_initial_position_axis_span": [
+          0.0,
+          0.0,
+          0.9952985048294067
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            1.0,
+            0.032660367051695345,
+            0.047762757782786595
+          ],
+          [
+            0.032660367051695345,
+            1.0,
+            -0.01625428177247053
+          ],
+          [
+            0.04776275778278659,
+            -0.01625428177247053,
+            1.0
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 0.0,
+        "max_abs_velocity_goal_minus_affine_position": 0.0,
+        "goal_and_simulator_rng_key_equal": true
+      },
+      "legacy_shared_key_autoreset": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.5114874839782715,
+          0.805056095123291,
+          1.2596815824508667
+        ],
+        "first_world_target": [
+          0.5114874839782715,
+          0.805056095123291,
+          -0.4806368350982666
+        ],
+        "goal_minus_initial_position_axis_span": [
+          0.0,
+          0.0,
+          0.9964748620986938
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            1.0,
+            0.0007261651514617343,
+            0.01686645408540388
+          ],
+          [
+            0.0007261651514617343,
+            1.0,
+            0.010814875053979364
+          ],
+          [
+            0.01686645408540388,
+            0.010814875053979362,
+            0.9999999999999998
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 0.0,
+        "max_abs_velocity_goal_minus_affine_position": 0.0,
+        "goal_and_simulator_rng_key_equal": true
+      },
+      "independent_goal_rng_v1_initial": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "first_world_target": [
+          0.6908657550811768,
+          -0.9079506397247314,
+          -0.49144411087036133
+        ],
+        "goal_minus_initial_position_axis_span": [
+          3.86614990234375,
+          3.8355119228363037,
+          2.8697094917297363
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            -0.03576907016118762,
+            -0.05700379732939059,
+            0.0013388477169667225
+          ],
+          [
+            -0.03345216975840943,
+            -0.006113360923201463,
+            0.0019287835659902316
+          ],
+          [
+            -0.029583635433375194,
+            -0.019971529070018278,
+            -0.02407022890847064
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 1.9546620845794678,
+        "max_abs_velocity_goal_minus_affine_position": 1.9546620845794678,
+        "goal_and_simulator_rng_key_equal": false
+      },
+      "independent_goal_rng_v1_autoreset": {
+        "worlds": 1024,
+        "first_world_initial_position": [
+          0.5114874839782715,
+          0.805056095123291,
+          1.2596815824508667
+        ],
+        "first_world_target": [
+          -0.6847853660583496,
+          -0.32004570960998535,
+          0.23771929740905762
+        ],
+        "goal_minus_initial_position_axis_span": [
+          3.891174793243408,
+          3.9109041690826416,
+          2.817488431930542
+        ],
+        "goal_initial_position_cross_correlation": [
+          [
+            -0.037293259152590984,
+            0.013004746321694608,
+            0.04276328815250971
+          ],
+          [
+            -0.021903339214314883,
+            -0.00473944764061064,
+            -0.03291253212846695
+          ],
+          [
+            -0.022440755061416073,
+            -0.025907540286160526,
+            -0.008075281774903978
+          ]
+        ],
+        "max_abs_xy_goal_minus_initial_xy": 1.9895963668823242,
+        "max_abs_velocity_goal_minus_affine_position": 1.9895963668823242,
+        "goal_and_simulator_rng_key_equal": false
+      },
+      "simulator_initial_position_max_change_after_fix": 0.0,
+      "same_seed_initial_and_autoreset_observation_max_replay_difference": 0.0
+    }
+  },
+  "new_protocol_fused_cuda_checks": [
+    {
+      "env_id": "DroneReachPos-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 5.960464477539063e-08,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneReachVel-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 5.960464477539063e-08,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneLanding-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 1.1175870895385742e-08,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneFigureEightTrajectory-v0",
+      "device": "gpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 5.960464477539063e-08,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    }
+  ],
+  "new_protocol_cuda_recovery_check": {
+    "worlds": 8,
+    "rollout_steps": 16,
+    "continuous_updates": 2,
+    "staged_updates": [
+      1,
+      1
+    ],
+    "vector_step_slots": 256,
+    "valid_transitions": 216,
+    "ignored_reset_slots": 40,
+    "policy_weights_exact_match": true,
+    "simulator_leaves_exact_match": true,
+    "history_exact_match": true,
+    "legacy_checkpoint_evaluation_supported": true
+  }
+}

@@ -275,78 +275,6 @@ index a9e0330..95ffdac 100644
          )
          self.action_space = batch_space(batch_space(self.single_action_space), num_envs)
          self.single_observation_space = batch_space(
-diff --git a/lsy_drone_racing/envs/race_core.py b/lsy_drone_racing/envs/race_core.py
-index d5d2b92..0e5149f 100644
---- a/lsy_drone_racing/envs/race_core.py
-+++ b/lsy_drone_racing/envs/race_core.py
-@@ -31,7 +31,7 @@ import jax
- import jax.numpy as jp
- import mujoco
- import numpy as np
--from crazyflow.drones import load_params as load_hardware_params
-+from crazyflow.dynamics import load_params as load_hardware_params
- from crazyflow.sim import Sim
- from crazyflow.sim.pipeline import append_fn, insert_fn_before
- from crazyflow.sim.sim import seed_sim, sync_sim2mjx, use_box_collision
-@@ -221,7 +221,9 @@ class EnvSettings:
-         )
-
-
--def build_action_space(control_mode: Literal["state", "attitude"], drone: str) -> spaces.Box:
-+def build_action_space(
-+    control_mode: Literal["state", "attitude"], drone: str, dynamics: str = "so_rpy"
-+) -> spaces.Box:
-     """Create the action space for the environment.
-
-     Args:
-@@ -235,7 +237,7 @@ def build_action_space(control_mode: Literal["state", "attitude"], drone: str) -
-     if control_mode == "state":
-         return spaces.Box(low=-np.inf, high=np.inf, shape=(13,))
-     if control_mode == "attitude":
--        params = load_hardware_params(drone)
-+        params = load_hardware_params(dynamics, drone)
-         thrust_min, thrust_max = params["thrust_min"] * 4, params["thrust_max"] * 4
-         return spaces.Box(
-             np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, thrust_min], dtype=np.float32),
-@@ -570,7 +572,7 @@ class RaceCoreEnv:
-
-     def build_apply_action_fn(self) -> Callable[[Array, EnvData, EnvSettings], EnvData]:
-         """Build a function that applies the action to the simulation."""
--        action_space = build_action_space(self.sim.control, self.sim.drone)
-+        action_space = build_action_space(self.sim.control, self.sim.drone, self.sim.dynamics)
-         if self.sim.control == "state":
-             ctrl_fn = F.state_control
-         elif self.sim.control == "attitude":
-@@ -588,6 +590,12 @@ class RaceCoreEnv:
-                 action += disturbances["action"](subkey, action.shape)
-                 sim_data = data.sim_data.replace(core=data.sim_data.core.replace(rng_key=key))
-                 data = data.replace(sim_data=sim_data)
-+            if self.sim.control == "state":
-+                # Preserve the course/hardware 13D action API while Crazyflow uses a quaternion.
-+                half_yaw = action[..., 9:10] / 2.0
-+                zeros = jp.zeros_like(half_yaw)
-+                quat = jp.concatenate((zeros, zeros, jp.sin(half_yaw), jp.cos(half_yaw)), axis=-1)
-+                action = jp.concatenate((action[..., :9], quat, action[..., 10:13]), axis=-1)
-             return data.replace(sim_data=ctrl_fn(data.sim_data, action))
-
-         return apply_action
-@@ -657,7 +665,15 @@ class RaceCoreEnv:
-         vel = self.sim.data.states.vel.at[...].set(drones["vel"])
-         ang_vel = self.sim.data.states.ang_vel.at[...].set(drones["ang_vel"])
-         states = self.sim.data.states.replace(pos=pos, quat=quat, vel=vel, ang_vel=ang_vel)
--        self.sim.data = self.sim.data.replace(states=states)
-+        # Racing randomizes mass/inertia independently per world and drone. Upstream now
-+        # stores nominal parameters without batch axes, so allocate the explicit world axes.
-+        n, d = self.sim.n_worlds, self.sim.n_drones
-+        params = self.sim.data.params.replace(
-+            mass=jp.broadcast_to(self.sim.data.params.mass, (n, d, 1)),
-+            J=jp.broadcast_to(self.sim.data.params.J, (n, d, 3, 3)),
-+            J_inv=jp.broadcast_to(self.sim.data.params.J_inv, (n, d, 3, 3)),
-+        )
-+        self.sim.data = self.sim.data.replace(states=states, params=params)
-         self.sim.build_default_data()
-         # Build the reset randomizations and disturbances into the sim itself
-         append_fn(self.sim.reset_pipeline, build_reset_fn(randomizations))
 diff --git a/lsy_drone_racing/envs/real_race_env.py b/lsy_drone_racing/envs/real_race_env.py
 index b635322..d7f69fa 100644
 --- a/lsy_drone_racing/envs/real_race_env.py
@@ -372,3 +300,105 @@ index b635322..d7f69fa 100644
          self.drone = Crazyflie.from_radio(
              radio_id=self.rank,
              radio_channel=drone_config["channel"],
+diff --git a/pyproject.toml b/pyproject.toml
+index 8b62b0d..e18895d 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -29,7 +29,7 @@ dependencies = [
+     "gymnasium[array-api] >= 1.2.0",
+     "ml-collections >= 1.0",
+     "packaging >= 24.0",
+-    "crazyflow>=0.3.0,<0.4.0",
++    "crazyflow>=0.3.0,<0.5.0",
+     "jax >= 0.7",
+     "warp-lang",
+ ]
+diff --git a/lsy_drone_racing/envs/race_core.py b/lsy_drone_racing/envs/race_core.py
+index d5d2b92..7644294 100644
+--- a/lsy_drone_racing/envs/race_core.py
++++ b/lsy_drone_racing/envs/race_core.py
+@@ -31,7 +31,7 @@ import jax
+ import jax.numpy as jp
+ import mujoco
+ import numpy as np
+-from crazyflow.drones import load_params as load_hardware_params
++from crazyflow.dynamics import load_params as load_hardware_params
+ from crazyflow.sim import Sim
+ from crazyflow.sim.pipeline import append_fn, insert_fn_before
+ from crazyflow.sim.sim import seed_sim, sync_sim2mjx, use_box_collision
+@@ -221,7 +221,9 @@ class EnvSettings:
+         )
+ 
+ 
+-def build_action_space(control_mode: Literal["state", "attitude"], drone: str) -> spaces.Box:
++def build_action_space(
++    control_mode: Literal["state", "attitude"], drone: str, dynamics: str = "so_rpy"
++) -> spaces.Box:
+     """Create the action space for the environment.
+ 
+     Args:
+@@ -235,7 +237,7 @@ def build_action_space(control_mode: Literal["state", "attitude"], drone: str) -
+     if control_mode == "state":
+         return spaces.Box(low=-np.inf, high=np.inf, shape=(13,))
+     if control_mode == "attitude":
+-        params = load_hardware_params(drone)
++        params = load_hardware_params(dynamics, drone)
+         thrust_min, thrust_max = params["thrust_min"] * 4, params["thrust_max"] * 4
+         return spaces.Box(
+             np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, thrust_min], dtype=np.float32),
+@@ -501,6 +503,7 @@ class RaceCoreEnv:
+     ]:
+         """Build a function that resets the environment data and simulation data."""
+         sim_reset_fn = self.sim.build_reset_fn()
++        sim_device = self.sim.device
+         default_sim_data = self.sim.default_data
+         randomize_track = build_track_randomization_fn(
+             self.settings.randomizations, track=self.track
+@@ -512,7 +515,7 @@ class RaceCoreEnv:
+         ) -> tuple[EnvData, tuple[dict[str, Array], dict]]:
+             sim_data = data.sim_data
+             if seed is not None:
+-                sim_data = seed_sim(sim_data, seed, sim_data.core.device)
++                sim_data = seed_sim(sim_data, seed, sim_device)
+             key, subkey = jax.random.split(sim_data.core.rng_key, 2)
+             sim_data = sim_data.replace(core=sim_data.core.replace(rng_key=key))
+             # Randomization of the drone is compiled into the sim reset pipeline, so we don't need
+@@ -570,7 +573,7 @@ class RaceCoreEnv:
+ 
+     def build_apply_action_fn(self) -> Callable[[Array, EnvData, EnvSettings], EnvData]:
+         """Build a function that applies the action to the simulation."""
+-        action_space = build_action_space(self.sim.control, self.sim.drone)
++        action_space = build_action_space(self.sim.control, self.sim.drone, self.sim.dynamics)
+         if self.sim.control == "state":
+             ctrl_fn = F.state_control
+         elif self.sim.control == "attitude":
+@@ -588,6 +591,12 @@ class RaceCoreEnv:
+                 action += disturbances["action"](subkey, action.shape)
+                 sim_data = data.sim_data.replace(core=data.sim_data.core.replace(rng_key=key))
+                 data = data.replace(sim_data=sim_data)
++            if self.sim.control == "state":
++                # Preserve the course/hardware 13D action API while Crazyflow uses a quaternion.
++                half_yaw = action[..., 9:10] / 2.0
++                zeros = jp.zeros_like(half_yaw)
++                quat = jp.concatenate((zeros, zeros, jp.sin(half_yaw), jp.cos(half_yaw)), axis=-1)
++                action = jp.concatenate((action[..., :9], quat, action[..., 10:13]), axis=-1)
+             return data.replace(sim_data=ctrl_fn(data.sim_data, action))
+ 
+         return apply_action
+@@ -657,7 +666,15 @@ class RaceCoreEnv:
+         vel = self.sim.data.states.vel.at[...].set(drones["vel"])
+         ang_vel = self.sim.data.states.ang_vel.at[...].set(drones["ang_vel"])
+         states = self.sim.data.states.replace(pos=pos, quat=quat, vel=vel, ang_vel=ang_vel)
+-        self.sim.data = self.sim.data.replace(states=states)
++        # Racing randomizes mass/inertia independently per world and drone. Upstream now
++        # stores nominal parameters without batch axes, so allocate the explicit world axes.
++        n, d = self.sim.n_worlds, self.sim.n_drones
++        params = self.sim.data.params.replace(
++            mass=jp.broadcast_to(self.sim.data.params.mass, (n, d, 1)),
++            J=jp.broadcast_to(self.sim.data.params.J, (n, d, 3, 3)),
++            J_inv=jp.broadcast_to(self.sim.data.params.J_inv, (n, d, 3, 3)),
++        )
++        self.sim.data = self.sim.data.replace(states=states, params=params)
+         self.sim.build_default_data()
+         # Build the reset randomizations and disturbances into the sim itself
+         append_fn(self.sim.reset_pipeline, build_reset_fn(randomizations))

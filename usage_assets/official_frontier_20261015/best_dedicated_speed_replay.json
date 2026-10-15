@@ -1,0 +1,14 @@
+{
+  "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed43.ckpt",
+  "checkpoint_sha256": "ec189420127bf9ebb0db3d2deb900d2bf2ff9296e467b90b804f2ca133aaeaad",
+  "scenario": "position_holdout",
+  "seed": 14001,
+  "world": 0,
+  "outcome": "completed evaluation horizon",
+  "simulation_seconds": 19.98,
+  "replay_position_max_diff_m": 2.384185791015625e-07,
+  "evaluation_record": "usage_assets/official_frontier_20261015/official_frontier_bptt_T3.5s_budget1_seed43_test_position_holdout.json",
+  "evaluation_raw": "usage_assets/official_frontier_20261015/official_frontier_bptt_T3.5s_budget1_seed43_test_position_holdout.npz",
+  "trained_and_test_reference_period_s": 3.5,
+  "selection": "Validation only; world0 fixed before rendering, no best-world selection."
+}

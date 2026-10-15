@@ -1,0 +1,6 @@
+{
+  "seeded_race_reset_worlds": 2,
+  "frozen_policy_steps": 3,
+  "checkpoint": "trained_models/racing_s42_15000000_20261015.ckpt",
+  "passed": true
+}

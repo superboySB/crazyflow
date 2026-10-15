@@ -1,0 +1,46 @@
+{
+  "adapter_used_by_formal_study": false,
+  "conditions": "Shared GPU with ongoing workers; diagnostic wall times, not hardware rankings.",
+  "verification": [
+    {
+      "env_id": "DroneReachPos-v0",
+      "device": "cpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneReachVel-v0",
+      "device": "cpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneLanding-v0",
+      "device": "cpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    },
+    {
+      "env_id": "DroneFigureEightTrajectory-v0",
+      "device": "cpu",
+      "steps": 64,
+      "worlds": 16,
+      "maximum_absolute_float_difference": 0.0,
+      "exact_rng_and_flags": true,
+      "terminations": 1,
+      "truncations": 144
+    }
+  ]
+}

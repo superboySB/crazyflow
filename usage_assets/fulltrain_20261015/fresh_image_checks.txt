@@ -1,0 +1,58 @@
+No broken requirements found.
+FRESH_IMAGE_VERSION_GPU_ALL_WEIGHT_HASHES 0.4.0 [CudaDevice(id=0)] NVIDIA GeForce RTX 4070 Ti SUPER 110
+Position behavior cloning: 2 batches, final MSE 0.050470
+Training DroneReachPos-v0: 8 CUDA envs, 16 rollout steps, 2 PPO updates (256 slots)
+update 0001/2 | steps          128 | valid 112 | reward 0.1438 | distance 1.1577 | episode 0.8 | term 0.000% | KL 0.0022 | clip 0.027 | 1,192 SPS
+validation/1 seed=20123 success=0.000000 survival=1.000000 rmse=1.051127 best_update=1
+update 0002/2 | steps          256 | valid 216 | reward 0.1109 | distance 1.3147 | episode 0.6 | term 0.000% | KL 0.0008 | clip 0.010 | 190 SPS
+validation/2 seed=20123 success=0.000000 survival=1.000000 rmse=1.051107 best_update=2
+Training finished in 1.37 s; best validation update 2
+Position behavior cloning: 2 batches, final MSE 0.050470
+Training DroneReachPos-v0: 8 CUDA envs, 16 rollout steps, 1 PPO updates (128 slots)
+update 0001/1 | steps          128 | valid 112 | reward 0.1438 | distance 1.1577 | episode 0.8 | term 0.000% | KL 0.0022 | clip 0.027 | 4,940 SPS
+validation/1 seed=20123 success=0.000000 survival=1.000000 rmse=1.051127 best_update=1
+Training finished in 0.79 s; best validation update 1
+Resuming after update 1, 128 vector-step slots
+Training DroneReachPos-v0: 8 CUDA envs, 16 rollout steps, 2 PPO updates (256 slots)
+update 0002/2 | steps          256 | valid 216 | reward 0.1109 | distance 1.3147 | episode 0.6 | term 0.000% | KL 0.0008 | clip 0.010 | 162 SPS
+validation/2 seed=20123 success=0.000000 survival=1.000000 rmse=1.051107 best_update=2
+Training finished in 1.55 s; best validation update 2
+{
+  "purpose": "regression verification; not a trained policy demonstration",
+  "teacher_model": "calibrated",
+  "env_backend": "fused",
+  "task": "reach_pos",
+  "teacher_recipe_resume_mismatch_rejected": true,
+  "exact_policy_and_simulator_recovery": true,
+  "vector_step_slots": 256,
+  "valid_transitions": 216,
+  "ignored_reset_slots": 40
+}
+/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-packages/jax/_src/core.py:684: RuntimeWarning: overflow encountered in cast
+  c_arg = dtypes.canonicalize_value(arg)
+FRESH_IMAGE_SEEDED_RACING {'seeded_race_reset_worlds': 2, 'frozen_policy_steps': 3, 'checkpoint': 'trained_models/racing_s42_15000000_20261015.ckpt', 'passed': True}
+FRESH_IMAGE_INERTIA {'passed': True, 'samples': 4096, 'drone': 'cf21B_500', 'nominal_principal_moments_kg_m2': [2.499999936844688e-05, 2.8000000384054147e-05, 4.8999998398358e-05], 'nominal_triangle_margin_kg_m2': 4.0000013541430235e-06, 'analytic_worst_case_triangle_margin_kg_m2': 1.0000012480304576e-06, 'sample_min_eigenvalue_kg_m2': 2.4000415578484535e-05, 'sample_min_triangle_margin_kg_m2': 1.164502464234829e-06, 'max_inverse_error': 5.960464477539063e-08, 'sample_diagonal_noise_range_kg_m2': [-9.996656444855034e-07, 9.998548193834722e-07], 'distribution': 'Independent uniform [-1e-6, 1e-6] noise on three principal moments; no rejection or clipping.', 'randomize_source_sha256': 'bc6af6d2e53440c2d41de3e291d80c5d695f84c8c431cd917bb27ffed87b97bd'}
+Cloning into '/tmp/crazyflow_experiments'...
+Note: switching to 'bfc6414da1f4405e4e41e3a3d0656bb5f38e09e3'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at bfc6414 Ruff formatting
+/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/subprocess.py:1885: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = _fork_exec(
+Rendered /tmp/crazyflow_fresh_rotor.mp4; outcome=goal reached; replay max difference 3.11e-05m
+FRESH_IMAGE_FROZEN_ROTOR_EGL_MP4 51 25.0 (528, 800, 3)
+ALL_FRESH_IMAGE_CHECKS_PASSED

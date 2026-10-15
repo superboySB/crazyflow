@@ -1,0 +1,11 @@
+{
+  "checkpoint": "trained_models/official_ppo_5_5s_budget2_20261015_seed44.ckpt",
+  "checkpoint_sha256": "8847c55dd33897955f1fbf02eea2c0ff360e783a8a488054d26aea51da4f0295",
+  "scenario": "holdout_initial_state",
+  "seed": 10001,
+  "world": 0,
+  "outcome": "time limit",
+  "simulation_seconds": 19.98,
+  "replay_position_max_diff_m": 8.928775787353516e-05,
+  "evaluation_record": "usage_assets/official_ppo_5_5s_budget2_20261015_seed44.json"
+}

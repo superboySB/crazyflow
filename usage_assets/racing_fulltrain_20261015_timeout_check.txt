@@ -1,0 +1,4 @@
+All checks passed!
+1 file reformatted
+All checks passed!
+Simultaneous terminal+timeout fixture counted; strict bootstrap suppresses terminal value and preserves timeout-only value

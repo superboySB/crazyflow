@@ -1,0 +1,16 @@
+{
+  "exact_repeat": true,
+  "raw_rmse_recomputed_m": 0.01596564783375286,
+  "per_world_fields": [
+    "positions",
+    "target",
+    "returns",
+    "episode_steps",
+    "distance_sum_m",
+    "distance_squared_sum_m2",
+    "crashes",
+    "reference_below_ground",
+    "reference_min_height_per_world_m"
+  ],
+  "selected_sha256": "a735efafee28bb9269cf96348573ab6068329af891e4a46176a3ec9d6e405bc5"
+}

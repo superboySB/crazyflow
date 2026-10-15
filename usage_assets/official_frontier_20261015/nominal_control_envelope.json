@@ -1,0 +1,23 @@
+{
+  "drone": "cf21B_500",
+  "mass_kg": 0.04340000078082085,
+  "gravity_mps2": 9.8100004196167,
+  "motor_thrust_max_N": 0.20000000298023224,
+  "command_collective_max_N": 0.800000011920929,
+  "upright_no_drag_max_up_acceleration_mps2": 8.62317924692519,
+  "scope": "Command envelope diagnostic; ignores drag, rotor lag and attitude coupling. Not a global physical speed limit or proof of policy optimality.",
+  "per_period": {
+    "3.5": {
+      "reference_peak_up_acceleration_mps2": 6.4454559354052945,
+      "no_drag_vertical_force_required_N": 0.7054868185005537
+    },
+    "3.0": {
+      "reference_peak_up_acceleration_mps2": 8.772981689857206,
+      "no_drag_vertical_force_required_N": 0.8065014380611473
+    },
+    "2.5": {
+      "reference_peak_up_acceleration_mps2": 12.633093633394378,
+      "no_drag_vertical_force_required_N": 0.9740302994247164
+    }
+  }
+}

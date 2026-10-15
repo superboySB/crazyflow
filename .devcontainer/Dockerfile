@@ -148,10 +148,14 @@ ENV LD_LIBRARY_PATH="/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/site-pac
 
 FROM dependencies AS research
 
-# Source changes are a cheap layer: they do not invalidate the locked CUDA
-# dependency environment above.
-COPY --chown=${USERNAME}:${USERNAME} . .
+# Install the core before external native dependencies. Scripts, reports and
+# trained weights are copied afterwards so their updates reuse those expensive layers.
+COPY --chown=${USERNAME}:${USERNAME} crazyflow ./crazyflow
+COPY --chown=${USERNAME}:${USERNAME} .devcontainer/lsy_drone_racing-compat.patch ./.devcontainer/lsy_drone_racing-compat.patch
 RUN python -m pip install --no-deps --no-build-isolation -e .
+
+# Keep MP4 training and evaluation exports available in clean image rebuilds.
+RUN python -m pip install imageio-ffmpeg==0.6.0
 
 # The lock already selects a matching MuJoCo/MJX 3.10 pair. Gymnasium 1.4
 # supplies the updated camera API, so no post-install downgrade is needed.
@@ -192,6 +196,16 @@ ENV ACADOS_SOURCE_DIR=/opt/lsy_drone_racing/acados
 ENV ACADOS_INSTALL_DIR=/opt/lsy_drone_racing/acados
 ENV PATH="/opt/lsy_drone_racing/acados/bin:/opt/lsy_drone_racing/acados/interfaces/acados_template:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/lsy_drone_racing/acados/lib:${LD_LIBRARY_PATH}"
+
+WORKDIR /opt/crazyflow
+COPY --chown=${USERNAME}:${USERNAME} . .
+
+# Keep configured principal-inertia perturbations on the diagonal. Applying this
+# small simulation fix after native builds preserves their cache on report updates.
+RUN git -C /opt/lsy_drone_racing apply \
+        /opt/crazyflow/.devcontainer/lsy_drone_racing-inertia.patch \
+    && git -C /opt/lsy_drone_racing apply --reverse --check \
+        /opt/crazyflow/.devcontainer/lsy_drone_racing-inertia.patch
 
 # Recheck outbound HTTPS after all network-dependent build steps.  Keeping this
 # close to the end makes a source-changing rebuild perform a fresh check rather

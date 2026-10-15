@@ -1,0 +1,11 @@
+{
+  "checkpoint": "trained_models/official_td3_rotor_reach_budget2_20261015_seed42.ckpt",
+  "checkpoint_sha256": "f5213f1f763434b16eeaca3cf6ba82119528dcfb9b5d72698bf64bc79c370c71",
+  "scenario": "holdout_figure8_15s",
+  "seed": 10001,
+  "world": 0,
+  "outcome": "time limit",
+  "simulation_seconds": 14.99,
+  "replay_position_max_diff_m": 9.441375732421875e-05,
+  "evaluation_record": "usage_assets/official_td3_rotor_reach_budget2_20261015_seed42.json"
+}

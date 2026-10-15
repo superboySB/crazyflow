@@ -1,0 +1,2 @@
+seed 123401 episodes 128 reference_min_height_m -0.06752553582191467 references_below_ground 1 indices [74]
+seed 987651 episodes 256 reference_min_height_m -0.13112540543079376 references_below_ground 3 indices [138, 232, 248]

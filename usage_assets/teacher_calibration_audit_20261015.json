@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "desired_acceleration_seed": 931,
+  "sample_count": 4099,
+  "desired_acceleration_range_m_s2": [
+    -4,
+    4
+  ],
+  "legacy_bitwise_unchanged_vs_tracked_HEAD": true,
+  "teacher_source_sha256": "529991412acd14c4d84b46c3c228708c0f306d990827f1b931334ece5e148a7b",
+  "official_dynamics_source_sha256": "c48c2624732a26da1302ab79d176d9a14df9abae0ff15994eeacc17b9862887b",
+  "steady_attitude_gain": [
+    0.9221102112179755,
+    0.9221102112179755,
+    0.9191972449234754
+  ],
+  "physical_parameters": {
+    "mass": 0.0328,
+    "gravity_vec": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "acc_coef": 0.0,
+    "cmd_f_coef": 1.023224599403443
+  },
+  "modes": {
+    "legacy": {
+      "maximum_absolute_acceleration_error_m_s2": 0.7726239512699618,
+      "acceleration_rmse_m_s2": 0.21863142946035777,
+      "maximum_absolute_equilibrium_rpy_acceleration_rad_s2": 5.684341886080802e-14,
+      "all_actions_finite": true,
+      "maximum_normalized_command": 1.0,
+      "hover_acceleration_m_s2": [
+        0.0,
+        0.0,
+        0.2278338075237727
+      ]
+    },
+    "calibrated": {
+      "maximum_absolute_acceleration_error_m_s2": 3.0534798343140324e-06,
+      "acceleration_rmse_m_s2": 6.797162950119126e-07,
+      "maximum_absolute_equilibrium_rpy_acceleration_rad_s2": 5.684341886080802e-14,
+      "all_actions_finite": true,
+      "maximum_normalized_command": 0.9924720525741577,
+      "hover_acceleration_m_s2": [
+        0.0,
+        0.0,
+        1.4370145251518807e-07
+      ]
+    }
+  },
+  "cuda_calibrated_resume_regression": {
+    "verified": true,
+    "configuration": "ReachPos 8 worlds, 16 steps, 2 PPO updates; 2 behavior-cloning batches; fused backend; anneal_lr=False to preserve the learning-rate schedule",
+    "weight_maximum_difference": 0.0,
+    "history_equal": true,
+    "legacy_calibrated_resume_mismatch_rejected": true,
+    "note": "Small execution regression only; full training performance is evaluated separately.",
+    "reproduction_command": "python usage_assets/train_gymnasium_checks_20261015.py --task reach_pos --teacher-model calibrated --env-backend fused",
+    "vector_step_slots": 256,
+    "valid_transitions": 216,
+    "ignored_reset_slots": 40
+  },
+  "legacy_reference_git_commit": "9b0e44638455f7cdf7283aafe0e4818b271c2a7d",
+  "legacy_reference_file_sha256": "94c94b7e80b5b9c27e9f9c750c4039f0dcf3712efb0203db57cb1cac70b5a517"
+}

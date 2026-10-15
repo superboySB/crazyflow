@@ -1,0 +1,420 @@
+{
+  "schema": 3,
+  "status": "complete",
+  "selection_rule": "Checkpoint selection solely by validation; fixed test seed 31001 / world 0 of 1024. No selection by held-out outcomes or appearance.",
+  "videos": {
+    "reach_pos": {
+      "checkpoint": "trained_models/gym_reach_pos_s19_g0.99_200000000_calibrated.pt",
+      "checkpoint_sha256": "d89ab91c33d3b162c77181245c8a1e9a41380effbb2e51bcbd5b1fcfe8190df1",
+      "replay_helper_sha256": "69ebe40d8f04959ccd618c4b220c5cac5878a18168fbcf0cf4b19dc037bf56f2",
+      "trainer_source_sha256_at_render": "529991412acd14c4d84b46c3c228708c0f306d990827f1b931334ece5e148a7b",
+      "env_backend": "fused",
+      "torch_cuda_matmul_allow_tf32": true,
+      "adapter_source_sha256": "6405f25d39751539549833d1a3e66142345e3c8707744bd5d2aca479abca8c4b",
+      "source_npz": "usage_assets/fulltrain_20261015/reach_pos_s19_g0.99_200000000_calibrated_test31001.npz",
+      "source_npz_sha256": "613b1569360f8ea1120efcd905c938652bc8cb912905612a5c5b0a0657950fb6",
+      "initial": {
+        "pos": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "vel": [
+          -0.08000946044921875,
+          -0.5253517627716064,
+          0.3805232048034668
+        ],
+        "quat": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "traced_steps": 500,
+      "flight_simulation_duration_seconds": 10.0,
+      "max_observed_error": 1.1637108325958252,
+      "final_observed_error": 0.004961428232491016,
+      "trajectory_sha256": "c0170f4b4a3c565c461fdcb5ef3a5ce2bef62b2bd7932a0108ef247ef700439d",
+      "same_initial_position_as_saved_holdout_world0": true,
+      "max_abs_actual_vs_npz": 0.0,
+      "max_abs_reference_vs_npz": 0.0,
+      "behavior_scope": "default_task",
+      "matches_saved_behavior_scope": true,
+      "policy_frame_count": 250,
+      "failure_overlay_hold_seconds": 0.0,
+      "poster_simulation_time_seconds": 4.02,
+      "status": "complete",
+      "goal_rng_protocol": "independent_goal_rng_v1",
+      "selected_tag": "reach_pos_s19_g0.99_200000000_calibrated",
+      "selected_validation_score": [
+        1.0,
+        1.0,
+        -0.2884533107280731
+      ],
+      "video": "usage_assets/fulltrain_20261015/best_reach_pos.mp4",
+      "video_sha256": "d3e03d93e66b875463285145e169ba3e738367aace8437b1694d99e38ce2c6c3",
+      "seed": 31001,
+      "world_index": 0,
+      "simulated_worlds": 1024,
+      "scenario": "Independent random 3D position goals",
+      "horizontal_velocity_subset": false,
+      "method": "BC + PPO + calibrated teacher",
+      "teacher_model": "calibrated",
+      "error_unit": "m",
+      "fps": 25.0,
+      "readback_frames": 250,
+      "actual_duration_seconds": 10.0,
+      "metadata_duration_seconds": 10.0,
+      "resolution": [
+        640,
+        480
+      ],
+      "codec": "h264",
+      "all_frames_finite": true,
+      "pixel_min": 0,
+      "pixel_max": 255,
+      "minimum_scene_pixel_std": 33.325585687957464,
+      "poster": "usage_assets/fulltrain_20261015/best_reach_pos_poster.png",
+      "poster_sha256": "2e020b3c6b48e1435757bd2f9f95166df259b63fc90dc6ab964e451ab69b838e",
+      "requested_poster_video_time_seconds": 4.0,
+      "poster_video_time_seconds": 4.0,
+      "poster_note": null
+    },
+    "reach_vel": {
+      "checkpoint": "trained_models/gym_reach_vel_s7_g0.99_200000000.pt",
+      "checkpoint_sha256": "528c5429fd0f7bea78ec78ff711aaaf6597ab447758594063de1d9bf4c4885f7",
+      "replay_helper_sha256": "69ebe40d8f04959ccd618c4b220c5cac5878a18168fbcf0cf4b19dc037bf56f2",
+      "trainer_source_sha256_at_render": "f6a7d3980c508dac56fe62c375d7c34366aec01b6d6ac5e4cbfdd0d2b859420b",
+      "env_backend": "fused",
+      "torch_cuda_matmul_allow_tf32": true,
+      "adapter_source_sha256": "0537dfc3960040c7b6dcf571627c19a3a399fc0ce779495b9540e6e0d52f7241",
+      "source_npz": "usage_assets/fulltrain_20261015/reach_vel_s7_g0.99_200000000_test31001.npz",
+      "source_npz_sha256": "bac307a7ec362aaabf3933b2c87fd3f0f305e284fdc85ae385b70bc263de8bc6",
+      "initial": {
+        "pos": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "vel": [
+          -0.08000946044921875,
+          -0.5253517627716064,
+          0.3805232048034668
+        ],
+        "quat": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "target_vel": [
+          0.6908657550811768,
+          -0.9079506397247314,
+          -0.49144411087036133
+        ]
+      },
+      "traced_steps": 146,
+      "max_observed_error": 1.2422817945480347,
+      "final_observed_error": 1.2422817945480347,
+      "trajectory_sha256": "a15ffa872b9e5d09d013039fcc2d761a680f4632315300bf6663685836782ac5",
+      "same_initial_position_as_saved_holdout_world0": true,
+      "max_abs_actual_vs_npz": 0.0,
+      "max_abs_reference_vs_npz": 0.0,
+      "status": "complete",
+      "goal_rng_protocol": "independent_goal_rng_v1",
+      "selected_tag": "reach_vel_s7_g0.99_200000000",
+      "selected_validation_score": [
+        0.58984375,
+        0.59765625,
+        -0.16386818885803223
+      ],
+      "video": "usage_assets/fulltrain_20261015/best_reach_vel.mp4",
+      "video_sha256": "debcdfa1823ccf7f67f82cdfa104e5c38af8e436524711c75fdb7e42e57018e8",
+      "seed": 31001,
+      "world_index": 0,
+      "simulated_worlds": 1024,
+      "scenario": "Default 3D velocity targets; failures retained",
+      "horizontal_velocity_subset": false,
+      "method": "PPO",
+      "error_unit": "m/s",
+      "fps": 25.0,
+      "readback_frames": 98,
+      "actual_duration_seconds": 3.92,
+      "metadata_duration_seconds": 3.92,
+      "resolution": [
+        640,
+        480
+      ],
+      "codec": "h264",
+      "all_frames_finite": true,
+      "pixel_min": 0,
+      "pixel_max": 255,
+      "minimum_scene_pixel_std": 33.25953139292994,
+      "poster": "usage_assets/fulltrain_20261015/best_reach_vel_poster.png",
+      "poster_sha256": "3d3e11d1c22aee71a90d13d6d52a426544a1f6557b1c5523c718af05be3b7e46",
+      "requested_poster_video_time_seconds": 4.0,
+      "poster_video_time_seconds": 3.88,
+      "poster_note": "Episode ended before requested 4 s; last actual video frame retained.",
+      "flight_simulation_duration_seconds": 2.92,
+      "policy_frame_count": 73,
+      "failure_overlay_hold_seconds": 1.0,
+      "poster_simulation_time_seconds": 2.9
+    },
+    "reach_vel_horizontal": {
+      "checkpoint": "trained_models/gym_reach_vel_s7_g0.99_200000000.pt",
+      "checkpoint_sha256": "528c5429fd0f7bea78ec78ff711aaaf6597ab447758594063de1d9bf4c4885f7",
+      "replay_helper_sha256": "69ebe40d8f04959ccd618c4b220c5cac5878a18168fbcf0cf4b19dc037bf56f2",
+      "trainer_source_sha256_at_render": "529991412acd14c4d84b46c3c228708c0f306d990827f1b931334ece5e148a7b",
+      "env_backend": "fused",
+      "torch_cuda_matmul_allow_tf32": true,
+      "adapter_source_sha256": "6405f25d39751539549833d1a3e66142345e3c8707744bd5d2aca479abca8c4b",
+      "source_npz": "usage_assets/fulltrain_20261015/reach_vel_s7_g0.99_200000000_horizontal_test31001.npz",
+      "source_npz_sha256": "f93cd928a865cb4976021441b7df2879f04223a383b3612e39522b16876ee111",
+      "initial": {
+        "pos": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "vel": [
+          -0.08000946044921875,
+          -0.5253517627716064,
+          0.3805232048034668
+        ],
+        "quat": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "target_vel": [
+          0.6908657550811768,
+          -0.9079506397247314,
+          0.0
+        ]
+      },
+      "traced_steps": 500,
+      "flight_simulation_duration_seconds": 10.0,
+      "max_observed_error": 0.8917628526687622,
+      "final_observed_error": 0.08554860204458237,
+      "trajectory_sha256": "5ae889ece356efb5b52f39446c8d531ea2aa9330d8d3dd9dd3b45fdc2957140c",
+      "same_initial_position_as_saved_holdout_world0": true,
+      "max_abs_actual_vs_npz": 0.0,
+      "max_abs_reference_vs_npz": 0.0,
+      "behavior_scope": "horizontal_velocity_subset",
+      "matches_saved_behavior_scope": true,
+      "policy_frame_count": 250,
+      "failure_overlay_hold_seconds": 0.0,
+      "poster_simulation_time_seconds": 4.02,
+      "status": "complete",
+      "goal_rng_protocol": "independent_goal_rng_v1",
+      "selected_tag": "reach_vel_s7_g0.99_200000000",
+      "selected_validation_score": [
+        0.58984375,
+        0.59765625,
+        -0.16386818885803223
+      ],
+      "video": "usage_assets/fulltrain_20261015/best_reach_vel_horizontal.mp4",
+      "video_sha256": "305e55ab2861823a657427256a809bdcd0ef646722f478c0a3f2790b93135564",
+      "seed": 31001,
+      "world_index": 0,
+      "simulated_worlds": 1024,
+      "scenario": "Horizontal-target subset (vz=0); separate from default 3D task",
+      "horizontal_velocity_subset": true,
+      "method": "PPO",
+      "teacher_model": "legacy",
+      "error_unit": "m/s",
+      "fps": 25.0,
+      "readback_frames": 250,
+      "actual_duration_seconds": 10.0,
+      "metadata_duration_seconds": 10.0,
+      "resolution": [
+        640,
+        480
+      ],
+      "codec": "h264",
+      "all_frames_finite": true,
+      "pixel_min": 0,
+      "pixel_max": 255,
+      "minimum_scene_pixel_std": 33.25511772196688,
+      "poster": "usage_assets/fulltrain_20261015/best_reach_vel_horizontal_poster.png",
+      "poster_sha256": "5003620d866b27d2dfe6b2d9dda181e1f3f8b5faebaa3c56ea02302725bd8416",
+      "requested_poster_video_time_seconds": 4.0,
+      "poster_video_time_seconds": 4.0,
+      "poster_note": null
+    },
+    "landing": {
+      "checkpoint": "trained_models/gym_landing_s43_g0.99_200000000_calibrated.pt",
+      "checkpoint_sha256": "6eb44776c04cd1239bfb46e7404e73fdde710e2f7b9b3a3c0c813536e4be6a68",
+      "replay_helper_sha256": "69ebe40d8f04959ccd618c4b220c5cac5878a18168fbcf0cf4b19dc037bf56f2",
+      "trainer_source_sha256_at_render": "529991412acd14c4d84b46c3c228708c0f306d990827f1b931334ece5e148a7b",
+      "env_backend": "fused",
+      "torch_cuda_matmul_allow_tf32": true,
+      "adapter_source_sha256": "6405f25d39751539549833d1a3e66142345e3c8707744bd5d2aca479abca8c4b",
+      "source_npz": "usage_assets/fulltrain_20261015/landing_s43_g0.99_200000000_calibrated_test31001.npz",
+      "source_npz_sha256": "76ad1a01acb3be89301a4ab88b0fc0ece7c64cd5d95d767fe762a92633082637",
+      "initial": {
+        "pos": [
+          0.18708324432373047,
+          0.060381174087524414,
+          1.1732958555221558
+        ],
+        "vel": [
+          -0.08000946044921875,
+          -0.5253517627716064,
+          0.3805232048034668
+        ],
+        "quat": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "traced_steps": 500,
+      "flight_simulation_duration_seconds": 10.0,
+      "max_observed_error": 1.1003451347351074,
+      "final_observed_error": 0.023478547111153603,
+      "trajectory_sha256": "c959a51ac06ee9a591cafeddd0d3a97af51a9c5f96564f38cd0b7de90e944d9e",
+      "same_initial_position_as_saved_holdout_world0": true,
+      "max_abs_actual_vs_npz": 3.5837292671203613e-06,
+      "max_abs_reference_vs_npz": 0.0,
+      "behavior_scope": "default_task",
+      "matches_saved_behavior_scope": true,
+      "policy_frame_count": 250,
+      "failure_overlay_hold_seconds": 0.0,
+      "poster_simulation_time_seconds": 4.02,
+      "status": "complete",
+      "goal_rng_protocol": "independent_goal_rng_v1",
+      "selected_tag": "landing_s43_g0.99_200000000_calibrated",
+      "selected_validation_score": [
+        1.0,
+        1.0,
+        -0.3926698863506317
+      ],
+      "video": "usage_assets/fulltrain_20261015/best_landing.mp4",
+      "video_sha256": "f85cba758e8fd74a43485c8f70df4ae4ff3dafc22b7f03be7429d4fdcd16dbff",
+      "seed": 31001,
+      "world_index": 0,
+      "simulated_worlds": 1024,
+      "scenario": "Official target: 0.1 m above ground (near-ground hover)",
+      "horizontal_velocity_subset": false,
+      "method": "BC + PPO + calibrated teacher",
+      "teacher_model": "calibrated",
+      "error_unit": "m",
+      "fps": 25.0,
+      "readback_frames": 250,
+      "actual_duration_seconds": 10.0,
+      "metadata_duration_seconds": 10.0,
+      "resolution": [
+        640,
+        480
+      ],
+      "codec": "h264",
+      "all_frames_finite": true,
+      "pixel_min": 0,
+      "pixel_max": 255,
+      "minimum_scene_pixel_std": 33.32704724567398,
+      "poster": "usage_assets/fulltrain_20261015/best_landing_poster.png",
+      "poster_sha256": "e4c095f573ddccc78b66bf66b1506ed917936b07b7898f0de39fa4e09c217019",
+      "requested_poster_video_time_seconds": 4.0,
+      "poster_video_time_seconds": 4.0,
+      "poster_note": null
+    },
+    "figure8": {
+      "checkpoint": "trained_models/gym_figure8_s43_g0.99_200000000.pt",
+      "checkpoint_sha256": "04b92f71488a5b5b6993bcd14047a126588f594ad08fb35028161a32aa2adff6",
+      "replay_helper_sha256": "69ebe40d8f04959ccd618c4b220c5cac5878a18168fbcf0cf4b19dc037bf56f2",
+      "trainer_source_sha256_at_render": "529991412acd14c4d84b46c3c228708c0f306d990827f1b931334ece5e148a7b",
+      "env_backend": "fused",
+      "torch_cuda_matmul_allow_tf32": true,
+      "adapter_source_sha256": "6405f25d39751539549833d1a3e66142345e3c8707744bd5d2aca479abca8c4b",
+      "source_npz": "usage_assets/fulltrain_20261015/figure8_s43_g0.99_200000000_test31001.npz",
+      "source_npz_sha256": "fa80b2972cd1fe4e47d1f34a258183b02a01374bffa6e5fde9a5a0988787c9e4",
+      "initial": {
+        "pos": [
+          0.018708325922489166,
+          0.006038114428520203,
+          1.1346591711044312
+        ],
+        "vel": [
+          -0.040004730224609375,
+          -0.2626758813858032,
+          0.1902616024017334
+        ],
+        "quat": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "traced_steps": 500,
+      "flight_simulation_duration_seconds": 10.0,
+      "max_observed_error": 0.13823696970939636,
+      "final_observed_error": 0.00458511570468545,
+      "trajectory_sha256": "eabaa7098fd3eb8fb0356698b353cbd49dede7dc6ca3d848b7e2a352b0fe395c",
+      "same_initial_position_as_saved_holdout_world0": true,
+      "max_abs_actual_vs_npz": 0.0,
+      "max_abs_reference_vs_npz": 0.0,
+      "behavior_scope": "default_task",
+      "matches_saved_behavior_scope": true,
+      "policy_frame_count": 250,
+      "failure_overlay_hold_seconds": 0.0,
+      "poster_simulation_time_seconds": 4.02,
+      "status": "complete",
+      "goal_rng_protocol": "independent_goal_rng_v1",
+      "selected_tag": "figure8_s43_g0.99_200000000",
+      "selected_validation_score": [
+        1.0,
+        1.0,
+        -0.024412238970398903
+      ],
+      "video": "usage_assets/fulltrain_20261015/best_figure8.mp4",
+      "video_sha256": "44d7be2921a096f8d4b3ce2bb5585f8ba419ddc7235145a4b74d8d91ea333a14",
+      "seed": 31001,
+      "world_index": 0,
+      "simulated_worlds": 1024,
+      "scenario": "Official fixed 10 s figure-eight trajectory",
+      "horizontal_velocity_subset": false,
+      "method": "PPO",
+      "teacher_model": "legacy",
+      "error_unit": "m",
+      "fps": 25.0,
+      "readback_frames": 250,
+      "actual_duration_seconds": 10.0,
+      "metadata_duration_seconds": 10.0,
+      "resolution": [
+        640,
+        480
+      ],
+      "codec": "h264",
+      "all_frames_finite": true,
+      "pixel_min": 0,
+      "pixel_max": 255,
+      "minimum_scene_pixel_std": 33.33058729121621,
+      "poster": "usage_assets/fulltrain_20261015/best_figure8_poster.png",
+      "poster_sha256": "aa7a86940c909c5388ab45a6d0e4d238a66f8b9591383d96c9f046252d554357",
+      "requested_poster_video_time_seconds": 4.0,
+      "poster_video_time_seconds": 4.0,
+      "poster_note": null
+    }
+  },
+  "gallery": {
+    "path": "usage_assets/fulltrain_20261015/gallery.png",
+    "sha256": "5ce1bbe4346e539455e5d186b8e734a634c378a54a84f7c56ebf9e46d1177033",
+    "resolution": [
+      1280,
+      1232
+    ],
+    "panels": [
+      "reach_pos",
+      "landing",
+      "figure8",
+      "reach_vel_horizontal"
+    ]
+  },
+  "summary_sha256": "577a2830f6b30b60287e367e081b43e04b7bb678638545ef64090ad3d30cc65d",
+  "producer_source_sha256": "d44b31c4495463c7bf060800cd833b17288f27ec7f31ce096d5d449ffb7ba003"
+}

@@ -1,0 +1,31 @@
+{
+  "training_signature_matches_current_script": true,
+  "videos": [
+    {
+      "path": "usage_assets/racing_fulltrain_20261015_course.mp4",
+      "frames": 334,
+      "fps": 25.0,
+      "size": [
+        1280,
+        720
+      ],
+      "decoded_first_middle_last": true
+    },
+    {
+      "path": "usage_assets/racing_fulltrain_20261015_fast_course.mp4",
+      "frames": 167,
+      "fps": 25.0,
+      "size": [
+        1280,
+        720
+      ],
+      "decoded_first_middle_last": true
+    }
+  ],
+  "training_signatures_after_final_ruff_format": {
+    "adapter_sha256": "17e45e4a9fb7162c9bd085e49ede85441d67b2114f09b9610bca4273a3e0c6d1",
+    "instrumented_trainer_sha256": "bf093df67710c1c241fd97388bfcf0952eee1cece36c48030f375874d28373be",
+    "official_trainer_sha256": "61b948033c737fb3fa3263623c65d37a425e81e374d1e81b5876f386143995f0"
+  },
+  "format_changed_training_signatures": false
+}
