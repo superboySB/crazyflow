@@ -1,8 +1,9 @@
-"""Render the bid response as a self-contained local HTML preview.
+"""Render the bid response as an offline local HTML preview.
 
-All image, video and poster paths remain relative to the repository root. Static figures remain
-visible when printing; animated GIFs and videos are hidden in print. Use --verify-browser to check
-that Chrome can decode every image and read metadata and poster images for every embedded video.
+The Markdown must contain only prose, tables and embedded images. Known GIFs gain corresponding
+local videos in the HTML preview, keeping HTML tags and media paths out of the document's text.
+Static figures remain visible when printing; animated GIFs and videos are hidden in print.
+Use --verify-browser to verify image decoding and every embedded video's metadata and poster.
 """
 
 from __future__ import annotations
@@ -16,11 +17,49 @@ import subprocess
 import tempfile
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import unquote, urlsplit
 
 from markdown_it import MarkdownIt
 
+if TYPE_CHECKING:
+    from markdown_it.token import Token
+
 ROOT = Path(__file__).resolve().parents[1]
+VIDEO_FOR_GIF = {
+    "peibiao_assets/aerodynamics/ground_effect.gif": (
+        "peibiao_assets/aerodynamics/ground_effect.mp4",
+        "peibiao_assets/aerodynamics/ground_effect_scene.png",
+    ),
+    "peibiao_assets/aerodynamics/downwash_comparison.gif": (
+        "peibiao_assets/aerodynamics/downwash_comparison.mp4",
+        "peibiao_assets/aerodynamics/downwash_scene.png",
+    ),
+    "peibiao_assets/presentation/swarm.gif": (
+        "peibiao_assets/presentation/swarm_zh.mp4",
+        "peibiao_assets/presentation/swarm_replay.png",
+    ),
+    "peibiao_assets/presentation/neural_planner.gif": (
+        "peibiao_assets/presentation/neural_planner_zh.mp4",
+        "peibiao_assets/presentation/neural_planner_replay.png",
+    ),
+    "peibiao_assets/presentation/rl_policy.gif": (
+        "peibiao_assets/presentation/rl_policy_replay.mp4",
+        "peibiao_assets/presentation/rl_policy_replay.png",
+    ),
+    "peibiao_assets/real_flight/tracking_flight.gif": (
+        "peibiao_assets/real_flight/trajectory_tracking.mp4",
+        "peibiao_assets/real_flight/tracking_sequence.png",
+    ),
+    "peibiao_assets/real_flight/deployment_flight.gif": (
+        "peibiao_assets/real_flight/deployment_excerpt.mp4",
+        "peibiao_assets/real_flight/deployment_sequence.png",
+    ),
+    "peibiao_assets/crazyswarm_flight/crazyswarm_flight.gif": (
+        "peibiao_assets/crazyswarm_flight/crazyswarm_flight.mp4",
+        "peibiao_assets/crazyswarm_flight/crazyswarm_sequence.png",
+    ),
+}
 STYLE = """
 :root {color-scheme:light;--ink:#182c42;--muted:#526273;--rule:#d8e0e9;--accent:#12558a;}
 * {box-sizing:border-box;}
@@ -106,6 +145,33 @@ def local_path(value: str) -> Path:
     return resolved
 
 
+def embed_gif_videos(content: str) -> str:
+    """Add matching videos to standalone GIF figures without editing the Markdown."""
+
+    def replace(match: re.Match) -> str:
+        image = match.group(1)
+        source_match = re.search(r'\bsrc="([^"]+)"', image)
+        if not source_match:
+            return match.group(0)
+        source = html.unescape(source_match.group(1))
+        video = VIDEO_FOR_GIF.get(source)
+        # Preserve older documents with explicit videos rather than duplicating their players.
+        if not video or f'src="{video[0]}"' in content:
+            return match.group(0)
+        movie, poster = video
+        local_path(movie)
+        local_path(poster)
+        return (
+            '<figure class="motion-media">'
+            f'<video controls preload="metadata" src="{html.escape(movie, quote=True)}" '
+            f'poster="{html.escape(poster, quote=True)}"></video>'
+            '<details class="motion"><summary>动画预览</summary>'
+            f"{image}</details></figure>"
+        )
+
+    return re.sub(r"<p>\s*(<img\b[^>]*>)\s*</p>", replace, content)
+
+
 class MediaHTML(HTMLParser):
     """Validate HTML media and add a local video poster when one can be inferred."""
 
@@ -183,10 +249,25 @@ class MediaHTML(HTMLParser):
         self.parts.append(f"<!--{data}-->")
 
 
+def validate_markdown(tokens: list[Token]) -> None:
+    """Reject code, text hyperlinks and raw HTML in the bid manuscript."""
+    forbidden = {"fence", "code_block", "code_inline", "link_open", "html_block", "html_inline"}
+    for token in tokens:
+        if token.type in forbidden:
+            raise ValueError(f"Bid Markdown must contain no code, links or HTML: {token.type}")
+        if token.children:
+            validate_markdown(token.children)
+
+
 def render(source: Path, destination: Path) -> None:
     """Convert Markdown to the local styled HTML preview."""
     parser = MarkdownIt("commonmark", {"html": True}).enable("table")
-    content = parser.render(source.read_text())
+    manuscript = source.read_text()
+    tokens = parser.parse(manuscript)
+    validate_markdown(tokens)
+    if re.search(r"https?://", manuscript):
+        raise ValueError("Bid Markdown must contain no external URLs")
+    content = embed_gif_videos(parser.renderer.render(tokens, parser.options, {}))
     media = MediaHTML()
     media.feed(content)
     document = (

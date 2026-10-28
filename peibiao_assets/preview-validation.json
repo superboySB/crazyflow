@@ -97,28 +97,16 @@
       "height": 1120
     },
     {
-      "src": "peibiao_assets/real_flight/tracking_sequence.png",
+      "src": "peibiao_assets/crazyswarm_flight/crazyswarm_sequence.png",
       "loaded": true,
-      "width": 1800,
-      "height": 573
+      "width": 1920,
+      "height": 1564
     },
     {
-      "src": "peibiao_assets/real_flight/tracking_flight.gif",
+      "src": "peibiao_assets/crazyswarm_flight/crazyswarm_flight.gif",
       "loaded": true,
       "width": 640,
-      "height": 360
-    },
-    {
-      "src": "peibiao_assets/real_flight/deployment_sequence.png",
-      "loaded": true,
-      "width": 1800,
-      "height": 1135
-    },
-    {
-      "src": "peibiao_assets/real_flight/deployment_flight.gif",
-      "loaded": true,
-      "width": 800,
-      "height": 450
+      "height": 521
     }
   ],
   "videos": [
@@ -173,22 +161,12 @@
       "error": null
     },
     {
-      "src": "peibiao_assets/real_flight/trajectory_tracking.mp4",
+      "src": "peibiao_assets/crazyswarm_flight/crazyswarm_flight.mp4",
       "readyState": 4,
-      "duration": 18.2,
-      "width": 1920,
-      "height": 1080,
-      "poster": "peibiao_assets/real_flight/tracking_sequence.png",
-      "posterLoaded": true,
-      "error": null
-    },
-    {
-      "src": "peibiao_assets/real_flight/deployment_excerpt.mp4",
-      "readyState": 4,
-      "duration": 8,
-      "width": 1920,
-      "height": 1080,
-      "poster": "peibiao_assets/real_flight/deployment_sequence.png",
+      "duration": 8.975642,
+      "width": 960,
+      "height": 782,
+      "poster": "peibiao_assets/crazyswarm_flight/crazyswarm_sequence.png",
       "posterLoaded": true,
       "error": null
     }

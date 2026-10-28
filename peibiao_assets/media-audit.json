@@ -22,8 +22,7 @@
         768,
         328
       ],
-      "frames": 21,
-      "duration_s": 2.1
+      "frames": 21
     },
     {
       "path": "peibiao_assets/aerodynamics/downwash_evidence.png",
@@ -39,8 +38,7 @@
         768,
         328
       ],
-      "frames": 51,
-      "duration_s": 10.2
+      "frames": 51
     },
     {
       "path": "peibiao_assets/presentation/swarm_sequence.png",
@@ -56,8 +54,7 @@
         640,
         556
       ],
-      "frames": 104,
-      "duration_s": 31.1
+      "frames": 104
     },
     {
       "path": "peibiao_assets/charts/swarm_metrics_zh.png",
@@ -97,8 +94,7 @@
         640,
         503
       ],
-      "frames": 34,
-      "duration_s": 10.0
+      "frames": 34
     },
     {
       "path": "peibiao_assets/charts/neural_execution_zh.png",
@@ -122,8 +118,7 @@
         640,
         442
       ],
-      "frames": 40,
-      "duration_s": 10.0
+      "frames": 40
     },
     {
       "path": "peibiao_assets/sim2sim_evidence.png",
@@ -134,38 +129,20 @@
       "frames": 1
     },
     {
-      "path": "peibiao_assets/real_flight/tracking_sequence.png",
+      "path": "peibiao_assets/crazyswarm_flight/crazyswarm_sequence.png",
       "size": [
-        1800,
-        573
+        1920,
+        1564
       ],
       "frames": 1
     },
     {
-      "path": "peibiao_assets/real_flight/tracking_flight.gif",
+      "path": "peibiao_assets/crazyswarm_flight/crazyswarm_flight.gif",
       "size": [
         640,
-        360
+        521
       ],
-      "frames": 108,
-      "duration_s": 17.28
-    },
-    {
-      "path": "peibiao_assets/real_flight/deployment_sequence.png",
-      "size": [
-        1800,
-        1135
-      ],
-      "frames": 1
-    },
-    {
-      "path": "peibiao_assets/real_flight/deployment_flight.gif",
-      "size": [
-        800,
-        450
-      ],
-      "frames": 47,
-      "duration_s": 7.69
+      "frames": 34
     }
   ],
   "videos": [
@@ -190,11 +167,7 @@
       "full_decode": "passed"
     },
     {
-      "path": "peibiao_assets/real_flight/trajectory_tracking.mp4",
-      "full_decode": "passed"
-    },
-    {
-      "path": "peibiao_assets/real_flight/deployment_excerpt.mp4",
+      "path": "peibiao_assets/crazyswarm_flight/crazyswarm_flight.mp4",
       "full_decode": "passed"
     }
   ]

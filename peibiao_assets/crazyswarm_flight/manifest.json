@@ -1,0 +1,49 @@
+{
+  "material_type": "third-party real-flight example; not this project's hardware experiment",
+  "source": {
+    "file": "source_crazyswarm.mp4",
+    "url": "https://www.youtube.com/watch?v=D0CrjoYDt9w",
+    "official_documentation": "https://crazyswarm.readthedocs.io/en/latest/",
+    "official_repository_documentation": "https://raw.githubusercontent.com/IMRCLab/crazyswarm2/main/docs/index.rst",
+    "title": "Crazyswarm: a large nano-quadcopter swarm (Sep. 2016)",
+    "publisher": "ACT Lab at Brown",
+    "source_duration_s": 109.84,
+    "fps": 29.97,
+    "size": [
+      1920,
+      1080
+    ],
+    "sha256": "9ea55f1136751a3a1195e92680ba3105f825659ca32606e3c6eae5589927eea9"
+  },
+  "selected_timestamps_s": [
+    12.0,
+    15.5,
+    18.5,
+    20.0
+  ],
+  "source_crop_xyxy": [
+    250,
+    0,
+    1700,
+    1080
+  ],
+  "no_people": "Entire selected source interval inspected; no people present, none erased",
+  "excerpt_requested_time_s": [
+    12.0,
+    21.0
+  ],
+  "excerpt_actual_frame_range": [
+    360,
+    629
+  ],
+  "excerpt_duration_s": 8.975642308975642,
+  "processing": "Fixed source rectangle [250,0,1700,1080], resized with Chinese bar outside source frame. No scene objects synthesized, erased, moved or retouched. MP4 preserves source frame order and fps; GIF subsamples every eighth source frame with matched duration.",
+  "observable_content": "Real indoor arena without people in the selected source interval; physical quadcopters change height and form layers. Footage alone does not validate any algorithm or hardware of the local project.",
+  "gif_frames": 34,
+  "gif_duration_s": 8.98,
+  "outputs": {
+    "crazyswarm_sequence.png": "dcc01d8c0ac815182f201fdb09f93646ffbf2fb79f7b0a7ec3a96606386b0ecf",
+    "crazyswarm_flight.mp4": "668649373d19f2c1986c7ef3df46d2d6960cabe39710a83fce169c8ae005972b",
+    "crazyswarm_flight.gif": "9659fc16a999437cff7ec161809c2298d35f5a530cd6f567f5052142c6b713de"
+  }
+}
