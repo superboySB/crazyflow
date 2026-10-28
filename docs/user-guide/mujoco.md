@@ -150,16 +150,17 @@ sim = Sim(n_worlds=1, n_drones=1)
 sim.reset()
 
 _mjx_data = sim.mjx_data  # captured in closure
+contact_fn = sim.build_contact_fn()
 
 
 def check_contacts(sim_data: SimData, obstacle_mocap_pos: Array) -> Array:
     # Update obstacle positions and sync inside JIT
     mjx_data = _mjx_data.replace(mocap_pos=obstacle_mocap_pos)
     _, mjx_data = sync_sim2mjx(sim_data, mjx_data, sim.mjx_model)
-    return mjx_data._impl.contact.dist < 0
+    return contact_fn(mjx_data)
 
 
-in_contact = check_contacts(sim.data, sim.mjx_data.mocap_pos)
+in_contact = check_contacts(sim.data, sim.mjx_data.mocap_pos)  # shape (n_worlds, n_drones)
 ```
 
 `_mjx_data` is fused into the closure and compiled as a constant. Only `sim_data` and the obstacle positions cross the JIT boundary at runtime — a much smaller pytree than passing the full `mjx_data`.
@@ -167,5 +168,5 @@ in_contact = check_contacts(sim.data, sim.mjx_data.mocap_pos)
 ## Next steps
 
 - [Pipelines](pipelines.md) — inserting custom stages into the step and reset pipelines
-- [Examples](../examples/index.md#cameras-and-rgbd) — FPV camera and RGBD rendering
-- [Examples](../examples/index.md#contact-queries) — contact detection with box collision geometry
+- [Examples](../examples/rendering.md#cameras-and-rgbd) — FPV camera and RGBD rendering
+- [Examples](../examples/contacts.md#contact-queries) — contact detection with box collision geometry
