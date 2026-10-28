@@ -1,0 +1,197 @@
+{
+  "images": [
+    {
+      "src": "peibiao_assets/dynamics_evidence.png",
+      "loaded": true,
+      "width": 1820,
+      "height": 1260
+    },
+    {
+      "src": "peibiao_assets/aerodynamics/ground_effect_evidence.png",
+      "loaded": true,
+      "width": 2080,
+      "height": 1280
+    },
+    {
+      "src": "peibiao_assets/aerodynamics/ground_effect.gif",
+      "loaded": true,
+      "width": 768,
+      "height": 328
+    },
+    {
+      "src": "peibiao_assets/aerodynamics/downwash_evidence.png",
+      "loaded": true,
+      "width": 2080,
+      "height": 1440
+    },
+    {
+      "src": "peibiao_assets/aerodynamics/downwash_comparison.gif",
+      "loaded": true,
+      "width": 768,
+      "height": 328
+    },
+    {
+      "src": "peibiao_assets/presentation/swarm_sequence.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 1232
+    },
+    {
+      "src": "peibiao_assets/presentation/swarm.gif",
+      "loaded": true,
+      "width": 640,
+      "height": 556
+    },
+    {
+      "src": "peibiao_assets/charts/swarm_metrics_zh.png",
+      "loaded": true,
+      "width": 1920,
+      "height": 800
+    },
+    {
+      "src": "peibiao_assets/charts/neural_training_zh.png",
+      "loaded": true,
+      "width": 1920,
+      "height": 736
+    },
+    {
+      "src": "peibiao_assets/charts/rl_training_zh.png",
+      "loaded": true,
+      "width": 2240,
+      "height": 720
+    },
+    {
+      "src": "peibiao_assets/presentation/rl_policy_sequence.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 1112
+    },
+    {
+      "src": "peibiao_assets/presentation/rl_policy.gif",
+      "loaded": true,
+      "width": 640,
+      "height": 503
+    },
+    {
+      "src": "peibiao_assets/charts/neural_execution_zh.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 768
+    },
+    {
+      "src": "peibiao_assets/presentation/neural_planner_sequence.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 976
+    },
+    {
+      "src": "peibiao_assets/presentation/neural_planner.gif",
+      "loaded": true,
+      "width": 640,
+      "height": 442
+    },
+    {
+      "src": "peibiao_assets/sim2sim_evidence.png",
+      "loaded": true,
+      "width": 1820,
+      "height": 1120
+    },
+    {
+      "src": "peibiao_assets/real_flight/tracking_sequence.png",
+      "loaded": true,
+      "width": 1800,
+      "height": 573
+    },
+    {
+      "src": "peibiao_assets/real_flight/tracking_flight.gif",
+      "loaded": true,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "src": "peibiao_assets/real_flight/deployment_sequence.png",
+      "loaded": true,
+      "width": 1800,
+      "height": 1135
+    },
+    {
+      "src": "peibiao_assets/real_flight/deployment_flight.gif",
+      "loaded": true,
+      "width": 800,
+      "height": 450
+    }
+  ],
+  "videos": [
+    {
+      "src": "peibiao_assets/aerodynamics/ground_effect.mp4",
+      "readyState": 4,
+      "duration": 2.1,
+      "width": 1280,
+      "height": 546,
+      "poster": "peibiao_assets/aerodynamics/ground_effect_scene.png",
+      "posterLoaded": true,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/aerodynamics/downwash_comparison.mp4",
+      "readyState": 4,
+      "duration": 10.1,
+      "width": 1280,
+      "height": 546,
+      "poster": "peibiao_assets/aerodynamics/downwash_scene.png",
+      "posterLoaded": true,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/presentation/swarm_zh.mp4",
+      "readyState": 4,
+      "duration": 31.1,
+      "width": 960,
+      "height": 796,
+      "poster": "peibiao_assets/presentation/swarm_replay.png",
+      "posterLoaded": true,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/presentation/rl_policy_replay.mp4",
+      "readyState": 4,
+      "duration": 10,
+      "width": 960,
+      "height": 716,
+      "poster": "peibiao_assets/presentation/rl_policy_replay.png",
+      "posterLoaded": true,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/presentation/neural_planner_zh.mp4",
+      "readyState": 4,
+      "duration": 10,
+      "width": 800,
+      "height": 534,
+      "poster": "peibiao_assets/presentation/neural_planner_replay.png",
+      "posterLoaded": true,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/real_flight/trajectory_tracking.mp4",
+      "readyState": 4,
+      "duration": 18.2,
+      "width": 1920,
+      "height": 1080,
+      "poster": "peibiao_assets/real_flight/tracking_sequence.png",
+      "posterLoaded": true,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/real_flight/deployment_excerpt.mp4",
+      "readyState": 4,
+      "duration": 8,
+      "width": 1920,
+      "height": 1080,
+      "poster": "peibiao_assets/real_flight/deployment_sequence.png",
+      "posterLoaded": true,
+      "error": null
+    }
+  ],
+  "ok": true
+}

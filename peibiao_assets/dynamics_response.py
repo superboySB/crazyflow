@@ -31,6 +31,8 @@ FREQUENCY = 500
 SAMPLE_STEPS = 5
 DURATION = 5.0
 
+plt.rcParams.update({"font.family": "Noto Sans CJK SC", "axes.unicode_minus": False})
+
 
 def main() -> None:
     """Record the batched simulator's actual state and a rendered frame."""
@@ -83,14 +85,15 @@ def main() -> None:
             )
             if i == 190:
                 camera = {
-                    "distance": 1.5,
+                    "distance": 0.65,
                     "elevation": -25,
                     "azimuth": -135,
-                    "lookat": [0.2, 0.0, 1.0],
+                    "lookat": pos[0].tolist(),
                 }
                 image0 = sim.render(
                     mode="rgb_array", world=0, width=640, height=480, cam_config=camera
                 )
+                camera["lookat"] = pos[1].tolist()
                 image1 = sim.render(
                     mode="rgb_array", world=1, width=640, height=480, cam_config=camera
                 )
@@ -152,28 +155,28 @@ def main() -> None:
     left = fig.add_subplot(grid[0, 0])
     left.imshow(image0)
     left.axis("off")
-    left.set_title("World 0: undisturbed | t = 1.9 s")
+    left.set_title("基准组：无水平外力｜1.9 秒")
     right = fig.add_subplot(grid[0, 1])
     right.imshow(image1)
     right.axis("off")
-    right.set_title("World 1: 0.02 N x-force | t = 1.9 s")
+    right.set_title("受扰组：施加 0.02 N 水平外力｜1.9 秒")
     motor = fig.add_subplot(grid[1, 0])
-    motor.plot(data[:, 0], data[:, 1], "k--", label="command")
-    motor.plot(data[:, 0], data[:, 3], label="actual rotor")
-    motor.set(xlabel="Time (s)", ylabel="Speed (RPM)", title="Actuator response")
+    motor.plot(data[:, 0], data[:, 1], "k--", label="转速指令")
+    motor.plot(data[:, 0], data[:, 3], label="仿真实际转速")
+    motor.set(xlabel="时间（s）", ylabel="转速（RPM）", title="电机动态：转速跟随推力脉冲")
     motor.legend()
     wind = fig.add_subplot(grid[1, 1])
     wind.plot(data[:, 0], data[:, 2], color="tab:orange")
-    wind.set(xlabel="Time (s)", ylabel="Force (N)", title="World 1 applied force")
+    wind.set(xlabel="时间（s）", ylabel="水平外力（N）", title="扰动输入：1–2 秒施加水平外力")
     xaxis = fig.add_subplot(grid[2, 0])
-    xaxis.plot(data[:, 0], data[:, 4], label="world 0")
-    xaxis.plot(data[:, 0], data[:, 5], label="world 1")
-    xaxis.set(xlabel="Time (s)", ylabel="x (m)", title="Horizontal displacement")
+    xaxis.plot(data[:, 0], data[:, 4], label="基准组")
+    xaxis.plot(data[:, 0], data[:, 5], label="受扰组")
+    xaxis.set(xlabel="时间（s）", ylabel="水平位置 x（m）", title="外力响应：受扰组产生水平位移")
     xaxis.legend()
     zaxis = fig.add_subplot(grid[2, 1])
-    zaxis.plot(data[:, 0], data[:, 8], label="world 0")
-    zaxis.plot(data[:, 0], data[:, 9], "--", label="world 1")
-    zaxis.set(xlabel="Time (s)", ylabel="z (m)", title="Vertical displacement")
+    zaxis.plot(data[:, 0], data[:, 8], label="基准组")
+    zaxis.plot(data[:, 0], data[:, 9], "--", label="受扰组")
+    zaxis.set(xlabel="时间（s）", ylabel="高度 z（m）", title="推力响应：2–3 秒增大转速指令")
     zaxis.legend()
     for ax in (motor, wind, xaxis, zaxis):
         ax.grid(alpha=0.25)

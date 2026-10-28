@@ -1,0 +1,61 @@
+{
+  "drone": "cf21B_500",
+  "dynamics": "first_principles",
+  "physics_hz": 500,
+  "sampling_hz": 100,
+  "backend": "cpu",
+  "jax": "0.11.1",
+  "model_parameters_sha256": "a0c223122529424c353c5820d64ee68e81156b75f137a9439a39d0c109926c7a",
+  "plugin_sha256": {
+    "ground_effect": "414f0f8afd98a7ae3df5ff4597a696cbfe1f830df0367a2de6865b1c77546a65",
+    "downwash": "18442e2c07579335b2cdff427febbf7374c58774e21b3271f88220679f42007b"
+  },
+  "ground_effect": {
+    "duration_s": 2,
+    "initial_height_m": 0.05,
+    "constant_rotor_command_RPM": 15899.8779296875,
+    "baseline_final_height_m": 0.05000000074505806,
+    "ground_effect_final_height_m": 0.24465057253837585,
+    "final_height_difference_m": 0.1946505717933178,
+    "max_added_lift_N": 0.01672506332397461,
+    "samples": 201,
+    "plugin": "examples.plugins.ground_effect.ground_effect_fn; world1 only",
+    "parameters": {
+      "propeller_diameter_m": 0.055,
+      "mu": 2,
+      "minimum_height_m": 0.02,
+      "max_gain": 2
+    },
+    "scope": "Open-loop fixed RPM, no real-flight validation; near-ground formula only within its stated range"
+  },
+  "downwash": {
+    "duration_s": 10,
+    "upper_height_command_m": 1.2,
+    "lower_height_command_m": 0.5,
+    "lower_pass": "hold x=-0.5 m for 4 s; pass to x=0.5 m at 0.25 m/s over 4 s; hold 2 s",
+    "scene_time_s": 6.6000000000000005,
+    "minimum_lower_external_fz_N": -0.1985199898481369,
+    "maximum_abs_lower_external_ty_Nm": 0.0010123056126758456,
+    "max_lower_height_difference_vs_baseline_m": 0.07579058408737183,
+    "lower_height_range_baseline_m": [
+      0.5,
+      0.5926445722579956
+    ],
+    "lower_height_range_downwash_m": [
+      0.5,
+      0.5919970870018005
+    ],
+    "samples": 1001,
+    "plugin": "examples.plugins.downwash.downwash_fn; world1 only",
+    "parameters": {
+      "air_density_kg_m3": 1.225,
+      "propeller_radius_m": 0.0275,
+      "motor_distance_m": 0.1,
+      "thrust_decay_s_m": 0.07,
+      "BD": 10.11,
+      "S": 0.07668,
+      "S0": -5.817
+    },
+    "scope": "Matched known path, two independent state-feedback simulations with common commands; far-field empirical plugin; not real-flight validation"
+  }
+}

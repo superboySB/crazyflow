@@ -1,0 +1,48 @@
+{
+  "videos": [
+    {
+      "src": "peibiao_assets/aerodynamics/ground_effect.mp4",
+      "time": 1.351706,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/aerodynamics/downwash_comparison.mp4",
+      "time": 1.350649,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/presentation/swarm_zh.mp4",
+      "time": 1.350249,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/presentation/rl_policy_replay.mp4",
+      "time": 1.350237,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/presentation/neural_planner_zh.mp4",
+      "time": 1.350228,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/real_flight/trajectory_tracking.mp4",
+      "time": 1.35028,
+      "readyState": 4,
+      "error": null
+    },
+    {
+      "src": "peibiao_assets/real_flight/deployment_excerpt.mp4",
+      "time": 1.350273,
+      "readyState": 4,
+      "error": null
+    }
+  ],
+  "print_video_hidden": true,
+  "text_hyperlinks": 0
+}

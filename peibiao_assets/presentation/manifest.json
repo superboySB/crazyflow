@@ -1,0 +1,236 @@
+{
+  "swarm": {
+    "source": "peibiao_assets/swarm_simulation.mp4",
+    "source_sha256": "f9cc42cbf45c87a79a9b07f651eb2ad7281384e6b985fba16d5752062918cc4f",
+    "fps": 10.0,
+    "source_frames": 311,
+    "source_duration_seconds": 31.1,
+    "full_chinese_video": {
+      "path": "peibiao_assets/presentation/swarm_zh.mp4",
+      "sha256": "d0fdf3c54cac660f8d547959a021e6056e8635b3cbbe59b48490fc15137d6a29",
+      "fps": 10.0,
+      "frames": 311,
+      "duration_seconds": 31.1,
+      "frame_rule": "every source frame retained in its original order and original fps",
+      "poster": "peibiao_assets/presentation/swarm_replay.png",
+      "poster_frame": 155,
+      "poster_video_seconds": 15.5
+    },
+    "contact_sheet_frames": [
+      0,
+      100,
+      200,
+      310
+    ],
+    "contact_sheet_seconds": [
+      0.0,
+      10.0,
+      20.0,
+      31.0
+    ],
+    "gif_stride_frames": 3,
+    "gif_speed": "source duration preserved; fixed-rate subsampling",
+    "crop_rectangle_xyxy": null,
+    "transform": "CJK label bar and aspect-preserving resize. Neural video: remove only the existing 70-pixel English header. RL: remove existing 76-pixel label header before adding one CJK header. Swarm: measured centre labels only.",
+    "swarm_label_projection": {
+      "source_data": "peibiao_assets/swarm_data.npz",
+      "source_data_sha256": "12db35ebe0388b4ea1a28e299f77a4ecdc625ae03a744fddfccd058b3f873455",
+      "rule": "actual[::10], 100 Hz states to 10 fps source video",
+      "source_frame_size": [
+        960,
+        720
+      ],
+      "camera": {
+        "distance": 8.0,
+        "azimuth": 90.0,
+        "elevation": -65.0,
+        "lookat": [
+          0.0,
+          0.0,
+          0.5
+        ],
+        "vertical_fov_degrees": 45.0
+      },
+      "projection": "MuJoCo mjv_updateScene GL camera, mono eye averaged from stereo",
+      "labels": "1..4 map to actual drone indices 0..3",
+      "check_frames": {
+        "0": [
+          [
+            172.62603759765625,
+            541.86865234375
+          ],
+          [
+            228.9177703857422,
+            167.2249755859375
+          ],
+          [
+            787.3739624023438,
+            541.86865234375
+          ],
+          [
+            731.0822143554688,
+            167.2249755859375
+          ]
+        ],
+        "100": [
+          [
+            277.49072265625,
+            273.42083740234375
+          ],
+          [
+            341.06927490234375,
+            328.9051208496094
+          ],
+          [
+            482.84454345703125,
+            464.82574462890625
+          ],
+          [
+            482.48358154296875,
+            214.99647521972656
+          ]
+        ],
+        "200": [
+          [
+            542.9962768554688,
+            214.54307556152344
+          ],
+          [
+            552.1025390625,
+            465.5107421875
+          ],
+          [
+            269.60638427734375,
+            334.0400085449219
+          ],
+          [
+            335.1761474609375,
+            393.3474426269531
+          ]
+        ],
+        "310": [
+          [
+            734.0184326171875,
+            161.7526092529297
+          ],
+          [
+            791.6302490234375,
+            539.6546020507812
+          ],
+          [
+            226.4553680419922,
+            161.4105224609375
+          ],
+          [
+            168.7484130859375,
+            540.097900390625
+          ]
+        ]
+      }
+    }
+  },
+  "neural_planner": {
+    "source": "peibiao_assets/neural_planner_flight.mp4",
+    "source_sha256": "6ee37fac8527c0f033b0d54eff4e2645569c81b637bca62e9ca62c4341b0485d",
+    "fps": 20.0,
+    "source_frames": 200,
+    "source_duration_seconds": 10.0,
+    "full_chinese_video": {
+      "path": "peibiao_assets/presentation/neural_planner_zh.mp4",
+      "sha256": "844c240f09e5a6c404abf09d4f38e84dd075e4f21cb206bc27b0d7aa9ae2393c",
+      "fps": 20.0,
+      "frames": 200,
+      "duration_seconds": 10.0,
+      "frame_rule": "every source frame retained in its original order and original fps",
+      "poster": "peibiao_assets/presentation/neural_planner_replay.png",
+      "poster_frame": 140,
+      "poster_video_seconds": 7.0
+    },
+    "contact_sheet_frames": [
+      0,
+      40,
+      120,
+      199
+    ],
+    "contact_sheet_seconds": [
+      0.0,
+      2.0,
+      6.0,
+      9.95
+    ],
+    "gif_stride_frames": 5,
+    "gif_speed": "source duration preserved; fixed-rate subsampling",
+    "crop_rectangle_xyxy": [
+      0,
+      70,
+      800,
+      528
+    ],
+    "transform": "CJK label bar and aspect-preserving resize. Neural video: remove only the existing 70-pixel English header. RL: remove existing 76-pixel label header before adding one CJK header. Swarm: measured centre labels only.",
+    "swarm_label_projection": null
+  },
+  "rl_replay": {
+    "checkpoint": "peibiao_assets/rl_cpu_medium.pt",
+    "checkpoint_sha256": "23ecf216909a57e5c44efa26a1e9aa1d3fe9bd7bc89dde1db72d0d443a073be0",
+    "seed": 10007,
+    "worlds": 32,
+    "rendered_world": 0,
+    "frames": 100,
+    "fps": 10,
+    "first_video_sample_seconds": 0.02,
+    "main_still_frame": 99,
+    "main_still_simulation_seconds": 9.92,
+    "goal_marker": {
+      "radius_m": 0.02,
+      "alpha": 0.5,
+      "label": "目标点",
+      "label_position": "off-body leader line from renderer GL camera projection"
+    },
+    "metrics": {
+      "mean_reward": 0.8403742909431458,
+      "episode_return": 420.1871337890625,
+      "mean_error": 0.13492999970912933,
+      "rmse": 0.3197428286075592,
+      "last_second_rmse": 0.028729651123285294,
+      "final_mean_error": 0.02694040536880493,
+      "median_env_rmse": 0.2855418026447296,
+      "p95_error": 0.7848488688468933,
+      "max_error": 2.2847976684570312,
+      "survival_rate": 1.0,
+      "success_rate": 1.0,
+      "mean_episode_steps": 500.0,
+      "evaluation_seed": 10007.0
+    },
+    "source": "fresh physics rollout of the saved frozen policy, own observed state feedback"
+  },
+  "rl_video": {
+    "source": "peibiao_assets/presentation/rl_policy_replay.mp4",
+    "source_sha256": "dcbfddc6deb999bde000b9009b5f0663854420e124c6de4262b838b976892325",
+    "fps": 10.0,
+    "source_frames": 100,
+    "source_duration_seconds": 10.0,
+    "full_chinese_video": null,
+    "contact_sheet_frames": [
+      0,
+      5,
+      20,
+      99
+    ],
+    "contact_sheet_seconds": [
+      0.0,
+      0.5,
+      2.0,
+      9.9
+    ],
+    "gif_stride_frames": 3,
+    "gif_speed": "source duration preserved; fixed-rate subsampling",
+    "crop_rectangle_xyxy": [
+      0,
+      76,
+      960,
+      716
+    ],
+    "transform": "CJK label bar and aspect-preserving resize. Neural video: remove only the existing 70-pixel English header. RL: remove existing 76-pixel label header before adding one CJK header. Swarm: measured centre labels only.",
+    "swarm_label_projection": null
+  }
+}

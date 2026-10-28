@@ -1,0 +1,201 @@
+{
+  "images": [
+    {
+      "path": "peibiao_assets/dynamics_evidence.png",
+      "size": [
+        1820,
+        1260
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/aerodynamics/ground_effect_evidence.png",
+      "size": [
+        2080,
+        1280
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/aerodynamics/ground_effect.gif",
+      "size": [
+        768,
+        328
+      ],
+      "frames": 21,
+      "duration_s": 2.1
+    },
+    {
+      "path": "peibiao_assets/aerodynamics/downwash_evidence.png",
+      "size": [
+        2080,
+        1440
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/aerodynamics/downwash_comparison.gif",
+      "size": [
+        768,
+        328
+      ],
+      "frames": 51,
+      "duration_s": 10.2
+    },
+    {
+      "path": "peibiao_assets/presentation/swarm_sequence.png",
+      "size": [
+        1440,
+        1232
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/presentation/swarm.gif",
+      "size": [
+        640,
+        556
+      ],
+      "frames": 104,
+      "duration_s": 31.1
+    },
+    {
+      "path": "peibiao_assets/charts/swarm_metrics_zh.png",
+      "size": [
+        1920,
+        800
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/charts/neural_training_zh.png",
+      "size": [
+        1920,
+        736
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/charts/rl_training_zh.png",
+      "size": [
+        2240,
+        720
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/presentation/rl_policy_sequence.png",
+      "size": [
+        1440,
+        1112
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/presentation/rl_policy.gif",
+      "size": [
+        640,
+        503
+      ],
+      "frames": 34,
+      "duration_s": 10.0
+    },
+    {
+      "path": "peibiao_assets/charts/neural_execution_zh.png",
+      "size": [
+        1440,
+        768
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/presentation/neural_planner_sequence.png",
+      "size": [
+        1440,
+        976
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/presentation/neural_planner.gif",
+      "size": [
+        640,
+        442
+      ],
+      "frames": 40,
+      "duration_s": 10.0
+    },
+    {
+      "path": "peibiao_assets/sim2sim_evidence.png",
+      "size": [
+        1820,
+        1120
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/real_flight/tracking_sequence.png",
+      "size": [
+        1800,
+        573
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/real_flight/tracking_flight.gif",
+      "size": [
+        640,
+        360
+      ],
+      "frames": 108,
+      "duration_s": 17.28
+    },
+    {
+      "path": "peibiao_assets/real_flight/deployment_sequence.png",
+      "size": [
+        1800,
+        1135
+      ],
+      "frames": 1
+    },
+    {
+      "path": "peibiao_assets/real_flight/deployment_flight.gif",
+      "size": [
+        800,
+        450
+      ],
+      "frames": 47,
+      "duration_s": 7.69
+    }
+  ],
+  "videos": [
+    {
+      "path": "peibiao_assets/aerodynamics/ground_effect.mp4",
+      "full_decode": "passed"
+    },
+    {
+      "path": "peibiao_assets/aerodynamics/downwash_comparison.mp4",
+      "full_decode": "passed"
+    },
+    {
+      "path": "peibiao_assets/presentation/swarm_zh.mp4",
+      "full_decode": "passed"
+    },
+    {
+      "path": "peibiao_assets/presentation/rl_policy_replay.mp4",
+      "full_decode": "passed"
+    },
+    {
+      "path": "peibiao_assets/presentation/neural_planner_zh.mp4",
+      "full_decode": "passed"
+    },
+    {
+      "path": "peibiao_assets/real_flight/trajectory_tracking.mp4",
+      "full_decode": "passed"
+    },
+    {
+      "path": "peibiao_assets/real_flight/deployment_excerpt.mp4",
+      "full_decode": "passed"
+    }
+  ]
+}

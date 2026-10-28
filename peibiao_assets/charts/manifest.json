@@ -1,0 +1,18 @@
+{
+  "method": "Chinese scientific plots drawn directly from unchanged recorded experiment data",
+  "inputs": {
+    "neural_planner_trajectory.npz": "4e63a9ba33b90ef7dc9be942c9447ad60bf09851afd2b2c58cab296a2b3f098a",
+    "neural_planner_results.json": "d28700712141a105d72e68b2661495b3911cd3274f818a14bf8d9092095f114e",
+    "swarm_data.npz": "12db35ebe0388b4ea1a28e299f77a4ecdc625ae03a744fddfccd058b3f873455",
+    "swarm_metrics.json": "ecaa2bbb5ee4d45cb406ea71215ec0ae66261ddd8fd395cf2d59c5b59a5e41e1",
+    "rl_cpu_medium.pt": "23ecf216909a57e5c44efa26a1e9aa1d3fe9bd7bc89dde1db72d0d443a073be0",
+    "presentation/rl_replay_trace.npz": "bb27c7fa1fba9595a1c62a3ba51de2115b7c6ae40d3ae659cad74f8dd412b85e",
+    "presentation/rl_replay_metrics.json": "5cfc4b2fd7073502f3cc9a32a0a0205de471b5d8a77c962faf665ca4075a8377"
+  },
+  "outputs": {
+    "swarm_metrics_zh.png": "f392395086016e00dbe8b6ed344a55b8a63f83c4999b3facc0bbaa81cc199dd7",
+    "rl_training_zh.png": "994a9f36500583ce87920337699057815724f7ee05c85cbac4466d80d0baf0c4",
+    "neural_execution_zh.png": "0f04252399772299581cea62f520e7f8ba89465ab8f270073cd69c84238edca4",
+    "neural_training_zh.png": "8d9aa720af83aa2a916c72332a273000b5a0a3484de7e2d19c9880c04d2e2afe"
+  }
+}

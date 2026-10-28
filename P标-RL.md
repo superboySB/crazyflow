@@ -1,134 +1,227 @@
-# 旋翼无人机集群仿真与智能算法技术响应
+# 旋翼无人机集群仿真与智能算法技术响应方案
 
-## 指标原文与响应结构
+## 技术指标与响应安排
 
 > 2）★仿真系统应具备与真实旋翼无人机集群系统高度一致的动力学模型，支持集群路径自主规划、强化学习及其他神经网络算法开发；提供一套强化学习训练范式和一套端到端轨迹规划算法，支持 Sim2Sim、Sim2Real 闭环验证，实现仿真算法向实机的高保真迁移。
 
-本材料按照上述指标的分句依次说明系统实现和验证结果。仿真验证基于 Crazyflow 0.4.0 的 `af31417` 代码基线，新增实验程序、数据、模型及图像位于 `peibiao_assets/`。实机相关画面和实测数据按实际来源标注；项目新增仿真结果与公开实机结果分别计量。
+本方案按照“动力学建模—集群规划—算法开发—强化学习训练—神经轨迹规划—跨仿真器验证—虚实迁移”的技术链路，逐项给出实现方法、运行画面与量化结果。各项要求与正文的对应关系如下。
 
-## 1. “具备与真实旋翼无人机集群系统高度一致的动力学模型”
+| 甲方要求 | 技术响应 | 直接展示的运行证据 |
+|---|---|---|
+| 真实旋翼无人机集群动力学模型及一致性 | 六自由度模型、电机响应、外力扰动及机群气动作用 | 动力学输入与响应曲线、近地与下洗对照、公开实机一致性数据 |
+| 集群路径自主规划 | 已知地图下的多机时空预约规划及闭环执行 | 四机绕障、交叉飞行、抵达目标的连续画面和间距记录 |
+| 强化学习及其他神经网络算法开发 | 并行环境、策略网络、价值网络与监督学习网络 | 实际训练曲线、独立场景测试及保存模型的飞行重放 |
+| 一套强化学习训练范式 | 环境采样、训练更新、验证选模、独立评估及模型保存 | 行为克隆与 PPO 训练记录、32 个独立环境评估和策略飞行 |
+| 一套端到端轨迹规划算法 | 从障碍参数直接生成整条轨迹的神经网络 | 网络训练、独立场景输出、绕障飞行及规划—执行轨迹对照 |
+| Sim2Sim 闭环验证 | 同一控制器在两个独立动力学引擎中分别闭环 | 双引擎画面、各自状态反馈和轨迹误差曲线 |
+| Sim2Real 闭环验证及高保真迁移 | 虚实接口与部署方案、原作者公开实飞验证 | 原作者公开的实物轨迹跟踪、离手恢复与空中稳定画面 |
 
-### 技术实现
+文中新增试验均由实际程序运行产生；实机画面采用 Crazyflow 原作者公开飞行资料，并在图内注明归属。本项目新增仿真结果与公开实机结果使用各自的试验条件和统计口径。
 
-系统以 Crazyflie `cf21B_500` 四旋翼为建模对象，采用 Crazyflow 的 `first_principles` 六自由度模型，包含质量、惯量、重力、机体线速度及角速度、四电机转速动态、转速—推力映射、气动阻力及力矩。每个 world 与无人机分别维护动力学状态和参数；可配置多机、扰动力、碰撞几何及控制频率。质量与惯量等参数来自机型配置文件，可通过实测数据辨识和更新。
+## 一、机群动力学建模与物理响应
 
-### 动力学响应验证
+针对真实旋翼无人机集群的动力学建模要求，系统采用 Crazyflow 六自由度模型，维护每架无人机的位置、姿态、线速度、角速度及四电机状态。模型包含质量、惯量、重力、电机转速动态、转速—推力映射、阻力及外力矩；可按机型配置参数，并在同一场景中组织多机仿真。
 
-在 500 Hz 下运行两个并行 world，初始高度均为 1 m；2–3 s 对两组施加 1.1 倍悬停推力对应的转速指令，另对第二组在 1–2 s 施加世界坐标系 +x 方向的 0.02 N 外力。转子转速从约 15,899.88 RPM 响应至约 16,658.17 RPM；5 s 时受扰组 x 位移为 0.761132 m，未受扰组为 0 m。运行画面、输入与状态记录如下。
+以 Crazyflie 2.1 Brushless 的 `cf21B_500` 模型开展输入—响应试验：两个并行环境均以 500 Hz 运行，初始高度 1 m；2—3 秒施加 1.1 倍悬停推力对应的电机转速指令，另对受扰组在 1—2 秒施加 0.02 N 水平外力。
 
-![两组 Crazyflie 动力学仿真画面及响应曲线](peibiao_assets/dynamics_evidence.png)
+![电机转速跟随、外力输入及无人机运动响应](peibiao_assets/dynamics_evidence.png)
 
-图 1：动力学模型实际运行画面和响应曲线。完整条件、参数文件哈希和原始采样分别见 [结果记录](peibiao_assets/dynamics_results.json) 与 [采样数据](peibiao_assets/dynamics_trace.csv)。
+**图 1　动力学模型的实际运行与输入—响应关系。** 上方为两组仿真机体近景，下方依次给出指令与电机响应、外力输入、水平位移及高度变化。转速由约 15,899.88 RPM 向 16,658.17 RPM 过渡；5 秒时受扰组水平位移为 0.761132 m，基准组为 0 m。
 
-模型的实机一致性采用公开的 Crazyflow 原作者 Crazyflie 2.1 飞行试验作为基础能力佐证：100 Hz 姿态控制、5 次飞行下，9 s 圆轨迹的仿真与实机位置差 RMSE 为 19.0 ± 2.6 mm，3.5 s 圆轨迹为 59.6 ± 1.3 mm。该结果属于上游作者在其机型和试验条件下的公开实测，不是本次仿真的实测误差；目标机型和载荷变化后应重新辨识并独立验证。公开实测条件及数据见 [Crazyflow 实机对比试验](https://arxiv.org/html/2606.01478v1)。
+### 近地增升与机间下洗
 
-## 2. “支持集群路径自主规划”
+为验证机群模型中的气动作用，显式启用已有地效、下洗插件开展独立对照。近地试验从 0.05 m 高度开始，基准与地效组保持相同的 15,899.878 RPM 转速；2 秒后基准高度为 0.050000 m，地效组为 0.244651 m，附加升力峰值为 0.016725 N。
 
-### 技术实现
+![同初态同转速下的近地增升画面及高度和附加升力记录](peibiao_assets/aerodynamics/ground_effect_evidence.png)
 
-针对已知静态栅格地图，实现带时空预约约束的优先级 A* 集群路径规划。规划器根据障碍、四机起点和目标点生成离散路径，逐时段检查与已规划轨迹的连续线段间距，并在终点保持预约；轨迹经状态控制器送入四机动力学模型闭环执行。
+**图 2　地效插件启用前后的实际对照。** 两组初始状态和固定转速相同，画面及曲线显示近地附加升力对高度响应的影响。
 
-### 实际运行结果
+<video controls preload="metadata" width="100%" poster="peibiao_assets/aerodynamics/ground_effect_scene.png" src="peibiao_assets/aerodynamics/ground_effect.mp4"></video>
 
-在 5 个静态障碍、4 架 `cf21B_500` 的交叉任务中，物理频率 500 Hz、控制频率 100 Hz，运行 31 s。四机均到达距目标 0.2 m 以内；全程三维位置跟踪 RMSE 为 0.08314 m，100 Hz 状态采样得到的最小机间中心距为 0.59332 m；10 Hz 接触采样共 311 帧，阳性 0 帧。
+<details class="motion">
+<summary>动画演示：同转速下的近地增升</summary>
 
-![四机规划与仿真场景](peibiao_assets/swarm_simulation.png)
+![近地增升实际对照动画](peibiao_assets/aerodynamics/ground_effect.gif)
 
-图 2：四机交叉航线及障碍场景，线条由实际仿真状态绘制。[查看完整运行视频](peibiao_assets/swarm_simulation.mp4)。
+</details>
 
-![集群轨迹与间距实测曲线](peibiao_assets/swarm_trajectory.png)
+下洗试验中，上机高度指令为 1.2 m，下机为 0.5 m；下机在 4—8 秒以 0.25 m/s 从上机下方穿越。基准与下洗组采用相同初态和位置指令，各自独立反馈；启用下洗后，下机向下附加力峰值为 0.198520 N，与基准组的最大高度差为 0.075791 m。
 
-图 3：规划轨迹与实测轨迹，以及机间与障碍间距。结果详见 [指标数据](peibiao_assets/swarm_metrics.json) 和 [轨迹数据](peibiao_assets/swarm_data.npz)。机心到障碍物表面的水平最小距离为 0.43315 m；以上距离和接触计数均为采样结果，本试验限于单个已知静态地图，不构成采样间无碰撞或未知环境规划的证明。
+![上下双机穿越的实际场景、机体高度及下洗力和力矩](peibiao_assets/aerodynamics/downwash_evidence.png)
 
-## 3. “支持强化学习及其他神经网络算法开发”
+**图 3　机间下洗引起的受力和闭环高度变化。** 上方为 6.6 秒的实际双机画面，下方为位置、向下外力和附加力矩记录。该图证明已启用的经验下洗模型在本场景中的作用；本节气动对照与第二节基础动力学下的四机规划试验分别计量。
 
-### 技术实现
+<video controls preload="metadata" width="100%" poster="peibiao_assets/aerodynamics/downwash_scene.png" src="peibiao_assets/aerodynamics/downwash_comparison.mp4"></video>
 
-系统提供 Gymnasium 向量化环境、观测与动作接口、奖励和终止条件、并行仿真及检查点机制。强化学习训练器实现 PPO 策略网络与价值网络、优势估计、裁剪更新和独立评估；支持 CPU 与 GPU 后端。除强化学习外，系统支持 JAX 自动微分和监督学习神经网络，神经轨迹生成网络的训练及仿真闭环见第 5 节。
+<details class="motion">
+<summary>动画演示：上下双机穿越的下洗对照</summary>
 
-### 实际训练与评估
+![双机穿越下洗作用实际对照动画](peibiao_assets/aerodynamics/downwash_comparison.gif)
 
-在 `DroneReachPos-v0` 任务中，使用默认 `cf2x_L250` 机型及 `so_rpy` 拟合动力学，环境控制 50 Hz、内部物理 500 Hz；采用 128 个并行环境，先使用 38,400 个教师样本进行行为克隆，再执行 128 次 PPO 更新，生成 524,288 个交互槽位，其中 523,264 个为有效交互。独立评估采用 seed 10007、32 个 world、每个 500 步（10 s）；全程未提前终止且末秒位置 RMSE 小于 0.1 m 定义为成功。实测成功及存活均为 32/32；末秒位置 RMSE 为 0.028730 m，全程 RMSE 为 0.319743 m。
+</details>
 
-![强化学习训练和独立评估结果](peibiao_assets/rl_cpu_medium.png)
+实机一致性另有公开实测支撑：Crazyflow 原作者对 Crazyflie 2.1 进行 100 Hz 姿态控制、每个条件 5 次飞行的仿真—实机对照，9 秒圆轨迹的位置差 RMSE 为 **19.0 ± 2.6 mm**，3.5 秒圆轨迹为 **59.6 ± 1.3 mm**。该数据说明其标定机型及工况下的基础模型一致性；本次多机仿真与该公开单机试验分别报告，不将二者合并为本项目的实机测试。
 
-图 4：行为克隆与 PPO 训练后的评估图；结果为本次 CPU 混合训练试验，并非纯 PPO 或全任务泛化结论。另一次不使用行为克隆、仅 4,091 个有效交互的小预算试验在 8 个独立 world 中成功率为 0%，全程 RMSE 为 0.758854 m，见 [训练日志](peibiao_assets/rl_cpu_training.log) 与 [评估图](peibiao_assets/rl_cpu_training.png)；该对照说明不同训练预算与初始化不能混同。[训练日志](peibiao_assets/rl_cpu_medium.log) 和 [策略检查点](peibiao_assets/rl_cpu_medium.pt) 用于核验训练与评估记录；[末次训练检查点](peibiao_assets/rl_cpu_medium_last.pt) 保存续训状态。
+## 二、多机协同航迹规划与避障执行
 
-## 4. “提供一套强化学习训练范式”
+针对集群路径自主规划要求，实现带时空预约约束的优先级 A* 规划器。输入为已知静态地图、各机起点和目标；规划过程中避开障碍、检查与已规划无人机的同步线段间距，并预约终点占用时段。生成的路径经状态控制器送入四机动力学模型，形成“规划—控制—状态反馈”的闭环。
 
-训练范式包括环境构建、并行采样、观测整理与动作归一化、策略采样、奖励和终止状态记录、PPO 更新、验证集选模、独立种子评估以及检查点保存和恢复。任务、并行数量、采样步数、训练预算、随机种子和评估规模均可配置；教师行为克隆为可选初始化步骤，教师样本量与 PPO 交互量分别统计。
+![四机从起点出发、交叉绕障并到达目标的连续画面](peibiao_assets/presentation/swarm_sequence.png)
 
-![强化学习训练过程与评估](peibiao_assets/rl_cpu_medium.png)
+**图 4　四机集群自主规划的执行过程。** 图中标注 1—4 号无人机，取自同一次运行的连续时刻；障碍物、实际机体位置及已飞轨迹均来自仿真画面。
 
-图 5：可执行训练范式的实际运行结果。该范式的入口为 [train_gymnasium.py](usage_assets/train_gymnasium.py)；第 3 节列示本次实例的条件及结果。训练模型、日志和评估必须与具体机型、任务配置及种子对应。
+<video controls preload="metadata" width="100%" poster="peibiao_assets/presentation/swarm_replay.png" src="peibiao_assets/presentation/swarm_zh.mp4"></video>
 
-## 5. “提供一套端到端轨迹规划算法”
+<details class="motion">
+<summary>动画演示：四机交叉飞行全过程</summary>
 
-### 技术实现
+![四机协同规划实际运行动画](peibiao_assets/presentation/swarm.gif)
 
-轨迹生成网络接收已知圆柱障碍物的二维位置和半径，使用 3→64→64→31 的多层感知机一次输出完整轨迹的 31 个横向采样点；固定起终点，纵向采样位置预先给定。训练使用合成轨迹监督标签，预测轨迹再由独立的状态控制器跟踪。端到端范围为“障碍参数输入至整条轨迹输出”，不包括传感器感知或电机控制。
+</details>
 
-### 训练和闭环验证
+![四机规划与实际航线、机间及障碍间距](peibiao_assets/charts/swarm_metrics_zh.png)
 
-使用 2,048 个合成场景训练 400 epoch，以另一随机种子的 256 个独立场景进行预测测试。预测点相对监督标签 RMSE 为 0.01019 m；逐条轨迹按 601 个点检查无人机中心至圆柱表面距离，256 条轨迹采样点均未进入圆柱，最小距离为 0.13361 m。该距离未扣除机身尺寸，亦不代表连续碰撞安全保证。
+**图 5　规划结果与执行效果的量化对照。** 虚线为规划航线，实线为实际航线；右侧为 100 Hz 状态记录计算的距离。
 
-![神经轨迹规划训练与独立测试](peibiao_assets/neural_planner_training.png)
+| 试验条件及结果 | 实际记录 |
+|---|---|
+| 场景规模与运行时间 | 4 架无人机、5 个静态障碍、31 秒 |
+| 物理与控制频率 | 500 Hz / 100 Hz |
+| 目标到达 | 4/4 架最终位置距目标小于 0.2 m |
+| 全程位置跟踪 RMSE | 0.08314 m |
+| 最小机心间距 | 0.59332 m |
+| 最小机心至障碍表面水平距离 | 0.43315 m |
+| 接触检测 | 10 Hz 共 311 帧，接触阳性 0 帧 |
 
-图 6：网络训练损失和独立测试轨迹的障碍间距分布。
+上述结果对应已知静态场景；距离和接触检测为所列频率下的采样结果。
 
-从独立测试集预先指定第 0 个场景，插值网络输出并以 `cf21B_500` 在 Crazyflow 中进行 500 Hz 动力学、100 Hz 状态控制闭环跟踪，轨迹执行 8 s 后稳定 2 s。该场景的实际接触检测在 1,000 个控制步中为 0 次，末目标误差 0.08113 m，三维轨迹跟踪 RMSE 为 0.083661 m；参考与状态按控制步结束时刻对齐。
+## 三、强化学习与神经网络算法开发环境
 
-![神经规划轨迹的仿真闭环执行画面](peibiao_assets/neural_planner_flight.png)
+针对强化学习及其他神经网络算法开发要求，系统提供向量化环境、固定顺序的观测接口、动作归一化、奖励与终止条件，以及模型保存和加载能力。PPO 使用策略网络和价值网络进行采样与更新；JAX 自动微分与监督学习接口支持直接训练轨迹生成网络。
 
-图 7：橙线为网络规划路径，蓝线为仿真实际轨迹。[查看运行视频](peibiao_assets/neural_planner_flight.mp4)；[训练及测试结果](peibiao_assets/neural_planner_results.json)、[模型权重](peibiao_assets/neural_planner_weights.npz) 和 [轨迹数据](peibiao_assets/neural_planner_trajectory.npz) 提供复核依据。本试验的输入为单一已知静态障碍，不能外推为多障碍视觉规划或通用场景性能。
+本次实际训练的神经规划网络采用 **3→64→64→31** 结构，以障碍物位置和半径为输入，以整条路径的采样点为输出。训练场景与测试场景采用独立随机种子；损失曲线和测试结果均由训练记录生成。
 
-## 6. “支持 Sim2Sim 闭环验证”
+![神经网络训练损失与独立测试场景的路径间距分布](peibiao_assets/charts/neural_training_zh.png)
 
-### 技术实现与验证结果
+**图 6　神经网络开发与独立测试的实际结果。** 左侧记录 2,048 个合成场景、400 轮训练的路径点损失；右侧为 256 个独立测试场景的规划中心线间距分布。该图对应已知单圆柱障碍、固定起终点的监督学习任务，具体绕障执行见第五节。
 
-建立 Crazyflow 与独立 MuJoCo `mj_step` 刚体仿真两套动力学闭环。两套仿真使用相同冻结的高度位置—速度反馈控制器，各自的实时状态独立反馈，不共享仿真状态；质量、重力、电机响应、推力系数和阻力参数对齐。控制频率 50 Hz、物理频率 500 Hz，垂直轨迹运行 8 s。
+## 四、强化学习训练范式与策略闭环飞行
 
-401 个采样点的跨引擎高度轨迹 RMSE 为 0.000632 m，最大高度差为 0.000930 m；Crazyflow 与 MuJoCo 各自相对高度参考的 RMSE 分别为 0.077688 m 和 0.077078 m。
+针对完整强化学习训练范式要求，已运行“环境构建—并行采样—优势估计—PPO 裁剪更新—验证选模—独立评估—模型保存”的完整流程。支持可选教师初始化、训练预算配置、检查点重载及续训；教师样本与强化学习有效交互分别计量。
 
-![两个动力学引擎的闭环画面和实测高度轨迹](peibiao_assets/sim2sim_evidence.png)
+本次到点任务使用 `cf2x_L250` 机型和 `so_rpy` 拟合动力学，内部物理 500 Hz、环境控制 50 Hz。128 个并行环境先使用 38,400 个教师样本初始化，再执行 128 次 PPO 更新，产生 524,288 个交互槽位、523,264 个有效交互。
 
-图 8：左右为两个引擎的运行画面，下方为各自闭环轨迹。[原始数据](peibiao_assets/sim2sim_trace.csv) 与 [结果记录](peibiao_assets/sim2sim_results.json) 可重算统计量。本验证限于同参数、无接触和扰动的单机一维垂直运动及手工控制器，不能代表任意三维场景或神经策略的跨引擎迁移表现。
+![PPO训练误差、原始奖励及32个独立环境的末秒误差](peibiao_assets/charts/rl_training_zh.png)
 
-## 7. “支持 Sim2Real 闭环验证，实现仿真算法向实机的高保真迁移”
+**图 7　实际训练与独立测试。** 左、中图来自保存的训练历史，按包含环境重置的采样批次统计；右图来自冻结模型的独立重放。32 个测试环境均完整运行 500 步，且末秒位置 RMSE 小于 0.1 m，**32/32 达标**；末秒聚合 RMSE 为 **0.028730 m**，含初始接近阶段的全程 RMSE 为 **0.319743 m**。
 
-### 迁移链路
+![冻结强化学习策略从随机初态接近并保持目标点](peibiao_assets/presentation/rl_policy_sequence.png)
 
-以 Crazyflie 机型和飞控接口为对象，拟实施的迁移链路包括机型参数与执行器标定、仿真中训练及冻结策略、状态和坐标系对齐、控制指令接口映射、定位反馈闭环、实飞日志采集及同轨迹误差评估。定位、飞控、通信频率、执行器饱和、时延和任务终止机制均应与目标设备匹配。实机验证应采用独立飞行轨迹，并记录实测状态、指令、时间戳、失败及中止情况。
+**图 8　训练后策略的实际物理闭环重放。** 橙色为目标点，青色为实际飞行轨迹；画面显示无人机逐步接近目标并稳定。该重放读取保存的模型，使用独立种子 10007 和各环境自身状态反馈，测得指标与原评估一致。
 
-### 公开实机验证材料
+<video controls preload="metadata" width="100%" poster="peibiao_assets/presentation/rl_policy_replay.png" src="peibiao_assets/presentation/rl_policy_replay.mp4"></video>
 
-Crazyflow 原作者公开的实机试验视频可直接查看：[Crazyflie 轨迹跟踪](https://www.youtube.com/watch?v=isHuQqZSapo)及[仿真训练视觉策略的实机飞行](https://www.youtube.com/watch?v=QhOUePHSmyA)。该视频及第 1 节的飞行对照数据属于上游作者的公开实验，证明其所用仿真模型与试验平台的迁移结果；并非本项目自行完成的实机飞行。
+<details class="motion">
+<summary>动画演示：冻结策略从初态飞向目标并保持</summary>
 
-[![Crazyflow 原作者公开的视觉策略实飞视频预览](https://i.ytimg.com/vi/QhOUePHSmyA/maxresdefault.jpg)](https://www.youtube.com/watch?v=QhOUePHSmyA)
+![强化学习策略闭环飞行动画](peibiao_assets/presentation/rl_policy.gif)
 
-图 9：Crazyflow 原作者的视觉策略实机飞行公开视频预览，点击可查看原视频。
+</details>
 
-本材料的新增试验均为仿真；本项目尚无 Crazyflie 飞行日志、实机部署记录或实机闭环测量结果，不能据此认定本项目已完成实机高保真迁移验收。实际验收需在目标设备上完成参数辨识、独立闭环飞行和定量对照。
+该结果为教师初始化与 PPO 的混合训练实例。另一次不使用教师初始化、仅 4,091 个有效交互的小预算试验，8 个独立环境的成功率为 0%；不同初始化方式与预算的结果分别保留，不能据此合并为纯 PPO 性能。
 
-## 8. 试验环境及复现
+## 五、神经网络端到端轨迹生成与绕障验证
 
-本次新增仿真实验使用 Python 3.12、JAX 0.11.1、MuJoCo/MJX 3.10.0、PyTorch 2.8.0+cpu，CPU 后端，离屏渲染使用 EGL。完整依赖版本见 [环境清单](peibiao_assets/environment-freeze.txt)；系统须提供 EGL。数据、图像和视频由对应脚本生成；针对同一输入和固定随机种子，集群、动力学及 Sim2Sim 的结果已复跑核对。训练器、接触检测及积分器相关 CPU 测试共 33 项通过，存在 1 条接触检测中的 JAX 数值转换警告；本次未进行 GPU 后端回归。
+针对端到端轨迹规划算法要求，采用从障碍参数直接输出整条路径的神经网络：输入圆柱中心位置与半径，单次前向计算输出 31 个路径点的横向坐标，纵向坐标及起终点固定。输出轨迹经插值后交由独立状态控制器执行，端到端范围为**障碍参数至完整轨迹**。
 
-```bash
-python -m pip install -r peibiao_assets/environment-freeze.txt
-export JAX_PLATFORMS=cpu MUJOCO_GL=egl MPLBACKEND=Agg
-export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
-export XLA_FLAGS='--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1'
-export PYTHONPATH="$PWD"
-python peibiao_assets/dynamics_response.py
-python peibiao_assets/swarm_planning.py --device cpu
-python peibiao_assets/neural_planner_demo.py
-python peibiao_assets/sim2sim_closed_loop.py
-python usage_assets/train_gymnasium.py --device cpu --env-id DroneReachPos-v0 \
-  --num-envs 128 --num-steps 32 --total-timesteps 524288 \
-  --num-minibatches 8 --update-epochs 3 --position-bc-steps 300 \
-  --teacher-model calibrated --eval-envs 32 --eval-interval 32 \
-  --checkpoint peibiao_assets/rl_cpu_medium.pt --output peibiao_assets/rl_cpu_medium.png
-```
+![网络规划路径与实际绕障轨迹的中文对照图](peibiao_assets/charts/neural_execution_zh.png)
 
-实验结果仅适用于文中列示的模型、参数和场景。正式交付或验收时应同时提供运行环境、源程序、配置、模型权重、原始数据及相应视频，并以目标设备和招标验收条件对实机条款进行核验。
+**图 9　规划输出与动力学执行结果。** 橙色虚线为网络输出路径，蓝线为实际执行轨迹；圆形区域为障碍横截面。测试场景在执行前指定，不依据飞行结果挑选。
+
+![无人机从障碍左侧绕行并到达右侧目标的连续画面](peibiao_assets/presentation/neural_planner_sequence.png)
+
+**图 10　神经规划轨迹的实际绕障飞行。** 连续画面显示无人机由起点出发、绕过圆柱并抵达目标；路径与机体运动均来自仿真运行。
+
+<video controls preload="metadata" width="100%" poster="peibiao_assets/presentation/neural_planner_replay.png" src="peibiao_assets/presentation/neural_planner_zh.mp4"></video>
+
+<details class="motion">
+<summary>动画演示：网络输出轨迹的实际绕障执行</summary>
+
+![神经轨迹规划实际绕障动画](peibiao_assets/presentation/neural_planner.gif)
+
+</details>
+
+| 验证环节 | 实际结果 |
+|---|---|
+| 独立预测测试 | 256 个场景，路径点相对监督标签 RMSE 0.01019 m |
+| 规划几何检查 | 每条路径采样 601 点，最小中心线至圆柱表面距离 0.13361 m，采样点进入圆柱 0 条 |
+| 动力学闭环场景 | 独立测试第 0 场景；500 Hz 物理、100 Hz 控制；执行 8 秒并稳定 2 秒 |
+| 三维跟踪 RMSE | 0.083661 m，参考与状态按控制步结束时刻对齐 |
+| 末目标误差 | 0.08113 m |
+| 执行接触检查 | 1,000 个控制步中接触阳性 0 次 |
+
+预测测试属于几何采样，实际动力学飞行对应其中一个预定场景。场景限定为已知单静态圆柱；中心线距离未扣除机身半径，不能作为连续碰撞安全保证。
+
+## 六、跨仿真器的独立闭环对照
+
+针对 Sim2Sim 闭环验证要求，在 Crazyflow 与独立 MuJoCo 刚体动力学中分别部署同一冻结高度控制器。两个引擎各自根据实际位置和速度计算反馈，不共享仿真状态；对齐质量、重力、电机响应、推力与阻力参数，以 500 Hz 物理频率、50 Hz 控制频率执行 8 秒垂直轨迹。
+
+![Crazyflow和独立MuJoCo的运行画面及各自闭环轨迹](peibiao_assets/sim2sim_evidence.png)
+
+**图 11　两个动力学引擎的独立闭环与记录轨迹。** 401 个采样点的跨引擎高度差 RMSE 为 **0.000632 m**，最大差为 **0.000930 m**；两引擎相对目标高度的 RMSE 分别为 0.077688 m、0.077078 m。
+
+该验证覆盖同参数、无接触和外部扰动的单机垂直运动，控制器为固定位置—速度反馈。结果对应上述对照条件，不代表任意三维场景或神经策略的跨引擎迁移性能。
+
+## 七、虚实迁移链路与真实飞行效果
+
+针对 Sim2Real 闭环验证及高保真迁移要求，技术链路包括机型与执行器参数对齐、仿真训练及策略冻结、状态和坐标系映射、控制接口适配、真实定位反馈与同轨迹误差评估。以下采用 Crazyflow 原作者的公开实飞片段，直接展示仿真相关算法在真实无人机上的飞行效果。
+
+### 实物八字轨迹跟踪
+
+![真实场地中PPO控制无人机在八字轨迹不同位置的连续实飞画面](peibiao_assets/real_flight/tracking_sequence.png)
+
+**图 12　真实场地中的实物轨迹跟踪。** 取自同一公开视频的 3、9、15 秒：同一机体分别位于八字轨迹右上、左上及右下位置。真实机体、场地和原片轨迹叠加均保留；原片“15.9 mm”为作者标注的 PPO 实机轨迹跟踪误差，归属于该公开试验。
+
+<video controls preload="metadata" width="100%" poster="peibiao_assets/real_flight/tracking_sequence.png" src="peibiao_assets/real_flight/trajectory_tracking.mp4"></video>
+
+<details class="motion">
+<summary>实际飞行片段：实物无人机沿八字轨迹持续运动</summary>
+
+![原作者公开的实物PPO八字轨迹跟踪动画](peibiao_assets/real_flight/tracking_flight.gif)
+
+</details>
+
+### 实物离手恢复与空中稳定
+
+![真实无人机投掷后上升、恢复姿态并在空中稳定的连续画面](peibiao_assets/real_flight/deployment_sequence.png)
+
+**图 13　真实无人机离手后的闭环恢复过程。** 取自原作者公开视频的 21.8、24、27 秒，画面保留操作人员、真实场地及机体位移，可直接辨识离手、恢复和空中稳定过程。
+
+<video controls preload="metadata" width="100%" poster="peibiao_assets/real_flight/deployment_sequence.png" src="peibiao_assets/real_flight/deployment_excerpt.mp4"></video>
+
+<details class="motion">
+<summary>实际飞行片段：离手后的恢复与稳定</summary>
+
+![原作者公开的真实无人机恢复飞行动画](peibiao_assets/real_flight/deployment_flight.gif)
+
+</details>
+
+**实飞资料归属：学习系统与机器人实验室（LSY）公开发布。** 上述画面为真实飞行视频帧及片段，已保存为本地素材，来源、时间戳和加工说明随交付文件保留；本项目新增试验为仿真记录，不将公开实飞归属于本项目。目标硬件的最终迁移验收仍需对应机型的部署记录与独立实飞测量。
+
+## 验证条件与证据交付
+
+新增仿真采用 Python 3.12、JAX 0.11.1、MuJoCo/MJX 3.10.0 和 PyTorch 2.8.0 CPU 后端；图表直接使用保存的训练历史、模型权重与原始轨迹计算，视频画面来自实际仿真或已标注来源的公开实飞。静态连续帧供文档审阅与打印，内嵌视频及动画供动态核验。
+
+| 证据内容 | 随附文件位置 |
+|---|---|
+| 动力学输入、状态及模型参数记录 | `peibiao_assets/dynamics_*` |
+| 地效与下洗对照程序及气动记录 | `peibiao_assets/aerodynamics/` |
+| 多机规划程序、原始轨迹及指标 | `peibiao_assets/swarm_*` |
+| 强化学习训练程序、模型及日志 | `usage_assets/train_gymnasium.py`、`peibiao_assets/rl_cpu_*` |
+| 神经规划训练程序、权重及轨迹 | `peibiao_assets/neural_planner_*` |
+| 独立引擎闭环程序与采样数据 | `peibiao_assets/sim2sim_*` |
+| 中文图表及其原始数据追溯 | `peibiao_assets/charts/` |
+| 仿真连续帧、动态演示及重放记录 | `peibiao_assets/presentation/` |
+| 实飞片段、原片与来源说明 | `peibiao_assets/real_flight/` |
+
+相关 CPU 测试 33 项通过；动力学、规划及独立引擎试验已复跑，训练策略已重新加载并独立评估。采样指标、训练预算、测试规模和场景范围随各节列示，作为本材料的验证依据。

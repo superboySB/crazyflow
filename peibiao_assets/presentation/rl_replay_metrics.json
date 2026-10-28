@@ -1,0 +1,15 @@
+{
+  "mean_reward": 0.8403742909431458,
+  "episode_return": 420.1871337890625,
+  "mean_error": 0.13492999970912933,
+  "rmse": 0.3197428286075592,
+  "last_second_rmse": 0.028729651123285294,
+  "final_mean_error": 0.02694040536880493,
+  "median_env_rmse": 0.2855418026447296,
+  "p95_error": 0.7848488688468933,
+  "max_error": 2.2847976684570312,
+  "survival_rate": 1.0,
+  "success_rate": 1.0,
+  "mean_episode_steps": 500.0,
+  "evaluation_seed": 10007.0
+}

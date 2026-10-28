@@ -38,6 +38,8 @@ DRAG_Z = -0.02477138502714662
 MIN_FORCE = 0.02136263065537499
 MAX_FORCE = 0.2
 
+plt.rcParams.update({"font.family": "Noto Sans CJK SC", "axes.unicode_minus": False})
+
 XML = """<mujoco model="independent_drone">
 <option timestep="0.002" gravity="0 0 -9.81" integrator="Euler"/>
 <visual><global offwidth="640" offheight="480"/></visual>
@@ -188,21 +190,21 @@ def main() -> None:
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.imshow(screenshot_cf)
     ax1.axis("off")
-    ax1.set_title("Crazyflow renderer | t = 2.0 s")
+    ax1.set_title("Crazyflow 动力学闭环｜2.0 秒")
     ax2 = fig.add_subplot(gs[0, 1])
     ax2.imshow(screenshot_mj)
     ax2.axis("off")
-    ax2.set_title("Independent MuJoCo renderer | t = 2.0 s")
+    ax2.set_title("独立 MuJoCo 动力学闭环｜2.0 秒")
     ax3 = fig.add_subplot(gs[1, :])
-    ax3.plot(samples[:, 0], samples[:, 1], "k--", label="Target")
-    ax3.plot(samples[:, 0], samples[:, 2], label="Crazyflow closed loop")
-    ax3.plot(samples[:, 0], samples[:, 3], label="MuJoCo closed loop", alpha=0.8)
+    ax3.plot(samples[:, 0], samples[:, 1], "k--", label="目标高度")
+    ax3.plot(samples[:, 0], samples[:, 2], label="Crazyflow 实际高度")
+    ax3.plot(samples[:, 0], samples[:, 3], label="MuJoCo 实际高度", alpha=0.8)
     ax3.set(
-        xlabel="Time (s)",
-        ylabel="Altitude (m)",
+        xlabel="时间（s）",
+        ylabel="高度（m）",
         title=(
-            "Actual recorded trajectories | "
-            f"Cross-engine RMSE = {summary['cross_engine_rmse_m']:.6f} m"
+            "各自使用状态反馈的独立闭环记录｜"
+            f"跨引擎高度差 RMSE = {summary['cross_engine_rmse_m']:.6f} m"
         ),
     )
     ax3.grid(alpha=0.25)

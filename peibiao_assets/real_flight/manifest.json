@@ -1,0 +1,87 @@
+{
+  "material_type": "Third-party publicly released real-flight evidence, not a local hardware experiment",
+  "retrieved_on": "2026-10-28",
+  "generator": "build_frames.py",
+  "font": {
+    "name": "NotoSansCJK-Regular.ttc",
+    "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+  },
+  "videos": [
+    {
+      "file": "trajectory_tracking.mp4",
+      "url": "https://www.youtube.com/watch?v=isHuQqZSapo",
+      "title": "Crazyflow - Sim-to-Real",
+      "publisher": "Learning Systems and Robotics Lab",
+      "upload_date": "20260521",
+      "sha256": "e51f5558811d47929e6be411664b8b882049179b19907e7d86076f3ac56d0c24",
+      "duration_s": 18.2
+    },
+    {
+      "file": "recovery_training.mp4",
+      "url": "https://www.youtube.com/watch?v=684uZqaAmuU",
+      "title": "Crazyflow - Throw",
+      "publisher": "Learning Systems and Robotics Lab",
+      "upload_date": "20260521",
+      "sha256": "438550b965170b26173ad72110371fb1fd080e4fdd570bef80c75f2b4fe37a79",
+      "duration_s": 34.62
+    }
+  ],
+  "derived": [
+    {
+      "file": "tracking_sequence.png",
+      "source": "trajectory_tracking.mp4",
+      "timestamps_s": [
+        3,
+        9,
+        15
+      ],
+      "processing": "Crop bottom-left PPO quadrant [0,540,960,1080]; resize and add separately positioned captions. Pixel content unaltered.",
+      "sha256": "e6315ee900757d8a26ea96ff62dc30cf9f2492eff8989dbed8ee6b64dfcdcf08"
+    },
+    {
+      "file": "deployment_sequence.png",
+      "source": "recovery_training.mp4",
+      "timestamps_s": [
+        21.8,
+        24,
+        27
+      ],
+      "processing": "Crop central physical camera area [600,0,1320,1080]; resize and add separately positioned captions. Pixel content unaltered.",
+      "sha256": "e0182f37199ea881c8f8e5830b4cf50fca5d1416d579f914aa5c0f36f2f44739"
+    },
+    {
+      "file": "deployment_excerpt.mp4",
+      "source": "recovery_training.mp4",
+      "time_range_s": [
+        21,
+        29
+      ],
+      "processing": "Extract silent 8-second excerpt, full field of view retained.",
+      "sha256": "4c67dc4e0c2f81b10c9369c08c15fdbe993547b6f6cd8a3ca4a992f9faafa852"
+    },
+    {
+      "file": "tracking_flight.gif",
+      "source": "trajectory_tracking.mp4",
+      "time_range_s": [
+        0,
+        18
+      ],
+      "processing": "Sample at nominal 6 fps; crop bottom-left PPO panel [0,540,960,1080], resize to 640x360. Pixel content otherwise unaltered. GIF frame delays are quantized.",
+      "sha256": "ca62024f46ce9e693c2ddafa9aa9006c526d2a3e0dec69cac8200ca1ea1d585a",
+      "gif_frames": 108,
+      "gif_playback_duration_s": 17.28
+    },
+    {
+      "file": "deployment_flight.gif",
+      "source": "recovery_training.mp4",
+      "time_range_s": [
+        21,
+        29
+      ],
+      "processing": "Sample at nominal 6 fps; resize to width800, full field of view retained. GIF frame delays are quantized.",
+      "sha256": "f744400d6d36dd66981a9e8e39957d08413f1c6edd7b7ab2d12a455b87043544",
+      "gif_frames": 47,
+      "gif_playback_duration_s": 7.69
+    }
+  ]
+}
