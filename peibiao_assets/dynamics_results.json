@@ -1,0 +1,39 @@
+{
+  "drone": "cf21B_500",
+  "dynamics": "first_principles",
+  "environment": {
+    "crazyflow": "0.4.0",
+    "jax": "0.11.1",
+    "backend": "cpu"
+  },
+  "frequency_hz": 500,
+  "output_sample_hz": 100.0,
+  "duration_s": 5.0,
+  "worlds": 2,
+  "initial_height_m": 1.0,
+  "mass_kg": 0.0434,
+  "gravity_mps2": 9.81,
+  "parameter_file": "crazyflow/dynamics/first_principles/params.toml",
+  "parameter_file_sha256": "a0c223122529424c353c5820d64ee68e81156b75f137a9439a39d0c109926c7a",
+  "rotor_model": "quadratic rpm-to-thrust plus first-order nonlinear rotor dynamics",
+  "nominal_rotor_rpm": 15899.876687344424,
+  "pulse_rotor_rpm": 16658.193377417057,
+  "pulse_time_s": [
+    2,
+    3
+  ],
+  "thrust_pulse": "nominal total thrust command multiplied by 1.1",
+  "world1_force_x_N": 0.02,
+  "world1_force_interval_s": [
+    1,
+    2
+  ],
+  "world0_force_x_N": 0,
+  "max_world1_x_m": 0.761132001876831,
+  "max_world0_x_m": 0.0,
+  "max_rotor_rpm": 16658.166015625,
+  "final_altitude_m": 2.290555477142334,
+  "final_world1_x_m": 0.761132001876831,
+  "samples": 501,
+  "scope": "open-loop ideal symmetric rotors; no real-flight comparison or tracking controller"
+}

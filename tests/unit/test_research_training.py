@@ -1,5 +1,7 @@
 """CPU regression checks for the research trainer's episode accounting."""
 
+from pathlib import Path
+
 import gymnasium
 import jax.numpy as jnp
 import numpy as np
@@ -236,3 +238,40 @@ def test_calibrated_teacher_inverts_official_fitted_dynamics(dtype: torch.dtype)
         torch.tensor([[4.0, -4.0, 4.0]], dtype=dtype), "calibrated"
     )
     torch.testing.assert_close(saturated, clipped)
+
+
+def test_cpu_backend_runs_and_loads_legacy_checkpoint(tmp_path: Path) -> None:
+    """CPU interoperability and explicit override work for pre-device GPU checkpoints."""
+    from dataclasses import asdict
+
+    assert trainer.Config().device == "gpu"
+    config = trainer.Config(env_id="DroneReachPos-v0", device="cpu", num_envs=2)
+    env = trainer.make_env(config, 2)
+    try:
+        obs, _ = trainer.reset_env(env, seed=31)
+        assert obs["pos"].device.type == "cpu"
+        obs_keys = trainer.observation_keys(config.env_id)
+        flat = trainer.flatten_obs(obs, obs_keys)
+        agent = trainer.Agent(flat.shape[-1], 4)
+        with torch.no_grad():
+            action = agent.deterministic_action(flat)
+        next_obs, reward, _, _, _ = env.step(action)
+        assert next_obs["pos"].device.type == reward.device.type == "cpu"
+        config_data = asdict(config)
+        del config_data["device"]  # Checkpoints written before the backend field existed.
+        path = tmp_path / "legacy.pt"
+        torch.save(
+            {
+                "config": config_data,
+                "agent": agent.state_dict(),
+                "obs_keys": obs_keys,
+                "history": {},
+            },
+            path,
+        )
+        loaded, loaded_config, loaded_keys, _ = trainer.load_checkpoint(path, device="cpu")
+        assert loaded_config.device == "cpu" and loaded_keys == obs_keys
+        with torch.no_grad():
+            torch.testing.assert_close(loaded.deterministic_action(flat), action)
+    finally:
+        env.close()

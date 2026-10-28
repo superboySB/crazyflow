@@ -1,0 +1,32 @@
+{
+  "description": "A network predicts the path; a separate state controller tracks it",
+  "jax_version": "0.11.1",
+  "mujoco_version": "3.10.0",
+  "backend": "cpu",
+  "train_seed": 100,
+  "train_scenes": 2048,
+  "test_seed": 200,
+  "test_scenes": 256,
+  "jax_seed": 1701,
+  "epochs": 400,
+  "final_training_mse_m2": 9.661286458140239e-05,
+  "test_waypoint_rmse_m": 0.010190875269472599,
+  "test_center_clearance_min_m": 0.1336144663837895,
+  "test_plans_intersecting_cylinder": 0,
+  "weights_sha256": "a80b15f5a094a427446120513a8a6bb60b28d0bd43824cfcdf5619e1faa8d030",
+  "heldout_index": 0,
+  "obstacle_xyr_m": [
+    0.07341707497835159,
+    -0.018461814150214195,
+    0.20158369839191437
+  ],
+  "physics": "Crazyflow cf21B_500 first_principles; 500 Hz, state control 100 Hz",
+  "flight_seconds": 8.0,
+  "settle_seconds": 2,
+  "trajectory_tracking_rmse_m": 0.08366097600108324,
+  "actual_min_center_clearance_m": 0.2393094152212143,
+  "actual_contact_steps": 0,
+  "final_goal_error_m": 0.08113082498311996,
+  "render_enabled": true,
+  "limitations": "Synthetic single static cylinder, fixed endpoints, 2D path and known obstacle; separate controller; no real flight, sensing, or global safety guarantee."
+}

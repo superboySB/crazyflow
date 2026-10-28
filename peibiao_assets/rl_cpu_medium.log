@@ -1,0 +1,152 @@
+Failed to import warp: No module named 'warp'
+Failed to import mujoco_warp: No module named 'warp'
+Position behavior cloning: 300 batches, final MSE 0.000000
+Training DroneReachPos-v0: 128 cpu envs, 32 rollout steps, 128 PPO updates (524,288 slots)
+update 0001/128 | steps        4,096 | valid 4,096 | reward 0.1510 | distance 1.1131 | episode nan | term 0.000% | KL 0.0280 | clip 0.322 | 27,022 SPS
+validation/1 seed=20007 success=1.000000 survival=1.000000 rmse=0.412967 best_update=1
+update 0002/128 | steps        8,192 | valid 8,192 | reward 0.2812 | distance 0.7374 | episode nan | term 0.000% | KL 0.0098 | clip 0.138 | 4,815 SPS
+update 0003/128 | steps       12,288 | valid 12,288 | reward 0.5011 | distance 0.3768 | episode nan | term 0.000% | KL 0.0109 | clip 0.149 | 6,634 SPS
+update 0004/128 | steps       16,384 | valid 16,384 | reward 0.6783 | distance 0.2016 | episode nan | term 0.000% | KL 0.0082 | clip 0.113 | 8,156 SPS
+update 0005/128 | steps       20,480 | valid 20,480 | reward 0.7457 | distance 0.1510 | episode nan | term 0.000% | KL 0.0099 | clip 0.138 | 9,462 SPS
+update 0006/128 | steps       24,576 | valid 24,576 | reward 0.7583 | distance 0.1419 | episode nan | term 0.000% | KL 0.0093 | clip 0.125 | 10,604 SPS
+update 0007/128 | steps       28,672 | valid 28,672 | reward 0.7746 | distance 0.1309 | episode nan | term 0.000% | KL 0.0108 | clip 0.144 | 11,619 SPS
+update 0008/128 | steps       32,768 | valid 32,768 | reward 0.7858 | distance 0.1236 | episode nan | term 0.000% | KL 0.0063 | clip 0.083 | 12,376 SPS
+update 0009/128 | steps       36,864 | valid 36,864 | reward 0.7891 | distance 0.1219 | episode nan | term 0.000% | KL 0.0074 | clip 0.099 | 13,141 SPS
+update 0010/128 | steps       40,960 | valid 40,960 | reward 0.7695 | distance 0.1339 | episode nan | term 0.000% | KL 0.0069 | clip 0.093 | 13,848 SPS
+update 0011/128 | steps       45,056 | valid 45,056 | reward 0.7705 | distance 0.1339 | episode nan | term 0.000% | KL 0.0077 | clip 0.103 | 14,504 SPS
+update 0012/128 | steps       49,152 | valid 49,152 | reward 0.7851 | distance 0.1237 | episode nan | term 0.000% | KL 0.0055 | clip 0.071 | 15,094 SPS
+update 0013/128 | steps       53,248 | valid 53,248 | reward 0.7912 | distance 0.1197 | episode nan | term 0.000% | KL 0.0072 | clip 0.098 | 15,632 SPS
+update 0014/128 | steps       57,344 | valid 57,344 | reward 0.8071 | distance 0.1099 | episode nan | term 0.000% | KL 0.0084 | clip 0.119 | 16,124 SPS
+update 0015/128 | steps       61,440 | valid 61,440 | reward 0.8079 | distance 0.1091 | episode nan | term 0.000% | KL 0.0075 | clip 0.097 | 16,583 SPS
+update 0016/128 | steps       65,536 | valid 65,408 | reward 0.5631 | distance 0.5383 | episode 342.4 | term 0.000% | KL 0.0070 | clip 0.087 | 17,010 SPS
+update 0017/128 | steps       69,632 | valid 69,504 | reward 0.1755 | distance 1.0789 | episode 342.4 | term 0.000% | KL 0.0074 | clip 0.102 | 17,363 SPS
+update 0018/128 | steps       73,728 | valid 73,600 | reward 0.3709 | distance 0.5682 | episode 342.4 | term 0.000% | KL 0.0063 | clip 0.082 | 17,720 SPS
+update 0019/128 | steps       77,824 | valid 77,696 | reward 0.6137 | distance 0.2597 | episode 342.4 | term 0.000% | KL 0.0056 | clip 0.070 | 18,063 SPS
+update 0020/128 | steps       81,920 | valid 81,792 | reward 0.7588 | distance 0.1414 | episode 342.4 | term 0.000% | KL 0.0050 | clip 0.058 | 18,235 SPS
+update 0021/128 | steps       86,016 | valid 85,888 | reward 0.8054 | distance 0.1104 | episode 342.4 | term 0.000% | KL 0.0057 | clip 0.068 | 18,500 SPS
+update 0022/128 | steps       90,112 | valid 89,984 | reward 0.8125 | distance 0.1059 | episode 342.4 | term 0.000% | KL 0.0055 | clip 0.072 | 18,748 SPS
+update 0023/128 | steps       94,208 | valid 94,080 | reward 0.8187 | distance 0.1021 | episode 342.4 | term 0.000% | KL 0.0053 | clip 0.062 | 19,000 SPS
+update 0024/128 | steps       98,304 | valid 98,176 | reward 0.8132 | distance 0.1054 | episode 342.4 | term 0.000% | KL 0.0059 | clip 0.075 | 19,169 SPS
+update 0025/128 | steps      102,400 | valid 102,272 | reward 0.8186 | distance 0.1022 | episode 342.4 | term 0.000% | KL 0.0062 | clip 0.080 | 19,362 SPS
+update 0026/128 | steps      106,496 | valid 106,368 | reward 0.8201 | distance 0.1015 | episode 342.4 | term 0.000% | KL 0.0077 | clip 0.104 | 19,567 SPS
+update 0027/128 | steps      110,592 | valid 110,464 | reward 0.8141 | distance 0.1054 | episode 342.4 | term 0.000% | KL 0.0053 | clip 0.066 | 19,775 SPS
+update 0028/128 | steps      114,688 | valid 114,560 | reward 0.8265 | distance 0.0971 | episode 342.4 | term 0.000% | KL 0.0058 | clip 0.073 | 19,928 SPS
+update 0029/128 | steps      118,784 | valid 118,656 | reward 0.8397 | distance 0.0889 | episode 342.4 | term 0.000% | KL 0.0043 | clip 0.046 | 20,112 SPS
+update 0030/128 | steps      122,880 | valid 122,752 | reward 0.8395 | distance 0.0889 | episode 342.4 | term 0.000% | KL 0.0055 | clip 0.065 | 20,292 SPS
+update 0031/128 | steps      126,976 | valid 126,848 | reward 0.8380 | distance 0.0898 | episode 342.4 | term 0.000% | KL 0.0059 | clip 0.074 | 20,455 SPS
+update 0032/128 | steps      131,072 | valid 130,816 | reward 0.3428 | distance 0.8858 | episode 359.8 | term 0.000% | KL 0.0067 | clip 0.085 | 20,636 SPS
+validation/32 seed=20007 success=0.968750 survival=1.000000 rmse=0.383919 best_update=1
+update 0033/128 | steps      135,168 | valid 134,912 | reward 0.2602 | distance 0.7927 | episode 359.8 | term 0.000% | KL 0.0061 | clip 0.075 | 19,655 SPS
+update 0034/128 | steps      139,264 | valid 139,008 | reward 0.5252 | distance 0.3517 | episode 359.8 | term 0.000% | KL 0.0046 | clip 0.051 | 19,829 SPS
+update 0035/128 | steps      143,360 | valid 143,104 | reward 0.7303 | distance 0.1639 | episode 359.8 | term 0.000% | KL 0.0049 | clip 0.055 | 19,997 SPS
+update 0036/128 | steps      147,456 | valid 147,200 | reward 0.8124 | distance 0.1061 | episode 359.8 | term 0.000% | KL 0.0051 | clip 0.058 | 20,162 SPS
+update 0037/128 | steps      151,552 | valid 151,296 | reward 0.8251 | distance 0.0980 | episode 359.8 | term 0.000% | KL 0.0053 | clip 0.058 | 20,321 SPS
+update 0038/128 | steps      155,648 | valid 155,392 | reward 0.8291 | distance 0.0956 | episode 359.8 | term 0.000% | KL 0.0043 | clip 0.046 | 20,475 SPS
+update 0039/128 | steps      159,744 | valid 159,488 | reward 0.8329 | distance 0.0933 | episode 359.8 | term 0.000% | KL 0.0042 | clip 0.046 | 20,622 SPS
+update 0040/128 | steps      163,840 | valid 163,584 | reward 0.8315 | distance 0.0938 | episode 359.8 | term 0.000% | KL 0.0038 | clip 0.040 | 20,764 SPS
+update 0041/128 | steps      167,936 | valid 167,680 | reward 0.8416 | distance 0.0878 | episode 359.8 | term 0.000% | KL 0.0040 | clip 0.040 | 20,894 SPS
+update 0042/128 | steps      172,032 | valid 171,776 | reward 0.8417 | distance 0.0876 | episode 359.8 | term 0.000% | KL 0.0039 | clip 0.040 | 21,025 SPS
+update 0043/128 | steps      176,128 | valid 175,872 | reward 0.8400 | distance 0.0887 | episode 359.8 | term 0.000% | KL 0.0047 | clip 0.054 | 21,143 SPS
+update 0044/128 | steps      180,224 | valid 179,968 | reward 0.8228 | distance 0.0991 | episode 359.8 | term 0.000% | KL 0.0044 | clip 0.049 | 21,264 SPS
+update 0045/128 | steps      184,320 | valid 184,064 | reward 0.8287 | distance 0.0956 | episode 359.8 | term 0.000% | KL 0.0059 | clip 0.074 | 21,378 SPS
+update 0046/128 | steps      188,416 | valid 188,160 | reward 0.8386 | distance 0.0899 | episode 359.8 | term 0.000% | KL 0.0065 | clip 0.085 | 21,491 SPS
+update 0047/128 | steps      192,512 | valid 192,128 | reward 0.8215 | distance 0.1224 | episode 369.5 | term 0.000% | KL 0.0047 | clip 0.054 | 21,602 SPS
+update 0048/128 | steps      196,608 | valid 196,224 | reward 0.1569 | distance 1.0836 | episode 369.5 | term 0.000% | KL 0.0063 | clip 0.080 | 21,707 SPS
+update 0049/128 | steps      200,704 | valid 200,320 | reward 0.3754 | distance 0.5486 | episode 369.5 | term 0.000% | KL 0.0059 | clip 0.074 | 21,811 SPS
+update 0050/128 | steps      204,800 | valid 204,416 | reward 0.6395 | distance 0.2340 | episode 369.5 | term 0.000% | KL 0.0042 | clip 0.046 | 21,912 SPS
+update 0051/128 | steps      208,896 | valid 208,512 | reward 0.7665 | distance 0.1357 | episode 369.5 | term 0.000% | KL 0.0040 | clip 0.041 | 22,009 SPS
+update 0052/128 | steps      212,992 | valid 212,608 | reward 0.8165 | distance 0.1028 | episode 369.5 | term 0.000% | KL 0.0041 | clip 0.045 | 22,102 SPS
+update 0053/128 | steps      217,088 | valid 216,704 | reward 0.8368 | distance 0.0903 | episode 369.5 | term 0.000% | KL 0.0047 | clip 0.050 | 22,195 SPS
+update 0054/128 | steps      221,184 | valid 220,800 | reward 0.8331 | distance 0.0927 | episode 369.5 | term 0.000% | KL 0.0044 | clip 0.052 | 22,283 SPS
+update 0055/128 | steps      225,280 | valid 224,896 | reward 0.8342 | distance 0.0925 | episode 369.5 | term 0.000% | KL 0.0048 | clip 0.055 | 22,367 SPS
+update 0056/128 | steps      229,376 | valid 228,992 | reward 0.8219 | distance 0.0999 | episode 369.5 | term 0.000% | KL 0.0053 | clip 0.062 | 22,453 SPS
+update 0057/128 | steps      233,472 | valid 233,088 | reward 0.8273 | distance 0.0964 | episode 369.5 | term 0.000% | KL 0.0041 | clip 0.044 | 22,536 SPS
+update 0058/128 | steps      237,568 | valid 237,184 | reward 0.8470 | distance 0.0842 | episode 369.5 | term 0.000% | KL 0.0027 | clip 0.019 | 22,616 SPS
+update 0059/128 | steps      241,664 | valid 241,280 | reward 0.8433 | distance 0.0866 | episode 369.5 | term 0.000% | KL 0.0035 | clip 0.034 | 22,695 SPS
+update 0060/128 | steps      245,760 | valid 245,376 | reward 0.8312 | distance 0.0940 | episode 369.5 | term 0.000% | KL 0.0047 | clip 0.055 | 22,771 SPS
+update 0061/128 | steps      249,856 | valid 249,472 | reward 0.8249 | distance 0.0979 | episode 369.5 | term 0.000% | KL 0.0046 | clip 0.055 | 22,845 SPS
+update 0062/128 | steps      253,952 | valid 253,568 | reward 0.8318 | distance 0.0938 | episode 369.5 | term 0.000% | KL 0.0039 | clip 0.037 | 22,918 SPS
+update 0063/128 | steps      258,048 | valid 257,536 | reward 0.5655 | distance 0.5380 | episode 370.8 | term 0.000% | KL 0.0036 | clip 0.036 | 22,992 SPS
+update 0064/128 | steps      262,144 | valid 261,632 | reward 0.2171 | distance 0.9356 | episode 370.8 | term 0.000% | KL 0.0048 | clip 0.057 | 23,058 SPS
+validation/64 seed=20007 success=0.750000 survival=1.000000 rmse=0.374249 best_update=1
+update 0065/128 | steps      266,240 | valid 265,728 | reward 0.4860 | distance 0.4007 | episode 370.8 | term 0.000% | KL 0.0037 | clip 0.035 | 22,403 SPS
+update 0066/128 | steps      270,336 | valid 269,824 | reward 0.7197 | distance 0.1706 | episode 370.8 | term 0.000% | KL 0.0030 | clip 0.022 | 22,475 SPS
+update 0067/128 | steps      274,432 | valid 273,920 | reward 0.8181 | distance 0.1027 | episode 370.8 | term 0.000% | KL 0.0037 | clip 0.038 | 22,536 SPS
+update 0068/128 | steps      278,528 | valid 278,016 | reward 0.8418 | distance 0.0877 | episode 370.8 | term 0.000% | KL 0.0036 | clip 0.034 | 22,602 SPS
+update 0069/128 | steps      282,624 | valid 282,112 | reward 0.8588 | distance 0.0775 | episode 370.8 | term 0.000% | KL 0.0035 | clip 0.037 | 22,663 SPS
+update 0070/128 | steps      286,720 | valid 286,208 | reward 0.8573 | distance 0.0782 | episode 370.8 | term 0.000% | KL 0.0031 | clip 0.026 | 22,726 SPS
+update 0071/128 | steps      290,816 | valid 290,304 | reward 0.8511 | distance 0.0818 | episode 370.8 | term 0.000% | KL 0.0037 | clip 0.038 | 22,790 SPS
+update 0072/128 | steps      294,912 | valid 294,400 | reward 0.8405 | distance 0.0880 | episode 370.8 | term 0.000% | KL 0.0034 | clip 0.030 | 22,851 SPS
+update 0073/128 | steps      299,008 | valid 298,496 | reward 0.8418 | distance 0.0876 | episode 370.8 | term 0.000% | KL 0.0034 | clip 0.030 | 22,912 SPS
+update 0074/128 | steps      303,104 | valid 302,592 | reward 0.8380 | distance 0.0902 | episode 370.8 | term 0.000% | KL 0.0027 | clip 0.021 | 22,970 SPS
+update 0075/128 | steps      307,200 | valid 306,688 | reward 0.8426 | distance 0.0871 | episode 370.8 | term 0.000% | KL 0.0031 | clip 0.026 | 23,028 SPS
+update 0076/128 | steps      311,296 | valid 310,784 | reward 0.8417 | distance 0.0875 | episode 370.8 | term 0.000% | KL 0.0025 | clip 0.019 | 23,086 SPS
+update 0077/128 | steps      315,392 | valid 314,880 | reward 0.8447 | distance 0.0855 | episode 370.8 | term 0.000% | KL 0.0027 | clip 0.020 | 23,143 SPS
+update 0078/128 | steps      319,488 | valid 318,976 | reward 0.8513 | distance 0.0816 | episode 370.8 | term 0.000% | KL 0.0030 | clip 0.027 | 23,195 SPS
+update 0079/128 | steps      323,584 | valid 322,944 | reward 0.3305 | distance 0.8802 | episode 378.1 | term 0.000% | KL 0.0094 | clip 0.134 | 23,248 SPS
+update 0080/128 | steps      327,680 | valid 327,040 | reward 0.3143 | distance 0.6733 | episode 378.1 | term 0.000% | KL 0.0052 | clip 0.067 | 23,296 SPS
+update 0081/128 | steps      331,776 | valid 331,136 | reward 0.6046 | distance 0.2699 | episode 378.1 | term 0.000% | KL 0.0016 | clip 0.010 | 23,348 SPS
+update 0082/128 | steps      335,872 | valid 335,232 | reward 0.7899 | distance 0.1212 | episode 378.1 | term 0.000% | KL 0.0032 | clip 0.028 | 23,397 SPS
+update 0083/128 | steps      339,968 | valid 339,328 | reward 0.8543 | distance 0.0801 | episode 378.1 | term 0.000% | KL 0.0033 | clip 0.027 | 23,448 SPS
+update 0084/128 | steps      344,064 | valid 343,424 | reward 0.8540 | distance 0.0802 | episode 378.1 | term 0.000% | KL 0.0037 | clip 0.036 | 23,495 SPS
+update 0085/128 | steps      348,160 | valid 347,520 | reward 0.8584 | distance 0.0774 | episode 378.1 | term 0.000% | KL 0.0026 | clip 0.018 | 23,537 SPS
+update 0086/128 | steps      352,256 | valid 351,616 | reward 0.8560 | distance 0.0788 | episode 378.1 | term 0.000% | KL 0.0030 | clip 0.026 | 23,577 SPS
+update 0087/128 | steps      356,352 | valid 355,712 | reward 0.8618 | distance 0.0755 | episode 378.1 | term 0.000% | KL 0.0026 | clip 0.022 | 23,619 SPS
+update 0088/128 | steps      360,448 | valid 359,808 | reward 0.8622 | distance 0.0752 | episode 378.1 | term 0.000% | KL 0.0023 | clip 0.016 | 23,661 SPS
+update 0089/128 | steps      364,544 | valid 363,904 | reward 0.8620 | distance 0.0755 | episode 378.1 | term 0.000% | KL 0.0045 | clip 0.048 | 23,702 SPS
+update 0090/128 | steps      368,640 | valid 368,000 | reward 0.8612 | distance 0.0757 | episode 378.1 | term 0.000% | KL 0.0044 | clip 0.051 | 23,733 SPS
+update 0091/128 | steps      372,736 | valid 372,096 | reward 0.8631 | distance 0.0745 | episode 378.1 | term 0.000% | KL 0.0053 | clip 0.064 | 23,766 SPS
+update 0092/128 | steps      376,832 | valid 376,192 | reward 0.8553 | distance 0.0794 | episode 378.1 | term 0.000% | KL 0.0038 | clip 0.037 | 23,801 SPS
+update 0093/128 | steps      380,928 | valid 380,288 | reward 0.8582 | distance 0.0775 | episode 378.1 | term 0.000% | KL 0.0043 | clip 0.045 | 23,834 SPS
+update 0094/128 | steps      385,024 | valid 384,256 | reward 0.8158 | distance 0.1463 | episode 385.4 | term 0.000% | KL 0.0030 | clip 0.029 | 23,867 SPS
+update 0095/128 | steps      389,120 | valid 388,352 | reward 0.1807 | distance 1.0117 | episode 385.4 | term 0.000% | KL 0.0045 | clip 0.051 | 23,873 SPS
+update 0096/128 | steps      393,216 | valid 392,448 | reward 0.4297 | distance 0.4730 | episode 385.4 | term 0.000% | KL 0.0040 | clip 0.045 | 23,905 SPS
+validation/96 seed=20007 success=1.000000 survival=1.000000 rmse=0.362740 best_update=96
+update 0097/128 | steps      397,312 | valid 396,544 | reward 0.6915 | distance 0.1926 | episode 385.4 | term 0.000% | KL 0.0012 | clip 0.001 | 23,362 SPS
+update 0098/128 | steps      401,408 | valid 400,640 | reward 0.8098 | distance 0.1077 | episode 385.4 | term 0.000% | KL 0.0009 | clip 0.002 | 23,346 SPS
+update 0099/128 | steps      405,504 | valid 404,736 | reward 0.8438 | distance 0.0863 | episode 385.4 | term 0.000% | KL 0.0023 | clip 0.012 | 23,380 SPS
+update 0100/128 | steps      409,600 | valid 408,832 | reward 0.8561 | distance 0.0787 | episode 385.4 | term 0.000% | KL 0.0020 | clip 0.010 | 23,416 SPS
+update 0101/128 | steps      413,696 | valid 412,928 | reward 0.8612 | distance 0.0756 | episode 385.4 | term 0.000% | KL 0.0015 | clip 0.008 | 23,444 SPS
+update 0102/128 | steps      417,792 | valid 417,024 | reward 0.8622 | distance 0.0751 | episode 385.4 | term 0.000% | KL 0.0008 | clip 0.000 | 23,480 SPS
+update 0103/128 | steps      421,888 | valid 421,120 | reward 0.8521 | distance 0.0813 | episode 385.4 | term 0.000% | KL 0.0010 | clip 0.001 | 23,511 SPS
+update 0104/128 | steps      425,984 | valid 425,216 | reward 0.8433 | distance 0.0867 | episode 385.4 | term 0.000% | KL 0.0011 | clip 0.002 | 23,542 SPS
+update 0105/128 | steps      430,080 | valid 429,312 | reward 0.8500 | distance 0.0825 | episode 385.4 | term 0.000% | KL 0.0007 | clip 0.001 | 23,578 SPS
+update 0106/128 | steps      434,176 | valid 433,408 | reward 0.8604 | distance 0.0762 | episode 385.4 | term 0.000% | KL 0.0008 | clip 0.002 | 23,614 SPS
+update 0107/128 | steps      438,272 | valid 437,504 | reward 0.8513 | distance 0.0817 | episode 385.4 | term 0.000% | KL 0.0001 | clip 0.000 | 23,651 SPS
+update 0108/128 | steps      442,368 | valid 441,600 | reward 0.8509 | distance 0.0819 | episode 385.4 | term 0.000% | KL 0.0002 | clip 0.000 | 23,686 SPS
+update 0109/128 | steps      446,464 | valid 445,696 | reward 0.8537 | distance 0.0804 | episode 385.4 | term 0.000% | KL 0.0002 | clip 0.000 | 23,721 SPS
+update 0110/128 | steps      450,560 | valid 449,664 | reward 0.5428 | distance 0.5653 | episode 383.4 | term 0.000% | KL 0.0023 | clip 0.020 | 23,751 SPS
+update 0111/128 | steps      454,656 | valid 453,760 | reward 0.2245 | distance 0.8830 | episode 383.4 | term 0.000% | KL 0.0003 | clip 0.000 | 23,775 SPS
+update 0112/128 | steps      458,752 | valid 457,856 | reward 0.5161 | distance 0.3601 | episode 383.4 | term 0.000% | KL 0.0008 | clip 0.002 | 23,807 SPS
+update 0113/128 | steps      462,848 | valid 461,952 | reward 0.7552 | distance 0.1450 | episode 383.4 | term 0.000% | KL 0.0004 | clip 0.000 | 23,837 SPS
+update 0114/128 | steps      466,944 | valid 466,048 | reward 0.8287 | distance 0.0955 | episode 383.4 | term 0.000% | KL 0.0001 | clip 0.000 | 23,869 SPS
+update 0115/128 | steps      471,040 | valid 470,144 | reward 0.8462 | distance 0.0846 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 23,899 SPS
+update 0116/128 | steps      475,136 | valid 474,240 | reward 0.8493 | distance 0.0827 | episode 383.4 | term 0.000% | KL 0.0001 | clip 0.000 | 23,930 SPS
+update 0117/128 | steps      479,232 | valid 478,336 | reward 0.8577 | distance 0.0778 | episode 383.4 | term 0.000% | KL 0.0001 | clip 0.000 | 23,960 SPS
+update 0118/128 | steps      483,328 | valid 482,432 | reward 0.8578 | distance 0.0779 | episode 383.4 | term 0.000% | KL 0.0001 | clip 0.000 | 23,990 SPS
+update 0119/128 | steps      487,424 | valid 486,528 | reward 0.8611 | distance 0.0762 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,021 SPS
+update 0120/128 | steps      491,520 | valid 490,624 | reward 0.8626 | distance 0.0753 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,051 SPS
+update 0121/128 | steps      495,616 | valid 494,720 | reward 0.8620 | distance 0.0754 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,079 SPS
+update 0122/128 | steps      499,712 | valid 498,816 | reward 0.8588 | distance 0.0772 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,107 SPS
+update 0123/128 | steps      503,808 | valid 502,912 | reward 0.8645 | distance 0.0740 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,136 SPS
+update 0124/128 | steps      507,904 | valid 507,008 | reward 0.8703 | distance 0.0706 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,164 SPS
+update 0125/128 | steps      512,000 | valid 511,104 | reward 0.8616 | distance 0.0757 | episode 383.4 | term 0.000% | KL 0.0000 | clip 0.000 | 24,190 SPS
+update 0126/128 | steps      516,096 | valid 515,072 | reward 0.3172 | distance 0.8695 | episode 384.5 | term 0.000% | KL 0.0000 | clip 0.000 | 24,214 SPS
+update 0127/128 | steps      520,192 | valid 519,168 | reward 0.3429 | distance 0.6254 | episode 384.5 | term 0.000% | KL 0.0000 | clip 0.000 | 24,239 SPS
+update 0128/128 | steps      524,288 | valid 523,264 | reward 0.6370 | distance 0.2419 | episode 384.5 | term 0.000% | KL 0.0000 | clip 0.000 | 24,264 SPS
+validation/128 seed=20007 success=1.000000 survival=1.000000 rmse=0.360579 best_update=128
+Training finished in 21.98 s; best validation update 128
+eval/mean_reward=0.840374
+eval/episode_return=420.187134
+eval/mean_error=0.134930
+eval/rmse=0.319743
+eval/last_second_rmse=0.028730
+eval/final_mean_error=0.026940
+eval/median_env_rmse=0.285542
+eval/p95_error=0.784849
+eval/max_error=2.284798
+eval/survival_rate=1.000000
+eval/success_rate=1.000000
+eval/mean_episode_steps=500.000000
+eval/evaluation_seed=10007.000000
+plot saved to peibiao_assets/rl_cpu_medium.png

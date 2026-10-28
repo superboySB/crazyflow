@@ -1,0 +1,15 @@
+{
+  "scenario": "independent closed-loop vertical tracking, one drone, 8 s, 50 Hz controller, 500 Hz plant",
+  "crazyflow_version": "0.4.0",
+  "jax_version": "0.11.1",
+  "mujoco_version": "3.10.0",
+  "control": "same frozen altitude position and velocity feedback; each plant uses its own observation",
+  "mujoco_physics": "mj_step free rigid body, gravity, external vertical thrust and linear drag; Python motor ODE",
+  "crazyflow_track_rmse_m": 0.07768767126674346,
+  "mujoco_track_rmse_m": 0.07707806804656377,
+  "cross_engine_rmse_m": 0.0006323438279247829,
+  "cross_engine_max_abs_m": 0.0009302226038219175,
+  "samples": 401,
+  "seed": "deterministic; no random sampling",
+  "limits": "Only 1-D vertical, zero attitude, no contact/disturbance, shared coefficients; not Sim2Real or trained neural policy transfer."
+}

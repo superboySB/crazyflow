@@ -1,7 +1,7 @@
-"""Train and evaluate CUDA PPO policies on the Crazyflow Gymnasium environments.
+"""Train and evaluate PPO policies on the Crazyflow Gymnasium environments.
 
-The trainer intentionally leaves the environments and their rewards unchanged. JAX runs parallel
-Crazyflow environments on CUDA while PyTorch trains the policy on the same GPU.
+The environments and their rewards remain unchanged. JAX and PyTorch run on the same selected
+backend: GPU by default, or CPU for small-scale debugging and reproducibility.
 """
 
 from __future__ import annotations
@@ -61,6 +61,7 @@ class Config:
     """PPO and environment configuration."""
 
     env_id: str = "DroneFigureEightTrajectory-v0"
+    device: str = "gpu"
     seed: int = 7
     total_timesteps: int = 20_000_000
     num_envs: int = 4_096
@@ -119,7 +120,7 @@ def make_env(config: Config, num_envs: int) -> gymnasium.vector.VectorEnv:
         "num_envs": num_envs,
         "freq": config.freq,
         "max_episode_time": config.episode_time,
-        "device": "gpu",
+        "device": config.device,
     }
     if config.env_id == "DroneFigureEightTrajectory-v0":
         kwargs |= {
@@ -129,7 +130,7 @@ def make_env(config: Config, num_envs: int) -> gymnasium.vector.VectorEnv:
         }
     env = gymnasium.make_vec(config.env_id, **kwargs)
     env = NormalizeActions(env)
-    return JaxToTorch(env, device=torch.device("cuda"))
+    return JaxToTorch(env, device=torch.device("cuda" if config.device == "gpu" else "cpu"))
 
 
 def reset_env(
@@ -338,7 +339,9 @@ def pretrain_actor(
         final_loss = loss.item()
         obs_dict, _, _, _, _ = env.step(teacher_action)
     with torch.no_grad():
-        agent.actor_logstd.copy_(torch.tensor([[-2.0, -2.0, -2.5, -1.5]], device="cuda"))
+        agent.actor_logstd.copy_(
+            torch.tensor([[-2.0, -2.0, -2.5, -1.5]], device=agent.actor_logstd.device)
+        )
     print(f"{label} behavior cloning: {steps:,} batches, final MSE {final_loss:.6f}")
 
 
@@ -472,7 +475,7 @@ def train(
 
     set_seeds(config.seed)
     torch.backends.cuda.matmul.allow_tf32 = True
-    device = torch.device("cuda")
+    device = torch.device("cuda" if config.device == "gpu" else "cpu")
     env = make_env(config, config.num_envs)
     first_obs, _ = reset_env(env, config.seed)
     obs_keys = observation_keys(config.env_id)
@@ -519,6 +522,10 @@ def train(
             )
         if saved["config"].get("teacher_model", "legacy") != config.teacher_model:
             raise ValueError("Resume teacher model differs; do not mix training recipes")
+        if saved["config"].get("device", "gpu") != config.device:
+            raise ValueError(
+                "Resume backend differs; exact RNG/state recovery requires the same device"
+            )
         mutable = {"total_timesteps", "eval_envs", "eval_interval"}
         for name, value in saved["config"].items():
             if name not in mutable and getattr(config, name) != value:
@@ -546,7 +553,8 @@ def train(
         random.setstate(saved["rng"]["python"])
         np.random.set_state(saved["rng"]["numpy"])
         torch.set_rng_state(saved["rng"]["torch"])
-        torch.cuda.set_rng_state_all(saved["rng"]["cuda"])
+        if config.device == "gpu":
+            torch.cuda.set_rng_state_all(saved["rng"]["cuda"])
         print(f"Resuming after update {start_iteration - 1}, {global_step:,} vector-step slots")
     else:
         if config.env_id in ("DroneReachPos-v0", "DroneLanding-v0"):
@@ -587,7 +595,8 @@ def train(
     initial_step = global_step
 
     print(
-        f"Training {config.env_id}: {config.num_envs} CUDA envs, {config.num_steps} rollout steps, "
+        f"Training {config.env_id}: {config.num_envs} {config.device} envs, "
+        f"{config.num_steps} rollout steps, "
         f"{config.num_iterations} PPO updates ({config.num_iterations * config.batch_size:,} slots)"
     )
     try:
@@ -823,9 +832,11 @@ def train(
     return agent, obs_keys, history
 
 
-def load_checkpoint(path: Path) -> tuple[Agent, Config, tuple[str, ...], dict[str, list[float]]]:
+def load_checkpoint(
+    path: Path, device: str | None = None
+) -> tuple[Agent, Config, tuple[str, ...], dict[str, list[float]]]:
     """Load a policy checkpoint."""
-    data = torch.load(path, map_location="cuda", weights_only=False)
+    data = torch.load(path, map_location="cpu", weights_only=False)
     config_data = data["config"]
     # Checkpoints produced by the earlier Figure-eight-only version predate env_id.
     config_data.setdefault("env_id", "DroneFigureEightTrajectory-v0")
@@ -834,6 +845,8 @@ def load_checkpoint(path: Path) -> tuple[Agent, Config, tuple[str, ...], dict[st
     if "landing_bc_coef" in config_data:
         config_data.setdefault("position_bc_coef", config_data.pop("landing_bc_coef"))
     config = Config(**config_data)
+    if device is not None:
+        config.device = device
     obs_keys = tuple(data["obs_keys"])
     if obs_keys != observation_keys(config.env_id):
         raise ValueError("Checkpoint observation order does not match this script")
@@ -841,7 +854,7 @@ def load_checkpoint(path: Path) -> tuple[Agent, Config, tuple[str, ...], dict[st
         3 * config.n_samples if key == "local_samples" else 4 if key == "quat" else 3
         for key in obs_keys
     )
-    agent = Agent(obs_dim, action_dim=4).cuda()
+    agent = Agent(obs_dim, action_dim=4).to("cuda" if config.device == "gpu" else "cpu")
     agent.load_state_dict(data["agent"])
     agent.eval()
     return agent, config, obs_keys, data["history"]
@@ -877,8 +890,9 @@ def evaluate(
     )
     obs = flatten_obs(obs_dict, obs_keys)
     distances, rewards, speeds, masks = [], [], [], []
-    terminated_once = torch.zeros(count, dtype=torch.bool, device="cuda")
-    active = torch.ones(count, dtype=torch.bool, device="cuda")
+    device = next(agent.parameters()).device
+    terminated_once = torch.zeros(count, dtype=torch.bool, device=device)
+    active = torch.ones(count, dtype=torch.bool, device=device)
     actual, reference = [], []
     episode_steps = int(config.episode_time * config.freq)
     try:
@@ -904,7 +918,7 @@ def evaluate(
     valid = torch.stack(masks)
     lengths = valid.sum(dim=0)
     per_env_rmse = torch.sqrt((distance.square() * valid).sum(dim=0) / lengths.clamp_min(1))
-    indices = torch.arange(episode_steps, device="cuda")[:, None]
+    indices = torch.arange(episode_steps, device=device)[:, None]
     last_valid = valid & (indices >= (lengths - config.freq).clamp_min(0)[None, :])
     last_counts = last_valid.sum(dim=0).clamp_min(1)
     per_env_last_rmse = torch.sqrt((distance.square() * last_valid).sum(dim=0) / last_counts)
@@ -1006,7 +1020,7 @@ def plot_result(
     )
     axes[2].grid(alpha=0.3)
 
-    figure.suptitle(f"{config.env_id} — JAX/CUDA environments + PyTorch/CUDA PPO")
+    figure.suptitle(f"{config.env_id} — JAX/{config.device} environments + PyTorch PPO")
     figure.savefig(path, dpi=170)
     plt.close(figure)
 
@@ -1018,6 +1032,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--eval-only", action="store_true")
+    parser.add_argument(
+        "--device",
+        choices=("gpu", "cpu"),
+        default=None,
+        help="JAX and PyTorch backend (default: gpu; saved backend when evaluating)",
+    )
     parser.add_argument("--resume", type=Path)
     parser.add_argument("--eval-seed", type=int)
     parser.add_argument("--seed", type=int, default=Config.seed)
@@ -1054,7 +1074,7 @@ def main() -> None:
     checkpoint = args.checkpoint or Path(f"saves/{slug}_ppo.pt")
     output = args.output or Path(f"usage_assets/{slug}_ppo_result.png")
     if args.eval_only:
-        agent, config, obs_keys, history = load_checkpoint(checkpoint)
+        agent, config, obs_keys, history = load_checkpoint(checkpoint, device=args.device)
         if config.env_id != args.env_id:
             raise ValueError(
                 f"Checkpoint contains {config.env_id}, but --env-id selected {args.env_id}"
@@ -1063,6 +1083,7 @@ def main() -> None:
     else:
         config = Config(
             env_id=args.env_id,
+            device=args.device or "gpu",
             seed=args.seed,
             total_timesteps=args.total_timesteps,
             num_envs=args.num_envs,

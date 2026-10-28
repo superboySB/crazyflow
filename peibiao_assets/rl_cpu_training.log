@@ -1,0 +1,36 @@
+Failed to import warp: No module named 'warp'
+Failed to import mujoco_warp: No module named 'warp'
+Training DroneReachPos-v0: 16 cpu envs, 16 rollout steps, 16 PPO updates (4,096 slots)
+update 0001/16 | steps          256 | valid 256 | reward 0.1095 | distance 1.2947 | episode nan | term 0.000% | KL 0.0208 | clip 0.229 | 424 SPS
+validation/1 seed=20007 success=0.000000 survival=0.625000 rmse=4.934832 best_update=1
+update 0002/16 | steps          512 | valid 512 | reward 0.0867 | distance 1.3854 | episode nan | term 0.000% | KL 0.0027 | clip 0.023 | 263 SPS
+update 0003/16 | steps          768 | valid 768 | reward 0.0680 | distance 1.5144 | episode nan | term 0.000% | KL 0.0043 | clip 0.051 | 388 SPS
+update 0004/16 | steps        1,024 | valid 1,023 | reward 0.0623 | distance 1.6061 | episode 2.8 | term 0.392% | KL 0.0044 | clip 0.057 | 508 SPS
+update 0005/16 | steps        1,280 | valid 1,278 | reward 0.0711 | distance 1.6112 | episode 11.9 | term 0.392% | KL 0.0058 | clip 0.069 | 623 SPS
+update 0006/16 | steps        1,536 | valid 1,533 | reward 0.0812 | distance 1.5346 | episode 11.5 | term 0.392% | KL 0.0017 | clip 0.008 | 733 SPS
+update 0007/16 | steps        1,792 | valid 1,788 | reward 0.1209 | distance 1.3797 | episode 3.6 | term 0.392% | KL 0.0011 | clip 0.006 | 835 SPS
+update 0008/16 | steps        2,048 | valid 2,044 | reward 0.1702 | distance 1.1980 | episode 7.4 | term 0.000% | KL 0.0022 | clip 0.018 | 938 SPS
+update 0009/16 | steps        2,304 | valid 2,300 | reward 0.2267 | distance 1.0688 | episode 7.4 | term 0.000% | KL 0.0031 | clip 0.041 | 1,039 SPS
+update 0010/16 | steps        2,560 | valid 2,556 | reward 0.2534 | distance 1.0187 | episode 7.4 | term 0.000% | KL 0.0014 | clip 0.004 | 1,135 SPS
+update 0011/16 | steps        2,816 | valid 2,812 | reward 0.2335 | distance 1.0834 | episode 7.4 | term 0.000% | KL 0.0016 | clip 0.018 | 1,228 SPS
+update 0012/16 | steps        3,072 | valid 3,068 | reward 0.1805 | distance 1.2200 | episode 7.4 | term 0.000% | KL 0.0007 | clip 0.000 | 1,318 SPS
+update 0013/16 | steps        3,328 | valid 3,324 | reward 0.1575 | distance 1.2879 | episode 7.4 | term 0.000% | KL 0.0007 | clip 0.004 | 1,406 SPS
+update 0014/16 | steps        3,584 | valid 3,580 | reward 0.1528 | distance 1.2869 | episode 7.4 | term 0.000% | KL 0.0005 | clip 0.002 | 1,491 SPS
+update 0015/16 | steps        3,840 | valid 3,836 | reward 0.1674 | distance 1.2359 | episode 7.4 | term 0.000% | KL 0.0001 | clip 0.000 | 1,574 SPS
+update 0016/16 | steps        4,096 | valid 4,091 | reward 0.1890 | distance 1.1719 | episode 40.8 | term 0.392% | KL 0.0000 | clip 0.000 | 1,654 SPS
+validation/16 seed=20007 success=0.000000 survival=1.000000 rmse=0.750043 best_update=16
+Training finished in 2.83 s; best validation update 16
+eval/mean_reward=0.258493
+eval/episode_return=129.246429
+eval/mean_error=0.722053
+eval/rmse=0.758854
+eval/last_second_rmse=0.659590
+eval/final_mean_error=0.651408
+eval/median_env_rmse=0.721492
+eval/p95_error=1.208287
+eval/max_error=1.709236
+eval/survival_rate=1.000000
+eval/success_rate=0.000000
+eval/mean_episode_steps=500.000000
+eval/evaluation_seed=10007.000000
+plot saved to peibiao_assets/rl_cpu_training.png
