@@ -7,7 +7,8 @@
 作为历史记录保留；2026-10-09 增量同步官方 main 至
 [`70d09e4`](https://github.com/learnsyslab/crazyflow/commit/70d09e4)。API 片段已按当前源码更新，
 历史数值并不代表新模型参数下的结果；2026-10-15已进一步同步官方0.4.0，完整预算训练、
-最佳演示及能力边界见第16节。旧随机目标耦合成绩的修正说明也见该节。
+最佳演示及能力边界见第16节。旧随机目标耦合成绩的修正说明也见该节；2026-10-28
+的上游更新和 contact 接口迁移见第17节。
 
 > 镜像构建、容器启动和常用命令见 [`note.md`](note.md)。本文专注 Crazyflow API、示例、可视化和 drone racing 的具体用法。
 
@@ -28,6 +29,7 @@
 | 查模块或交付状态 | 13、14 | API 速查和完整验证矩阵 |
 | 使用10月9日 main 新功能 | 15 | 32个提交、X500、body rate、sharding、地效/下洗 |
 | 查看充分训练后的最佳演示与边界 | 16 | 0.4.0、完整多种子训练、高速八字、直接电机和真赛道 |
+| 使用10月28日同步的新接口 | 17 | contact API 迁移、示例路径及本轮提交 |
 
 文中的数值有三种含义：代码注释里的旧数值是 8 月版本的代表性输出；“实测”表格是标注日期的完整运行结果；
 训练结果则同时给出 observation、action、reward、终止条件和评估口径，避免只给一张曲线却无法解释。
@@ -568,7 +570,7 @@ X_dot, X, U, Y = symbolic_euler(model_rotor_vel=True)
 
 Euler 版本状态为 `pos(3), rpy(3), vel(3), drpy(3), thrust_state(4)`，共 16D；当前 Docker 校验
 `X_dot/X/U/Y` 为 `(16,1)/(16,1)/(4,1)/(6,1)`。只有第一项 thrust state 进入动力学。
-[`examples/symbolic.py`](examples/symbolic.py) 还用 `cs.integrator("fd", "cvodes", ...)` 完成离散积分；
+当前 [`examples/control/symbolic.py`](examples/control/symbolic.py) 还用 `cs.integrator("fd", "cvodes", ...)` 完成离散积分；
 8 月旧接口保存的 `(13,1)/(13,1)/(4,1)/(7,1)` 输出保留为历史记录，不能作为当前 shape。
 
 ### 4.6 系统辨识
@@ -850,7 +852,7 @@ sharding 会复制整个队列。多 world 队列应改用带 `CORE_NDIM_KEY` �
 
 ### 6.4 UWB 状态估计插件
 
-[`examples/plugins/estimation.py`](examples/plugins/estimation.py) 演示了完整的 pipeline 组合：
+历史版本的 [`examples/plugins/estimation.py`](https://github.com/learnsyslab/crazyflow/blob/c95f69bc54f830e859fee4ac5734bf571acd81f3/examples/plugins/estimation.py) 演示了完整的 pipeline 组合；官方 58987f8 已删除该示例，当前仓库不能直接运行：
 
 1. `simulate_uwb` 在 pipeline 开头生成 8 基站测距。
 2. `estimate_state` 用 constant-velocity EKF 更新位置/速度和 covariance。
@@ -931,7 +933,7 @@ rgb = sim.render(mode="rgb_array")       # 复用已同步的 MJX data
 from crazyflow.sim.sim import use_box_collision
 
 use_box_collision(sim, enable=True)
-contacts = sim.contacts()  # (n_worlds, n_contact_slots) bool
+contacts = sim.contacts()  # (n_worlds, n_drones) bool，逐机标记
 ```
 
 默认 sphere 适合快速保守检查；oriented box 更贴合机身，适合窄通道和碰撞调试。交互式 `contacts.py` 已完整渲染 120 帧并检查 `sim.contacts()`：
@@ -1568,16 +1570,16 @@ Sampling MPC 的真实 GUI 截图中，蓝线为 reference，绿色为最佳/采
 | `usage_assets/train_gymnasium.py` | 四个 Gymnasium 任务的 JAX/CUDA env + PyTorch/CUDA PPO 训练器 |
 | `jax/cache.py` | 持久 JAX cache |
 | `plugins/action_delay.py` | 30 ms action queue；平均差 27.93 cm |
-| `plugins/estimation.py` | UWB + EKF + pipeline state swap |
+| `plugins/estimation.py`（历史，现已删除） | UWB + EKF + pipeline state swap |
 | `rendering/cam_config.py` | 默认/自定义 free camera |
-| `rendering/render.py` | 25 架 drone 与尾迹线 |
+| `rendering/draw_line.py`（原 `rendering/render.py`） | 25 架 drone 与尾迹线 |
 | `rendering/splat_camera.py` | 2 worlds × 2 drones splat FPV |
 | `rendering/splat_depth.py` | 椭圆航线 splat depth |
 | `rendering/splat_gradients.py` | 可微 FPV pose gradients |
 | `rendering/splat_viewer.py` | viser web viewer 与 pose streaming |
-| `symbolic.py` | CasADi symbolic dynamics + CVODES |
+| `control/symbolic.py`（原 `symbolic.py`） | CasADi symbolic dynamics + CVODES |
 
-2026 年 8 月上游当时的全部 26 个 `main()` 已在容器执行；测试入口只 mock 了实时 `Sim.render()`，用于避免每个脚本等待 GUI，而数值循环、500k sampling、splat CUDA rasterization、CasADi 和 Gym 环境均真实运行。新增训练器又分别完成四个 Gymnasium 任务的 GPU 训练和跨 seed 评估。代表性的 X11 GUI、全部离屏模式和 web viewer 也单独实际打开并截图验证。当前源码新增了 7 个示例，历史 26/26 不代表本轮 33 个示例的执行结果。
+2026 年 8 月上游当时的全部 26 个 `main()` 已在容器执行；测试入口只 mock 了实时 `Sim.render()`，用于避免每个脚本等待 GUI，而数值循环、500k sampling、splat CUDA rasterization、CasADi 和 Gym 环境均真实运行。新增训练器又分别完成四个 Gymnasium 任务的 GPU 训练和跨 seed 评估。代表性的 X11 GUI、全部离屏模式和 web viewer 也单独实际打开并截图验证。10 月 9 日时源码新增了 7 个示例，历史 26/26 不代表当时 33 个示例的执行结果；之后示例再次变更，见第 17 节。
 
 ## 12. drone racing（2026 年 8 月历史集成）
 
@@ -2538,3 +2540,136 @@ fused/官方环境状态奖励差<1e-6。具体环境与命令见
 原始NPZ独立重算RMSE/成功率，检查best/last哈希和完整预算，
 [核验结果](usage_assets/fulltrain_20261015/artifact_verification.json)覆盖全部21完整Gym run。
 跳过项不记作通过，GPU小测试与科学训练预算分开报告。
+
+## 17. 2026-10-28 官方 main 增量同步
+
+本次在 0.4.0 的 [c95f69b](https://github.com/learnsyslab/crazyflow/commit/c95f69bc54f830e859fee4ac5734bf571acd81f3)
+基础上合入官方 main 至 [af31417](https://github.com/learnsyslab/crazyflow/commit/af314170be3e39f639dbffccb484a490f58a8561)。
+第 15、16 节的训练、图片和数值仍是当时的历史实验，不能作为本次版本的新测量。
+
+### 17.1 新增提交与影响
+
+| 官方提交 | 内容 | 使用影响 |
+|---|---|---|
+| [58987f8](https://github.com/learnsyslab/crazyflow/commit/58987f899bcf52b67df05bf3062e8c2d6ec140ea) | 按主题重组示例文档并整理示例 | 查看新的示例分组和迁移路径，见 17.3 |
+| [3684061](https://github.com/learnsyslab/crazyflow/commit/3684061) | 修正引用信息 | 更新 `CITATION.cff`、README 和引用页面，不改变仿真 API |
+| [44752d1](https://github.com/learnsyslab/crazyflow/commit/44752d1) | 在不同动力学及积分器间参数化仿真测试 | 新增短时数值一致性测试；不是长时误差或性能基准 |
+| [88cda21](https://github.com/learnsyslab/crazyflow/commit/88cda21) | 补充控制函数文档 | 明确命令维度、单位、姿态约定和角速度坐标系，不改变控制函数实现 |
+| [af31417](https://github.com/learnsyslab/crazyflow/commit/af31417) | 重做 contact API 并新增碰撞对示例 | `contacts()` 的形状和含义改变；可按机体或机体对排除碰撞 |
+
+控制命令均以 `(n_worlds, n_drones, 维度)` 输入：state 是 16 维
+`[x,y,z,vx,vy,vz,ax,ay,az,qx,qy,qz,qw,wx,wy,wz]`，四元数中只跟踪 yaw；
+attitude 是 `[roll,pitch,yaw,thrust]`（extrinsic xyz 欧拉角为 rad、推力为 N）；
+body rate 是 `[wx,wy,wz,thrust]`（机体系 rad/s、N）；force/torque 是
+`[thrust,tx,ty,tz]`（N、机体系 N·m），rotor velocity 是四个 RPM。
+
+### 17.2 碰撞接口迁移
+
+旧版 `sim.contacts()` 返回每个 contact slot 的布尔值，旧的 `sim.contacts(body=...)`
+可按 body 筛选；新版不接受 `body`，返回 `(n_worlds, n_drones)`，逐架表示该无人机是否
+与其他 body 接触。如果需要确定接触双方，使用 `sim.contact_bodies()`：
+
+```python
+import numpy as np
+from crazyflow.sim import Sim
+
+sim = Sim(n_worlds=1, n_drones=2, device="cpu")
+sim.reset()
+flags = sim.contacts()  # shape (1, 2)
+body1, body2, touching = sim.contact_bodies()  # 都是 (1, n_contacts)
+for slot in np.flatnonzero(np.asarray(touching[0])):
+    name1 = sim.mj_model.body(int(body1[0, slot])).name
+    name2 = sim.mj_model.body(int(body2[0, slot])).name
+    print(name1, name2)
+```
+
+这两个 body 数组是 MuJoCo body ID，子 body 映射到根 body；只读取 `touching` 为 true 的
+slot。当前实现以 contact distance `< 0` 标记接触。`contact_bodies()` 返回所有碰撞对，
+不应用 `build_contact_fn` 的忽略规则。
+
+```python
+# 在已创建的 sim 上设置过滤规则：忽略所有地面接触以及一对无人机的接触。
+contact_fn = sim.build_contact_fn(ignore=["world", ("drone:0", "drone:1")])
+filtered = sim.contacts()           # 使用刚设置的规则并按需同步 MJX
+same = contact_fn(sim.mjx_data)     # 直接用于已同步的 batched MJX data
+sim.close()
+```
+
+`ignore` 元素可用 body 名称或 ID；单个 body 对所有无人机生效，二元组只忽略指定的
+body 对，顺序无关。`build_contact_fn` 同时替换 `sim.contacts()` 使用的函数；
+`build_mjx()` 重建模型后会恢复默认过滤规则，需重新调用以设置忽略列表。直接调用返回的
+函数不会自动同步；修改 `sim.data.states` 后必须将 `sim.data.core.mjx_synced` 设为
+`False`，并先通过 `sim.contacts()` 或 `sim.contact_bodies()` 同步。
+
+接触缓存有容量限制。源码中小于 64 架时 `max_geom_pairs=-1`，64 架及以上默认为
+`2*n_drones`；极端密集碰撞可能超出容量。若需要完整碰撞对，设置
+`sim.max_geom_pairs = -1` 后调用 `sim.build_mjx()`，注意容量和计算开销可能随机群规模
+平方增长。按实例 ID 输出碰撞双方的完整示例为
+[`examples/contacts/collision_pairs.py`](examples/contacts/collision_pairs.py)，其中包含 GUI 渲染。
+
+### 17.3 示例与文档路径
+
+官方 [Examples](docs/examples/index.md) 已分为 control、JAX、plugins、rendering、contacts
+和 environments 六页；脚本仍从仓库根目录运行。`examples/symbolic.py` 移至
+[`examples/control/symbolic.py`](examples/control/symbolic.py)，
+`examples/rendering/render.py` 更名为 [`examples/rendering/draw_line.py`](examples/rendering/draw_line.py)。
+旧 `examples/plugins/estimation.py` 被删除；第 6.4 节只保留其历史实验。
+新增 [`examples/control/integrators.py`](examples/control/integrators.py) 比较积分器，
+[`examples/contacts/collision_pairs.py`](examples/contacts/collision_pairs.py) 显示碰撞双方。
+用户指南的 `visualization.md`、`splats.md` 分别更名为
+[`mujoco-rendering.md`](docs/user-guide/mujoco-rendering.md) 和
+[`splat-rendering.md`](docs/user-guide/splat-rendering.md)。
+
+### 17.4 本轮 CPU 实验：碰撞过滤与积分器
+
+在 Docker 中以 CPU 后端运行，JAX 0.11.1、MuJoCo 3.10.0。脚本与原始数据分别为
+[`upstream_contact_integrator_20261028.py`](usage_assets/upstream_contact_integrator_20261028.py) 和
+[`upstream_contact_integrator_20261028_results.json`](usage_assets/upstream_contact_integrator_20261028_results.json)：
+
+```bash
+cd /workspace/crazyflow
+JAX_PLATFORM_NAME=cpu python usage_assets/upstream_contact_integrator_20261028.py
+```
+
+碰撞实验使用 3 个 world、每个 3 架无人机：world 0 的 0、1 号在空中重合；world 1 的
+2 号穿入地面；world 2 的三架机均分离且在空中。设置位置后显式使同步标记失效，按
+`contact_bodies()` 取活跃 body 对，再分别建立过滤函数；脚本逐项断言结果。
+表中行是 world 0、1、2，列是 drone 0、1、2（T 为检测到接触）：
+
+| 过滤条件 | 逐机接触标记 |
+|---|---|
+| 默认 | `[[T,T,F], [F,F,T], [F,F,F]]` |
+| 忽略 `drone:0` 与 `drone:1` 这一对 | `[[F,F,F], [F,F,T], [F,F,F]]` |
+| 忽略 `world` | `[[T,T,F], [F,F,F], [F,F,F]]` |
+| 忽略 `drone:0` | `[[F,F,F], [F,F,T], [F,F,F]]` |
+
+未过滤的活跃 body 对依次为 `(drone:0, drone:1)`、`(world, drone:2)`、无；每 world
+接触缓存有 6 个 slot。这验证了上述固定构型及过滤规则，不代表任意场景或大机群都不会受
+接触缓存限制。
+
+积分器实验依照官方示例使用默认 cf21B_500 和 first-principles 动力学，初始高度 0 m，
+将 1.2 倍悬停推力均分到四个电机并转换为恒定 RPM 命令，以 500 Hz 模拟 1000 步（2 s）：
+
+| 积分器 | 最终高度（m） |
+|---|---:|
+| Euler | 2.32179785 |
+| RK4 | 2.31786633 |
+| Symplectic Euler | 2.32626057 |
+
+脚本只断言最终高度有限。这是单一推力与步长下的终点对照，没有解析真值、收敛性测试
+或计时，不能据此判断积分精度、长期稳定性或性能排名；也没有训练或重评历史权重。
+
+### 17.5 本轮回归检查
+
+在旧 2026-10-15 GPU 镜像中 bind mount 本轮源码，`MPLBACKEND=Agg pytest -q tests`
+得到 **790 passed / 53 skipped / 12 deselected**，耗时 341.51 秒；两条 warning
+来自 JAX 在 contacts 测试中的 cast overflow。默认配置排除的 12 项渲染测试随后以 GPU、`MUJOCO_GL=egl` 和 X11 环境单独运行，
+**12 passed / 843 deselected**，11.08 秒。
+CPU 上针对 sim、contacts、integrators、sharding 的测试为 **233 passed / 37 skipped /
+1 deselected**，81.08 秒，1 条同类 warning。官方文档测试为 **103 passed**，35.76 秒。
+
+`ruff check crazyflow tests examples benchmark` 和本轮实验脚本的 Ruff 检查及格式检查通过。
+全仓官方 Ruff 命令仍有合并前已有的失败：`ruff check` 在历史
+`usage_assets/racing_fulltrain_20261015.py` 报 83 项，`ruff format --check --diff`
+在已有 `note.md`、`usage.md` 的代码块格式上报错；本轮未对历史文件进行整体重格式化。
+跳过或排除的项目不计为通过；本轮未重训或重新评估旧策略。

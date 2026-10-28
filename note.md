@@ -9,7 +9,9 @@
 参数、完整预算、历史RNG问题修正和能力边界见[usage.md第16节](usage.md)；
 可加载权重见[trained_models](trained_models/README.md)。已有历史实验和图片保留，不用旧成绩代替新测试。
 
-本地已重建并在没有源码bind mount的新容器中验收该镜像，
+以下镜像验收属于 2026-10-15 的历史记录；本轮更新使用源码 bind mount，未重新构建镜像。
+
+当时已重建并在没有源码bind mount的新容器中验收该镜像，
 image ID为`sha256:3291a9fe23c293c1e9f8c22f2b889a719f13b5ae27147baaf978cdb49274972d`。
 CUDA、全部110权重哈希、精确续训、赛道播种/惯量和实际电机策略EGL视频逐帧读回均通过；
 [镜像核验原始日志](usage_assets/fulltrain_20261015/fresh_image_checks.txt)与
@@ -182,7 +184,7 @@ python examples/environments/figure8.py
 
 ```bash
 python examples/jax/gradient.py
-python examples/symbolic.py
+python examples/control/symbolic.py
 ```
 
 `step_pipeline` 和 `reset_pipeline` 可以插入自定义函数，用于域随机化、外力、传感器估计或动作延迟：
@@ -191,7 +193,6 @@ python examples/symbolic.py
 python examples/plugins/randomize.py
 python examples/plugins/disturbance.py
 python examples/plugins/action_delay.py
-python examples/plugins/estimation.py
 ```
 
 修改 pipeline 后调用 `sim.build_step_fn()` 或 `sim.build_reset_fn()` 重新编译。
@@ -218,7 +219,7 @@ MuJoCo 支持交互窗口、离屏 RGB、深度和 RGB-D 渲染。`camera` 可�
 常用示例：
 
 ```bash
-python examples/rendering/render.py       # 25 架无人机
+python examples/rendering/draw_line.py    # 绘制轨迹
 python examples/rendering/cameras.py      # 机载 RGB-D 相机
 python examples/rendering/raycasting.py   # JAX/MJX 深度射线
 python examples/rendering/led_deck.py     # LED 与自定义几何体
@@ -443,6 +444,28 @@ Racing 默认 PPO 完成 1,499,136 个 transitions；重载五局平均奖励 70
 验证结果：核心测试 **771 passed / 47 skipped / 12 deselected**，文档测试 **103 passed**，
 渲染测试 **12 passed**，关键用法片段 **26/26 passed**；Ruff 检查和格式检查通过。
 本节记录的构建、验证与实验均在 Docker 内执行，未使用服务器。
+
+## 2026-10-28：官方 main 增量同步与实验
+
+已将官方 main 从 c95f69b 同步至 [af31417](https://github.com/learnsyslab/crazyflow/commit/af314170be3e39f639dbffccb484a490f58a8561)，共五个提交；逐项变化与接口示例见 [usage.md 第 17 节](usage.md#17-2026-10-28-官方-main-增量同步)。`sim.contacts()` 现在按 `(n_worlds, n_drones)` 返回布尔值；过滤使用 `sim.build_contact_fn(ignore=...)`，识别接触双方使用 `sim.contact_bodies()`。
+
+下面在宿主机的项目根目录运行新实验（使用旧依赖镜像并 bind mount 当前源码；未重建镜像）：
+
+```bash
+docker run --rm --user "$(id -u):$(id -g)" \
+  -e JAX_PLATFORM_NAME=cpu -e PYTHONPATH=/workspace \
+  -e XLA_FLAGS='--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1' \
+  -e OMP_NUM_THREADS=1 -v "$PWD:/workspace" -w /workspace \
+  dzp_crazyflow:0.4.0-research-20261015-dependencies \
+  python usage_assets/upstream_contact_integrator_20261028.py
+```
+
+实验在 JAX 0.11.1、MuJoCo 3.10.0、CPU 上运行。三个 world 各放三架无人机：第一组两机重叠、第二组一机接地、第三组无接触。默认标志为 `[[1,1,0],[0,0,1],[0,0,0]]`；忽略 `drone:0` 与 `drone:1` 的接触后只剩第二组接地，忽略 `world` 后只剩第一组两机接触。`contact_bodies()` 分别识别出两机、地面与第三架无人机、无接触。积分器对照按官方示例以 500 Hz、1.2 倍悬停推力模拟 2 秒，Euler、RK4、symplectic Euler 的末高度分别为 2.321798、2.317866、2.326261 m；这是该条件下的数值对照，不代表精度排名或飞行策略训练结果。完整条件与输出见 [实验脚本](usage_assets/upstream_contact_integrator_20261028.py) 和 [JSON 结果](usage_assets/upstream_contact_integrator_20261028_results.json)。
+
+本轮 Docker GPU 回归为 **790 passed / 53 skipped / 12 deselected**（341.51 秒，
+两条 JAX cast overflow warning）；CPU 相关单元测试为 **233 passed / 37 skipped /
+1 deselected**，官方文档测试 **103 passed**。默认排除的渲染测试另用 EGL 和 X11 运行，
+**12 passed / 843 deselected**。全仓 Ruff 有合并前已有的历史脚本和文档格式问题，具体范围见 [usage.md 第 17.5 节](usage.md#175-本轮回归检查)。
 
 ## 常用操作
 
