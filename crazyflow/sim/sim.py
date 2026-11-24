@@ -15,6 +15,7 @@ import numpy as np
 from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 from jax import Array, Device
 from jax.sharding import NamedSharding, PartitionSpec
+from scipy.spatial.transform import Rotation as R
 
 import crazyflow.sim.functional as F
 from crazyflow.control import Control
@@ -297,12 +298,29 @@ class Sim:
         self.mj_data.qpos[:] = self.mjx_data.qpos[world, :]
         self.mj_data.mocap_pos[:] = self.mjx_data.mocap_pos[world, :]
         self.mj_data.mocap_quat[:] = self.mjx_data.mocap_quat[world, :]
+        # Only first principles dynamics track rotor RPM. The fused mesh has no separate propellers
+        if self.dynamics == Dynamics.first_principles and not self.fused_mjx_model:
+            self._spin_props(world)
         # mj_forward raises on contacts between two static bodies (e.g. drones welded to the world).
         # We only need poses, cameras and lights for rendering
         mujoco.mj_kinematics(self.mj_model, self.mj_data)
         mujoco.mj_comPos(self.mj_model, self.mj_data)
         mujoco.mj_camlight(self.mj_model, self.mj_data)
         return self.viewer.render(mode)
+
+    def _spin_props(self, world: int):
+        """Turn the propeller bodies by the angle their rotors travelled since the last render."""
+        time = float(self.time[world, 0])
+        dt = max(time - self.mj_data.time, 0.0)  # Time jumps back on reset
+        self.mj_data.time = time
+        # Rotors spin opposite to the yaw torque they exert on the body
+        rpm = -self.data.states.rotor_vel * self.data.params.mixing_matrix[..., 2, :]
+        angle = np.asarray(rpm[world]) * 2 * np.pi / 60 * dt
+        names = [f"{i}:prop{j}" for i in range(self.n_drones) for j in range(4)]
+        ids = [self.mj_model.body(name).id for name in names]
+        rot_prop = R.from_quat(self.mj_model.body_quat[ids], scalar_first=True)
+        rot_delta = R.from_euler("z", angle.reshape(-1, 1))
+        self.mj_model.body_quat[ids] = (rot_prop * rot_delta).as_quat(scalar_first=True)
 
     def seed(self, seed: int):
         """Set the JAX rng key for the simulation.
@@ -330,8 +348,8 @@ class Sim:
         if (drone_body := drone_spec.body(name)) is None:
             raise ValueError("Drone body not found in drone spec")
         drone_body.mocap = True
-        frame.attach_body(drone_body, "", ":0")  # Attach a single drone, then stamp out the swarm.
-        spec = self._replicate_drone(spec, f"{name}:0", drone_spec.meshdir)
+        frame.attach_body(drone_body, "0:")  # Attach a single drone, then stamp out the swarm.
+        spec = self._replicate_drone(spec, f"0:{name}", drone_spec.meshdir)
         # Mocap bodies avoid the nv^2 cost of qM/qLD/efc_J. A single dummy slide joint keeps nv=1 so
         # mjx.kinematics doesn't error on a zero-DOF mjx_model. Added after _replicate_drone because
         # to_xml() drops this geom-less body's mass/inertia (the result would fail to recompile).
@@ -350,11 +368,11 @@ class Sim:
         """Stamp the single attached drone body into ``n_drones`` instances by cloning its XML.
 
         Avoids the O(n_drones^2) cost and per-instance mesh copies of repeated ``attach_body``.
-        Only element ``name``s are suffixed ``:0`` -> ``:i``, so meshes and static materials stay
+        Only element ``name``s are re-prefixed ``0:`` -> ``i:``, so meshes and static materials stay
         shared. Dynamic materials are duplicated per drone.
         """
         # Name prefixes of the drone's "dynamic" materials which get per-copy materials
-        _DYN_MATERIAL = ("led",)
+        _DYN_MATERIAL = ("0:led",)
         # Absolute meshdir so the serialized mesh file paths resolve when re-parsed from a string.
         spec.meshdir = str((self.drone_path.parent / drone_meshdir).resolve())
         root = ET.fromstring(spec.to_xml())
@@ -364,15 +382,15 @@ class Sim:
         dynamic = [m for m in asset.findall("material") if m.get("name").startswith(_DYN_MATERIAL)]
         for i in range(1, self.n_drones):
             body = copy.deepcopy(body0)
-            for el in body.iter():  # suffix unique names + dynamic-material refs. keep shared refs
-                if (name := el.get("name", "")).endswith(":0"):
-                    el.set("name", f"{name[:-2]}:{i}")
+            for el in body.iter():  # prefix unique names + dynamic-material refs. keep shared refs
+                if (name := el.get("name", "")).startswith("0:"):
+                    el.set("name", f"{i}:{name[2:]}")
                 if (mat := el.get("material", "")).startswith(_DYN_MATERIAL):
-                    el.set("material", f"{mat[:-2]}:{i}")
+                    el.set("material", f"{i}:{mat[2:]}")
             frame.append(body)
             for material in dynamic:
                 clone = copy.deepcopy(material)
-                clone.set("name", f"{material.get('name')[:-2]}:{i}")
+                clone.set("name", f"{i}:{material.get('name')[2:]}")
                 asset.append(clone)
         new_spec = mujoco.MjSpec.from_string(ET.tostring(root, encoding="unicode"))
         new_spec.copy_during_attach = True  # write-only, re-apply after from_string() drops it
@@ -383,8 +401,8 @@ class Sim:
         mj_model = spec.compile()
         self._unweld_drones(mj_model)
         mj_data = mujoco.MjData(mj_model)
-        mjx_model = mjx.put_model(mj_model, device=self.device)
-        mjx_data = mjx.put_data(mj_model, mj_data, device=self.device)
+        mjx_model = mjx.put_model(mj_model, device=self.device, impl="jax")
+        mjx_data = mjx.put_data(mj_model, mj_data, device=self.device, impl="jax")
         if self.mesh is None:
             mjx_data = jax.vmap(lambda _: mjx_data)(jnp.arange(self.n_worlds))
         else:
@@ -402,7 +420,7 @@ class Sim:
         """
         base = "drone_fused" if self.fused_mjx_model else "drone"
         for i in range(self.n_drones):
-            body_id = mj_model.body(f"{base}:{i}").id
+            body_id = mj_model.body(f"{i}:{base}").id
             mj_model.body_weldid[body_id] = body_id  # Each drone becomes its own weld root
 
     def build_step_fn(self) -> Callable[[SimData, int], SimData]:
@@ -554,7 +572,7 @@ class Sim:
         device = self.device if self.mesh is None else None  # Sharded data is placed by the caller
         drone_name = "drone_fused" if self.fused_mjx_model else "drone"
         drone_mocap_ids = [
-            self.mj_model.body(f"{drone_name}:{i}").mocapid.item() for i in range(self.n_drones)
+            self.mj_model.body(f"{i}:{drone_name}").mocapid.item() for i in range(self.n_drones)
         ]
         N, D = self.n_worlds, self.n_drones
         data = SimData(
@@ -593,6 +611,8 @@ class Sim:
             return self.data.controls.body_rate.freq
         if self.control == Control.force_torque:
             return self.data.controls.force_torque.freq
+        if self.control == Control.rotor_vel:
+            return self.freq  # Rotor velocity commands are applied at every simulation step
         raise NotImplementedError(f"Control mode {self.control} not implemented")
 
     @property
@@ -641,7 +661,7 @@ class Sim:
         """
         mj_model = self.mj_model
         base = "drone_fused" if self.fused_mjx_model else "drone"
-        drone_ids = [mj_model.body(f"{base}:{i}").id for i in range(self.n_drones)]
+        drone_ids = [mj_model.body(f"{i}:{base}").id for i in range(self.n_drones)]
         no_drone_id = self.n_drones  # One past the last drone, gets ignored later
         body2drone = np.full(mj_model.nbody, no_drone_id)
         body2drone[drone_ids] = np.arange(self.n_drones)
@@ -825,8 +845,8 @@ def rotor_vel_limits(dynamics: Dynamics, drone: Drone) -> tuple[float, float]:
     params = load_dynamics_params(dynamics, drone)
     thrust_min, thrust_max = float(params["thrust_min"]), float(params["thrust_max"])
     if dynamics == Dynamics.first_principles:
-        rpm = motor_force2rotor_vel(np.asarray([thrust_min, thrust_max]), params["rpm2thrust"])
-        return float(rpm[0]), float(rpm[1])
+        rpm_max = motor_force2rotor_vel(np.asarray(thrust_max), params["rpm2thrust"])
+        return 0.0, float(rpm_max)
     return 4 * thrust_min, 4 * thrust_max
 
 

@@ -2,7 +2,7 @@
 
 Splat rendering is differentiable w.r.t. the camera pose. A reference FPV image is rendered at a
 baseline pose, and its photometric error is differentiated over small z and yaw offsets.
-Requires splax (`pip install "crazyflow[splats]"`) and a CUDA GPU.
+Requires splax (`pip install "crazyflow[splats]"`) and runs much faster on a GPU.
 
 Run with `--plot` to plot the results, which requires matplotlib from the `tests` environment.
 """
@@ -76,9 +76,9 @@ def _camera_viewmats(
 
 def _build_renderer(sim: Sim) -> Callable[[Array, Array], Array]:
     """Build a differentiable FPV renderer parameterized by z and yaw."""
-    camera_id = mujoco.mj_name2id(sim.mj_model, mujoco.mjtObj.mjOBJ_CAMERA, "fpv_cam:0")
+    camera_id = mujoco.mj_name2id(sim.mj_model, mujoco.mjtObj.mjOBJ_CAMERA, "0:fpv_cam")
     if camera_id < 0:
-        raise ValueError("Camera 'fpv_cam:0' not found in the model")
+        raise ValueError("Camera '0:fpv_cam' not found in the model")
 
     camera_position = jnp.asarray(sim.mj_model.cam_pos[camera_id], dtype=jnp.float32)
     camera_quaternion = jnp.roll(
@@ -131,7 +131,7 @@ def plot_results(experiments: tuple[tuple[NDArray, NDArray, NDArray, str, str], 
 
 def main(plot: bool = False) -> None:
     """Compare photometric and known pose gradients for independent z and yaw sweeps."""
-    sim = Sim(n_worlds=1, n_drones=1, device="gpu")
+    sim = Sim(n_worlds=1, n_drones=1, device=jax.default_backend())
     scene = fetch(f"{ASSETS_URL}/robot_hall.ply")
     attach_splats(sim, scene=scene)
     render = _build_renderer(sim)

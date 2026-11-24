@@ -90,17 +90,17 @@ def state2attitude(
     pos_err = setpoint_pos - pos  # l. 145 Position Error (ep)
     vel_err = setpoint_vel - vel  # l. 148 Velocity Error (ev)
     # l.151 ff Integral Error
-    int_pos_err = xp.zeros_like(pos) if pos_err_i is None else pos_err_i
-    int_pos_err = xp.clip(int_pos_err + pos_err * dt, -int_err_max, int_err_max)
+    pos_err_i = xp.zeros_like(pos) if pos_err_i is None else pos_err_i
+    pos_err_i = xp.clip(pos_err_i + pos_err * dt, -int_err_max, int_err_max)
     # l. 161 Desired thrust [F_des]
     # => only one case here, since setpoint is always in absolute mode
     # Note: since we've defined the gravity in z direction, a "-" needs to be added
     target_thrust = (
-        mass * (setpoint_acc - gravity_vec) + kp * pos_err + kd * vel_err + ki * int_pos_err
+        mass * (setpoint_acc - gravity_vec) + kp * pos_err + kd * vel_err + ki * pos_err_i
     )
     # l. 178 Rate-controlled YAW is moving YAW angle setpoint
     # => only one case here, since the setpoint is always in absolute mode
-    desired_yaw = R.from_quat(setpoint_quat).as_euler("xyz")[..., 2]
+    desired_yaw = R.from_quat(setpoint_quat).as_euler("xyz", suppress_warnings=True)[..., 2]
     # l. 189 Z-Axis [zB]
     rot = R.from_quat(quat).as_matrix()
     z_axis = rot[..., -1]  # 3rd column or roation matrix is z axis
@@ -132,7 +132,9 @@ def state2attitude(
     #
     # safety: assume_valid is okay here because we just constructed the rotation matrix from
     # orthonormal vectors
-    command_RPY = R.from_matrix(matrix, assume_valid=True).as_euler("xyz", degrees=False)
+    command_RPY = R.from_matrix(matrix, assume_valid=True).as_euler(
+        "xyz", degrees=False, suppress_warnings=True
+    )
     # l. 283 [control_thrust]
     # The firmware returns thrust in PWM, but we want to stay in SI units. The conversion from
     # thrust to PWM uses a mass_thrust parameter, which is a constant converting thrust values to
@@ -142,7 +144,9 @@ def state2attitude(
     # maps thrust -> PWM -> rescaled thrust.
     thrust = pwm2force(mass_thrust * current_thrust, thrust_max * 4, pwm_max)
     command_rpyt = xp.concat((command_RPY, thrust[..., None]), axis=-1)
-    return command_rpyt, int_pos_err
+    # l. 325 [controllerMellingerReset]
+    pos_err_i = xp.where((current_thrust > 0)[..., None], pos_err_i, 0.0)
+    return command_rpyt, pos_err_i
 
 
 def attitude2force_torque(
@@ -150,7 +154,7 @@ def attitude2force_torque(
     ang_vel: Array,
     cmd: Array,
     prev_ang_vel: Array | None = None,
-    r_int_error: Array | None = None,
+    rot_err_i: Array | None = None,
     ctrl_freq: int = 500,
     *,
     kR: Array,
@@ -160,7 +164,6 @@ def attitude2force_torque(
     int_err_max: Array,
     torque_pwm_max: Array,
     thrust_max: float,
-    pwm_min: float,
     pwm_max: float,
     L: float,
     thrust2torque: float,
@@ -178,8 +181,8 @@ def attitude2force_torque(
         cmd: Commanded attitude (roll, pitch, yaw) and total thrust [rad, rad, rad, N].
         prev_ang_vel: Angular velocity in rad/s from the previous call. If None, it is initialised
             to zero.
-        r_int_error: Angular velocity integral error (..., 3) from the previous call. If None, it
-            is initialised to zero.
+        rot_err_i: Rotation integral error (..., 3) from the previous call. If None, it is
+            initialised to zero.
         ctrl_freq: Control frequency in Hz
         kR: Proportional gain for the rotation error with shape (3,).
         kw: Proportional gain for the angular velocity error with shape (3,).
@@ -188,7 +191,6 @@ def attitude2force_torque(
         int_err_max: Range of the integral error with shape (3,). i_range in the firmware.
         torque_pwm_max: Maximum torque in PWM.
         thrust_max: Maximum thrust in N.
-        pwm_min: Minimum PWM value.
         pwm_max: Maximum PWM value.
         L: Distance from the center of the quadrotor to the center of the rotor in m.
         thrust2torque: Conversion factor (m).
@@ -207,7 +209,7 @@ def attitude2force_torque(
         cmd[..., 3],
         prev_ang_vel,
         ang_vel_des,
-        r_int_error,
+        rot_err_i,
         ctrl_freq,
         kR=kR,
         kw=kw,
@@ -216,7 +218,6 @@ def attitude2force_torque(
         int_err_max=int_err_max,
         torque_pwm_max=torque_pwm_max,
         thrust_max=thrust_max,
-        pwm_min=pwm_min,
         pwm_max=pwm_max,
         L=L,
         thrust2torque=thrust2torque,
@@ -230,7 +231,7 @@ def body_rate2force_torque(
     cmd: Array,
     prev_ang_vel: Array | None = None,
     prev_cmd: Array | None = None,
-    r_int_error: Array | None = None,
+    rot_err_i: Array | None = None,
     ctrl_freq: int = 500,
     *,
     kR: Array,
@@ -240,7 +241,6 @@ def body_rate2force_torque(
     int_err_max: Array,
     torque_pwm_max: Array,
     thrust_max: float,
-    pwm_min: float,
     pwm_max: float,
     L: float,
     thrust2torque: float,
@@ -266,8 +266,8 @@ def body_rate2force_torque(
         prev_cmd: Command from the previous call with shape (..., 4). The firmware includes the
             derivative of the body rate setpoint in the derivative term. If None, the setpoint is
             assumed to be constant.
-        r_int_error: Angular velocity integral error (..., 3) from the previous call. If None, it
-            is initialised to zero.
+        rot_err_i: Rotation integral error (..., 3) from the previous call. If None, it is
+            initialised to zero.
         ctrl_freq: Control frequency in Hz
         kR: Proportional gain for the rotation error with shape (3,).
         kw: Proportional gain for the angular velocity error with shape (3,).
@@ -276,7 +276,6 @@ def body_rate2force_torque(
         int_err_max: Range of the integral error with shape (3,). i_range in the firmware.
         torque_pwm_max: Maximum torque in PWM.
         thrust_max: Maximum thrust in N.
-        pwm_min: Minimum PWM value.
         pwm_max: Maximum PWM value.
         L: Distance from the center of the quadrotor to the center of the rotor in m.
         thrust2torque: Conversion factor (m).
@@ -288,7 +287,7 @@ def body_rate2force_torque(
     xp = array_namespace(quat)
     # l. 215 ff Without a position or attitude setpoint, the firmware levels the drone at the
     # current yaw
-    yaw = R.from_quat(quat).as_euler("xyz", degrees=False)[..., 2]
+    yaw = R.from_quat(quat).as_euler("xyz", degrees=False, suppress_warnings=True)[..., 2]
     rpy_des = xp.stack((xp.zeros_like(yaw), xp.zeros_like(yaw), yaw), axis=-1)
     ang_vel_des = cmd[..., :3]
     prev_ang_vel_des = ang_vel_des if prev_cmd is None else prev_cmd[..., :3]
@@ -300,7 +299,7 @@ def body_rate2force_torque(
         cmd[..., 3],
         prev_ang_vel,
         prev_ang_vel_des,
-        r_int_error,
+        rot_err_i,
         ctrl_freq,
         kR=kR,
         kw=kw,
@@ -309,7 +308,6 @@ def body_rate2force_torque(
         int_err_max=int_err_max,
         torque_pwm_max=torque_pwm_max,
         thrust_max=thrust_max,
-        pwm_min=pwm_min,
         pwm_max=pwm_max,
         L=L,
         thrust2torque=thrust2torque,
@@ -325,7 +323,7 @@ def _attitude2force_torque(
     force_des: Array,
     prev_ang_vel: Array | None,
     prev_ang_vel_des: Array,
-    r_int_error: Array | None,
+    rot_err_i: Array | None,
     ctrl_freq: int,
     *,
     kR: Array,
@@ -335,7 +333,6 @@ def _attitude2force_torque(
     int_err_max: Array,
     torque_pwm_max: Array,
     thrust_max: float,
-    pwm_min: float,
     pwm_max: float,
     L: float,
     thrust2torque: float,
@@ -355,7 +352,7 @@ def _attitude2force_torque(
         force_des: Desired total thrust in N with shape (...,).
         prev_ang_vel: Angular velocity from the previous call. If None, it is initialised to zero.
         prev_ang_vel_des: Desired angular velocity from the previous call with shape (..., 3).
-        r_int_error: Rotation integral error (..., 3) from the previous call. If None, it is
+        rot_err_i: Rotation integral error (..., 3) from the previous call. If None, it is
             initialised to zero.
         ctrl_freq: Control frequency in Hz
         kR: Proportional gain for the rotation error with shape (3,).
@@ -365,7 +362,6 @@ def _attitude2force_torque(
         int_err_max: Range of the integral error with shape (3,). i_range in the firmware.
         torque_pwm_max: Maximum torque in PWM.
         thrust_max: Maximum thrust in N.
-        pwm_min: Minimum PWM value.
         pwm_max: Maximum PWM value.
         L: Distance from the center of the quadrotor to the center of the rotor in m.
         thrust2torque: Conversion factor (m).
@@ -399,18 +395,17 @@ def _attitude2force_torque(
     ang_vel_d_err = xpx.at(ang_vel_d_err)[..., 2].set(0)
 
     # l. 268 ff Integral Error
-    r_int_error = xp.zeros_like(ang_vel) if r_int_error is None else r_int_error
-    r_int_error = r_int_error - eR * dt
-    r_int_error = xp.clip(r_int_error, -int_err_max, int_err_max)
+    rot_err_i = xp.zeros_like(ang_vel) if rot_err_i is None else rot_err_i
+    rot_err_i = rot_err_i - eR * dt
+    rot_err_i = xp.clip(rot_err_i, -int_err_max, int_err_max)
     # l. 278 ff Moment:
-    torque_pwm = -kR * eR + kw * ew + ki_m * r_int_error + kd_omega * ang_vel_d_err
+    torque_pwm = -kR * eR + kw * ew + ki_m * rot_err_i + kd_omega * ang_vel_d_err
     # l. 297 ff
     torque_pwm = xp.clip(torque_pwm, -torque_pwm_max, torque_pwm_max)
     torque_pwm = xp.where((force_des > 0)[..., None], torque_pwm, 0.0)
+    rot_err_i = xp.where((force_des > 0)[..., None], rot_err_i, 0.0)
     force_des_pwm = force2pwm(force_des / 4, thrust_max, pwm_max)
     pwms = force_torque_pwms2pwms(force_des_pwm, torque_pwm, mixing_matrix)
-    idle = xp.all(pwms == 0, axis=-1, keepdims=True)
-    pwms = xp.where(idle, 0.0, xp.clip(pwms, pwm_min, pwm_max))
 
     # Info: The Mellinger controller in the firmware ends here. However, we enforce a standardized
     # interface in the simulation from states -> attitude -> force_torque. We therefore need this
@@ -428,7 +423,7 @@ def _attitude2force_torque(
     # l. 310 ff
     torque_des = (mixing_matrix @ motor_forces[..., None])[..., 0] * xp.stack([L, L, thrust2torque])
     force_des = xp.sum(motor_forces, axis=-1)[..., None]
-    return force_des, torque_des, r_int_error
+    return force_des, torque_des, rot_err_i
 
 
 def force_torque_pwms2pwms(force_pwm: Array, torque_pwm: Array, mixing_matrix: Array) -> Array:
@@ -480,10 +475,11 @@ def force_torque2rotor_vel(
     assert force.shape[-1] == 1, f"Force must have shape (..., 1), but has {force.shape}"
     torque_forces = (torque * xp.asarray([1 / L, 1 / L, 1 / thrust2torque])) @ mixing_matrix
     motor_forces = (torque_forces + force) / 4
-    # Clip motor forces on the thrust instead of PWM level.
-    idle = xp.all(force == 0, axis=-1, keepdims=True)
-    motor_forces = xp.where(idle, 0.0, xp.clip(motor_forces, thrust_min, thrust_max))
-    # Assume perfect battery compensation and calculate the desired motor speeds directly
+    # Clip motor forces on the thrust instead of PWM level. Motors below thrust_min are turned off,
+    # see https://github.com/bitcraze/crazyflie-firmware/blob/d794c5ca081d19aa1e1bbcb6fd4a3711784fb8b1/src/drivers/src/motors.c#L199-L202
+    motor_forces = xp.where(motor_forces < thrust_min, 0.0, motor_forces)
+    excess = xp.clip(xp.max(motor_forces, axis=-1, keepdims=True) - thrust_max, min=0.0)
+    motor_forces = xp.clip(motor_forces - excess, min=0.0)
     return motor_force2rotor_vel(motor_forces, rpm2thrust)
 
 
@@ -538,7 +534,7 @@ class MellingerAttitudeData:
     """Last simulation steps that the attitude control command was applied."""
     freq: int = field(pytree_node=False)
     """Frequency of the attitude control command."""
-    r_int_error: Array = field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 3)
+    rot_err_i: Array = field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 3)
     """Integral errors of the attitude control command."""
     prev_ang_vel: Array = field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 3)
     """Previous angular velocity of the drone."""
@@ -561,7 +557,7 @@ class MellingerAttitudeData:
             staged_ang_vel_des=zeros_3d.copy(),
             steps=steps,
             freq=freq,
-            r_int_error=zeros_3d.copy(),
+            rot_err_i=zeros_3d.copy(),
             prev_ang_vel=zeros_3d.copy(),
             params=params,
         )
@@ -580,7 +576,7 @@ class MellingerBodyRateData:
     """Last simulation steps that the body rate control command was applied."""
     freq: int = field(pytree_node=False)
     """Frequency of the body rate control command."""
-    r_int_error: Array = field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 3)
+    rot_err_i: Array = field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 3)
     """Integral errors of the body rate control command."""
     prev_ang_vel: Array = field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 3)
     """Previous angular velocity of the drone."""
@@ -601,7 +597,7 @@ class MellingerBodyRateData:
             staged_cmd=zeros_4d.copy(),
             steps=steps,
             freq=freq,
-            r_int_error=zeros_3d.copy(),
+            rot_err_i=zeros_3d.copy(),
             prev_ang_vel=zeros_3d.copy(),
             params=params,
         )
@@ -671,7 +667,7 @@ def control_attitude2force_torque(data: SimData) -> SimData:
         cmd=attitude_ctrl.staged_cmd,
         ang_vel_des=attitude_ctrl.staged_ang_vel_des,
     )
-    force, torque, r_int_error = _attitude2force_torque(
+    force, torque, rot_err_i = _attitude2force_torque(
         states.quat,
         states.ang_vel,
         attitude_ctrl.cmd[..., :3],
@@ -679,16 +675,12 @@ def control_attitude2force_torque(data: SimData) -> SimData:
         attitude_ctrl.cmd[..., 3],
         attitude_ctrl.prev_ang_vel,
         prev_ang_vel_des,
-        attitude_ctrl.r_int_error,
+        attitude_ctrl.rot_err_i,
         attitude_ctrl.freq,
         **attitude_ctrl.params,
     )
     attitude_ctrl = leaf_replace(
-        attitude_ctrl,
-        mask,
-        r_int_error=r_int_error,
-        prev_ang_vel=states.ang_vel,
-        steps=data.core.steps,
+        attitude_ctrl, mask, rot_err_i=rot_err_i, prev_ang_vel=states.ang_vel, steps=data.core.steps
     )
     ft_ctrl = leaf_replace(
         data.controls.force_torque, mask, staged_cmd=jnp.concat([force, torque], axis=-1)
@@ -706,20 +698,20 @@ def control_body_rate2force_torque(data: SimData) -> SimData:
     mask = controllable(data.core.steps, data.core.freq, body_rate_ctrl.steps, body_rate_ctrl.freq)
     prev_cmd = body_rate_ctrl.cmd
     body_rate_ctrl = leaf_replace(body_rate_ctrl, mask, cmd=body_rate_ctrl.staged_cmd)
-    force, torque, r_int_error = body_rate2force_torque(
+    force, torque, rot_err_i = body_rate2force_torque(
         states.quat,
         states.ang_vel,
         body_rate_ctrl.cmd,
         prev_ang_vel=body_rate_ctrl.prev_ang_vel,
         prev_cmd=prev_cmd,
-        r_int_error=body_rate_ctrl.r_int_error,
+        rot_err_i=body_rate_ctrl.rot_err_i,
         ctrl_freq=body_rate_ctrl.freq,
         **body_rate_ctrl.params,
     )
     body_rate_ctrl = leaf_replace(
         body_rate_ctrl,
         mask,
-        r_int_error=r_int_error,
+        rot_err_i=rot_err_i,
         prev_ang_vel=states.ang_vel,
         steps=data.core.steps,
     )

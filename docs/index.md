@@ -4,9 +4,9 @@
   <img src="img/logo.svg" alt="Crazyflow Logo" width="300"/>
 </div>
 
-**Fast, parallelizable simulations of Crazyflie drones with JAX.**
+**Fast, parallelizable simulations of quadrotor drones with JAX.**
 
-Crazyflow is a research simulator for Crazyflie-style quadrotors that runs millions of independent environments in parallel on CPU or GPU. It is built on JAX, exposes a differentiable dynamics pipeline, and ships identified dynamics for the Crazyflie 2.x family.
+Crazyflow is a research simulator for quadrotors that runs millions of independent environments in parallel on CPU or GPU. It is built on JAX, exposes a differentiable dynamics pipeline, and ships identified dynamics for the Crazyflie 2.x family and the Holybro X500.
 
 ---
 
@@ -87,7 +87,7 @@ Crazyflow is a research simulator for Crazyflie-style quadrotors that runs milli
 
 <b>Watch the full narrated supplementary video:</b>
 
-[YouTube](https://www.youtube.com/watch?v=2ffWvhSSEAE){ .md-button .md-button--primary target="_blank" rel="noopener" }
+[YouTube](https://www.youtube.com/watch?v=P725lGp5RnU){ .md-button .md-button--primary target="_blank" rel="noopener" }
 
 </div>
 

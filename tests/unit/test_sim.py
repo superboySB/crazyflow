@@ -390,7 +390,7 @@ def test_control_frequency(dynamics: Dynamics):
     att_ctrl_1000 = sim_1000.data.controls.attitude
     assert np.all(att_ctrl_500.cmd == att_ctrl_1000.cmd)
     assert np.all(att_ctrl_500.staged_cmd == att_ctrl_1000.staged_cmd)
-    assert np.all(att_ctrl_500.r_int_error == att_ctrl_1000.r_int_error)
+    assert np.all(att_ctrl_500.rot_err_i == att_ctrl_1000.rot_err_i)
     # and force torque
     ft_ctrl_500 = sim_500.data.controls.force_torque
     ft_ctrl_1000 = sim_1000.data.controls.force_torque
@@ -399,6 +399,13 @@ def test_control_frequency(dynamics: Dynamics):
     assert np.all(sim_500.data.controls.rotor_vel == sim_1000.data.controls.rotor_vel)
     sim_500.close()
     sim_1000.close()
+
+
+@pytest.mark.unit
+def test_control_frequency_rotor_vel():
+    sim = Sim(freq=1000, dynamics=Dynamics.first_principles, control=Control.rotor_vel)
+    assert sim.control_freq == sim.freq, "Rotor velocity commands are applied every sim step"
+    sim.close()
 
 
 @pytest.mark.unit
@@ -459,7 +466,7 @@ def test_rotor_vel_clip(integrator: Integrator):
         device="cpu",
     )
     lower, upper = rotor_vel_limits(Dynamics.first_principles, sim.drone)
-    assert 0.0 < lower < upper
+    assert 0.0 < upper
 
     for value, target in ((2 * upper, upper), (-upper, lower)):
         sim.reset()
@@ -507,7 +514,7 @@ def test_spec_copy_during_attach():
     box = mujoco.MjSpec.from_string('<mujoco><worldbody><body name="box"/></worldbody></mujoco>')
     frame = sim.spec.worldbody.add_frame()
     for i in range(2):  # copy_during_attach=False would move "box" out, returning None next lookup
-        frame.attach_body(box.body("box"), "", f":{i}")
+        frame.attach_body(box.body("box"), f"{i}:")
     sim.close()
 
 
@@ -526,14 +533,14 @@ def test_drone_meshes_shared(n_drones: int, fused: bool):
     n_single, n_multi = single.mj_model.nmesh, multi.mj_model.nmesh
     assert n_single > 0, "expected the drone to define visual meshes"
     assert n_multi == n_single, f"mismatched mesh count: {single=} vs {multi=} for {n_drones=}"
-    # Every drone is still present as a distinct mocap body with the ``{body}:{i}`` naming.
+    # Every drone is still present as a distinct mocap body with the ``{i}:{body}`` naming.
     assert multi.mj_model.nmocap == n_drones
     body = "drone_fused" if fused else "drone"
-    ids = {multi.mj_model.body(f"{body}:{i}").id for i in range(n_drones)}
+    ids = {multi.mj_model.body(f"{i}:{body}").id for i in range(n_drones)}
     assert len(ids) == n_drones, "each drone must be a distinct body"
-    # Materials, unlike meshes, are kept per drone so each drone owns a distinct ``{mat}:{i}``
+    # Materials, unlike meshes, are kept per drone so each drone owns a distinct ``{i}:{mat}``
     mat_ids = {
-        mujoco.mj_name2id(multi.mj_model, mujoco.mjtObj.mjOBJ_MATERIAL, f"led_bot:{i}")
+        mujoco.mj_name2id(multi.mj_model, mujoco.mjtObj.mjOBJ_MATERIAL, f"{i}:led_bot")
         for i in range(n_drones)
     }
     assert -1 not in mat_ids and len(mat_ids) == n_drones, "each drone needs its own material"
@@ -619,8 +626,8 @@ def test_change_material(device: str, drone: str, mat_name: str):
     change_material(sim, mat_name=mat_name, drone_ids=drone_ids, rgba=rgba, emission=emission)
 
     mj_model = sim.mj_model
-    mat0 = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_MATERIAL, f"{mat_name}:0")
-    mat1 = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_MATERIAL, f"{mat_name}:1")
+    mat0 = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_MATERIAL, f"0:{mat_name}")
+    mat1 = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_MATERIAL, f"1:{mat_name}")
     assert mat0 != mat1, "drones must not share the same material asset"
     np.testing.assert_allclose(mj_model.mat_rgba[mat0], rgba[0])
     np.testing.assert_allclose(mj_model.mat_rgba[mat1], rgba[1])

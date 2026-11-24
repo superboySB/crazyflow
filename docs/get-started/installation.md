@@ -48,6 +48,13 @@ JAX defaults to CPU-only execution. The `gpu` extra swaps in `jax[cuda12]`, enab
 !!! note
     GPU support is only available on Linux x86-64.
 
+### Apple Silicon (experimental)
+
+On Apple Silicon, [jax-mps](https://github.com/tillahoffmann/jax-mps) runs JAX on the GPU via Metal. Install the jax-mps version matching your JAX version and set `device="mps"`. If you use crazyflow via pixi on macOS, we already include jax-mps in the environment.
+
+!!! warning
+    This backend is untested.
+
 ## Developer install
 
 [Pixi](https://pixi.sh/) creates a fully reproducible environment (locked via `pixi.lock`). This variant installs `crazyflow` in editable mode. Any source change takes effect immediately without reinstalling. Recommended for contributors and researchers who modify the simulator.
@@ -69,6 +76,7 @@ Adds `pytest` and `pytest-markdown-docs` for running the test suite and doc snip
     ```bash
     pixi run tests          # unit and integration tests
     pixi run test-docs      # doc code snippet tests
+    pixi run fuzzing        # differential fuzzing against the real firmware
     ```
 
 === "uv"

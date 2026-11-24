@@ -2,12 +2,13 @@ import mujoco
 import numpy as np
 import pytest
 from conftest import skip_if_headless
+from scipy.spatial.transform import Rotation as R
 
-from crazyflow import Sim
+from crazyflow.sim import Dynamics, Sim
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("cam_name", ["fpv_cam:0", "track_cam:0", "fpv_cam:1", "track_cam:1"])
+@pytest.mark.parametrize("cam_name", ["0:fpv_cam", "0:track_cam", "1:fpv_cam", "1:track_cam"])
 @pytest.mark.render
 @skip_if_headless
 def test_render_camera_selection_from_name(cam_name: str):
@@ -34,7 +35,7 @@ def test_render_camera_selection_from_id(cam_id: int):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("cam_name", ["fpv_cam:0", "track_cam:0"])
+@pytest.mark.parametrize("cam_name", ["0:fpv_cam", "0:track_cam"])
 @pytest.mark.render
 @skip_if_headless
 def test_drone_camera_follows_drone(cam_name: str):
@@ -64,3 +65,28 @@ def test_render_free_camera():
     viewer_cam = sim.viewer.viewer.cam
     assert viewer_cam.type == mujoco.mjtCamera.mjCAMERA_FREE, "Camera type was not set to FREE"
     sim.close()
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("dynamics", Dynamics)
+@pytest.mark.render
+@skip_if_headless
+def test_render_spins_props(dynamics: Dynamics):
+    sim = Sim(dynamics=dynamics)
+    ids = [sim.mj_model.body(f"0:prop{i}").id for i in range(4)]
+    sim.render(mode="rgb_array")
+    quat_before = sim.mj_data.xquat[ids].copy()
+    # 7.5 RPM for one second turns each prop by 45 degrees
+    states = sim.data.states.replace(rotor_vel=sim.data.states.rotor_vel + 7.5)
+    core = sim.data.core.replace(steps=sim.data.core.steps + sim.freq)
+    sim.data = sim.data.replace(states=states, core=core)
+    sim.render(mode="rgb_array")
+    quat_after = sim.mj_data.xquat[ids].copy()
+    sim.close()
+    rot_before = R.from_quat(quat_before, scalar_first=True)
+    rot = rot_before.inv() * R.from_quat(quat_after, scalar_first=True)
+    expected = np.zeros((4, 3))
+    if dynamics == Dynamics.first_principles:  # Only first principles dynamics track rotor RPM
+        # Rotors spin opposite to the yaw torque they exert on the body
+        expected[:, 2] = -np.asarray(sim.data.params.mixing_matrix[2]) * np.pi / 4
+    assert np.allclose(rot.as_rotvec(), expected, atol=1e-6), f"Prop rotations {rot.as_rotvec()}"

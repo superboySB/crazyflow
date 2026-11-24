@@ -22,8 +22,8 @@ dependencies = [
     "numpy>=2.0.0",
     "scipy>=1.17.0",
     "jax>=0.7.0,!=0.10.2", # 0.10.2 XLA:GPU miscompiles for larger swarms. See https://github.com/jax-ml/jax/issues/39157
-    "mujoco>=3.3.0",
-    "mujoco-mjx>=3.3.0",
+    "mujoco>=4.0.0",
+    "mujoco-mjx>=4.0.0",
     "gymnasium[mujoco]>=1.4.0",
     "imageio",
     "einops",
@@ -33,19 +33,19 @@ dependencies = [
     "array-api-compat",
     "array-api-extra",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [project.optional-dependencies]
 gpu = ["jax[cuda12]"]
 benchmark = ["fire", "matplotlib", "pandas", "pyinstrument"]
-splats = ["splax[viewer]>=0.2.0"]
+splats = ["splax[viewer]>=0.2.4"]
 
 [project.urls]
 Homepage = "https://github.com/learnsyslab/crazyflow"
 Repository = "https://github.com/learnsyslab/crazyflow"
 
 # Dependency groups for uv-based developer workflows. These mirror the pixi features below
-# ([tool.pixi.feature.*]). `uv sync` installs the `dev` group by default. pixi ignores this table.
+# ([tool.pixi.feature.*]). `uv sync` installs the `dev` group by default.
 [dependency-groups]
 tests = [
     "pytest>=8.4.1",
@@ -63,6 +63,8 @@ docs = [
     "mkdocs-literate-nav>=0.6.0",
     "mkdocs-section-index>=0.3.0",
     "mkdocs-charts-plugin>=0.0.10",
+    "matplotlib",
+    "imageio-ffmpeg",
 ]
 dist = ["build>=1.3", "twine>=6.0"]
 dev = [
@@ -85,7 +87,7 @@ crazyflow = ["scene.xml"]
 
 [tool.pytest.ini_options]
 markers = ["unit", "integration", "render"]
-addopts = "-m 'not render'"
+addopts = "-m 'not render' --ignore=tests/fuzzing"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
@@ -144,10 +146,17 @@ line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
+[tool.uv]
+exclude-newer = "1 week"
+
 [tool.pixi]
 [tool.pixi.workspace]
 channels = ["conda-forge"]
-platforms = ["linux-64", "osx-arm64"]
+exclude-newer = "7d"
+# jax-mps >= 0.11 only has wheels for macOS 14+
+platforms = ["linux-64", { name = "osx-arm64-14", platform = "osx-arm64", macos = "14.0" }]
+preview = ["pixi-build"]
+build-variants = { python = ["3.14.*"] }
 
 [tool.pixi.dependencies]
 pip = "*"
@@ -158,7 +167,19 @@ crazyflow = { path = "./", editable = true }
 
 # splax requires CUDA jax, which has no osx-arm64 wheels, so splats are linux-only by default
 [tool.pixi.target.linux-64.pypi-dependencies]
-splax = { version = ">=0.2.0", extras = ["viewer"] }
+splax = { version = ">=0.2.4", extras = ["viewer"] }
+
+# Experimental JAX backend for Apple Silicon GPUs (Metal)
+[tool.pixi.target.osx-arm64.pypi-dependencies]
+jax-mps = "*"
+
+[tool.pixi.target.osx-arm64.activation.env]
+JAX_PLATFORMS = "cpu,mps"  # Use CPU by default, but keep MPS available
+
+# Keep upstream's Python 3.14 for non-GPU workflows while the research GPU
+# environment stays compatible with the archived PyTorch 2.8 CUDA 12.6 policies.
+[tool.pixi.feature.python-default.dependencies]
+python = "3.14.*"
 
 [tool.pixi.feature.gpu]
 platforms = ["linux-64"]
@@ -169,20 +190,27 @@ platforms = ["linux-64"]
 # retain upstream's Python range.
 python = "3.12.*"
 
+[tool.pixi.feature.gpu.pypi-dependencies]
+# Resolve the research policy runtime together with JAX's compatible CUDA 12 wheels.
+# Limit the PyTorch wheel index to this dependency and GPU environments.
+torch = { version = "==2.8.0+cu126", index = "https://download.pytorch.org/whl/cu126" }
+imageio-ffmpeg = "==0.6.0"
+
 [tool.pixi.feature.build.pypi-dependencies]
 build = ">=1.3"
 twine = ">=6.0"
 
 [tool.pixi.environments]
-default = { solve-group = "default" }
-tests = { features = ["tests"], solve-group = "default" }
-docs = { features = ["docs"], solve-group = "default" }
-release = { features = ["build"], solve-group = "default" }
+default = { features = ["python-default"], solve-group = "default" }
+tests = { features = ["tests", "python-default"], solve-group = "default" }
+docs = { features = ["docs", "python-default"], solve-group = "default" }
+release = { features = ["build", "python-default"], solve-group = "default" }
 # GPU environments do not work on osx-arm64 
 gpu = { features = ["gpu"], solve-group = "gpu" }
 benchmark = { features = ["benchmark", "gpu"], solve-group = "gpu" }
 gpu-tests = { features = ["tests", "gpu"], solve-group = "gpu" }
-dist = { features = ["dist"], solve-group = "default" }
+dist = { features = ["dist", "python-default"], solve-group = "default" }
+fuzzing = { features = ["tests", "fuzzing", "python-default"], solve-group = "fuzzing" }
 
 [tool.pixi.feature.tests.dependencies]
 pytest = ">=8.4.1"
@@ -197,10 +225,24 @@ pytest-markdown-docs = "*"
 tests = { cmd = "pytest -v tests", description = "Run tests" }
 test-docs = { cmd = "pytest -v --markdown-docs --markdown-docs-syntax=superfences --doctest-glob='*.md' crazyflow/ docs/", description = "Run doctests in docs and docstrings" }
 
+[tool.pixi.feature.fuzzing]
+platforms = ["linux-64"]
+
+[tool.pixi.feature.fuzzing.tasks]
+fuzzing = { cmd = "pytest -v tests/fuzzing", description = "Compare controllers against the Crazyflie firmware" }
+
+[tool.pixi.feature.fuzzing.activation.env]
+JAX_PLATFORMS = "cpu"
+
+[tool.pixi.feature.fuzzing.dependencies]
+cffirmware = { path = "tests/fuzzing/cffirmware" }
+hypothesis = ">=6.170,<7"
+
 [tool.pixi.feature.docs.dependencies]
-python = ">=3.10"
+python = ">=3.12"
 properdocs = ">=1.5.0"
 mkdocs-material = ">=9.0.0"
+matplotlib-base = "*"
 
 [tool.pixi.feature.docs.pypi-dependencies]
 mkdocs-autorefs = ">=1.2.0"
@@ -209,11 +251,20 @@ mkdocs-gen-files = ">=0.5.0"
 mkdocs-literate-nav = ">=0.6.0"
 mkdocs-section-index = ">=0.3.0"
 mkdocs-charts-plugin = ">=0.0.10"
+imageio-ffmpeg = "*"
 
-# Headless OpenGL for rendering the drone images during the docs build
+# Headless OpenGL for rendering during the docs build
 [tool.pixi.feature.docs.target.linux-64.dependencies]
 libegl = "*"
 mesalib = "*"
+
+# libglvnd only searches /usr/share/glvnd, which is missing on minimal CI runners
+[tool.pixi.feature.docs.target.linux-64.activation.env]
+MUJOCO_GL = "${MUJOCO_GL:-egl}"
+__EGL_VENDOR_LIBRARY_DIRS = "/usr/share/glvnd/egl_vendor.d:$CONDA_PREFIX/share/glvnd/egl_vendor.d"
+
+[tool.pixi.feature.docs.target.osx-arm64.activation.env]
+MUJOCO_GL = "${MUJOCO_GL:-cgl}"
 
 [tool.pixi.feature.docs.tasks]
 docs-build = { cmd = "properdocs build --strict", description = "Build docs" }

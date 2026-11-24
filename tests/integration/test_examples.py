@@ -10,7 +10,7 @@ from conftest import available_backends
 EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "examples"
 DOCS_EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "docs" / "examples"
 
-# Examples that render splats. splax rasterizes with cuda, so these need splax and a GPU.
+# Examples that render splats. They are too slow on the CPU, so these need splax and a GPU.
 REQUIRES_SPLAX = (
     "rendering/splat_camera.py",
     "rendering/splat_depth.py",
@@ -62,7 +62,7 @@ def test_example_main(example_script: str):
 
 def test_examples_in_docs():
     """Every example script has a section in the example docs, and every section has a script."""
-    directive = re.compile(r'^--8<-- example "examples/(.+)"$', re.MULTILINE)
+    directive = re.compile(r'^--8<-- example "examples/([^"]+)"(?: \w+="[^"]*")*$', re.MULTILINE)
     pages = DOCS_EXAMPLES_DIR.glob("*.md")
     documented = {path for page in pages for path in directive.findall(page.read_text())}
     scripts = {path.relative_to(EXAMPLES_DIR).as_posix() for path in EXAMPLES_DIR.rglob("*.py")}
