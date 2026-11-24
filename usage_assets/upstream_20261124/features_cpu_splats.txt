@@ -1,0 +1,17 @@
+Running splats on cpu
+Warp 1.19.0 initialized:
+   CUDA Toolkit 13.4, Driver 13.0
+   Devices:
+     "cpu"      : "x86_64"
+     "cuda:0"   : "NVIDIA GeForce RTX 4070 Ti SUPER" (16 GiB, sm_89, mempool enabled)
+   Kernel cache:
+     /root/.cache/warp/1.19.0
+Module splax._project._kernels 4434c18 load on device 'cpu' took 2501.51 ms  (compiled)
+Module splax._rasterize._kernels f4d6d70 load on device 'cpu' took 1542.98 ms  (compiled)
+Module splax._rasterize._sort._kernels d71d75d load on device 'cpu' took 1702.67 ms  (compiled)
+Module splax._rasterize._kernels b40ca15 load on device 'cpu' took 2775.38 ms  (compiled)
+/workspace/crazyflow/crazyflow/sim/sensors/splat.py:138: UserWarning: Rendering splats on the CPU, which is much slower than on a GPU. If a GPU is available, make sure JAX has CUDA support and create the Sim with device='gpu'.
+  warnings.warn(
+Module splax._rasterize._kernels 6f1c2c6 load on device 'cpu' took 2743.33 ms  (compiled)
+Module splax._project._kernels fdd7e02 load on device 'cpu' took 2894.88 ms  (compiled)
+PASS splats: /workspace/crazyflow/usage_assets/upstream_features_20261124/cpu/splats.json

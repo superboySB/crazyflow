@@ -31,3 +31,6 @@ site/
 .DS_Store
 Thumbs.db
 .claude
+
+# MuJoCo runtime warnings are archived with each reproduction run.
+MUJOCO_LOG.TXT

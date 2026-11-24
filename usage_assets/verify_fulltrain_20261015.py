@@ -163,6 +163,7 @@ def main() -> None:
     """Check complete experiments without running additional training or tuning."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--require-complete", action="store_true")
+    parser.add_argument("--output", type=Path, default=GYM / "artifact_verification.json")
     args = parser.parse_args()
     result = verify_gym() | verify_official()
     if args.require_complete:
@@ -171,7 +172,8 @@ def main() -> None:
         assert result["completed_promoted_velocity_runs"] == 3, result
         assert result["official_training_records"] == 30, result
     result["all_checked_hashes_and_scores_match"] = True
-    output = GYM / "artifact_verification.json"
+    output = args.output
+    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
 

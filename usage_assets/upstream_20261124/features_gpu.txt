@@ -1,0 +1,13 @@
+Running splats on gpu
+Warp 1.19.0 initialized:
+   CUDA Toolkit 13.4, Driver 13.0
+   Devices:
+     "cpu"      : "x86_64"
+     "cuda:0"   : "NVIDIA GeForce RTX 4070 Ti SUPER" (16 GiB, sm_89, mempool enabled)
+   Kernel cache:
+     /root/.cache/warp/1.19.0
+Module splax._project._kernels fdd7e02 load on device 'cuda:0' took 0.67 ms  (cached)
+Module splax._rasterize._kernels b40ca15 load on device 'cuda:0' took 0.59 ms  (cached)
+Module splax._rasterize._sort._kernels 56a2bc2 load on device 'cuda:0' took 0.46 ms  (cached)
+Module splax._rasterize._kernels 6f1c2c6 load on device 'cuda:0' took 0.63 ms  (cached)
+PASS splats: /workspace/crazyflow/usage_assets/upstream_features_20261124/gpu/splats.json

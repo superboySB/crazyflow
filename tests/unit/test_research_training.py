@@ -236,3 +236,29 @@ def test_calibrated_teacher_inverts_official_fitted_dynamics(dtype: torch.dtype)
         torch.tensor([[4.0, -4.0, 4.0]], dtype=dtype), "calibrated"
     )
     torch.testing.assert_close(saturated, clipped)
+
+
+@pytest.mark.parametrize("mismatch", ("legacy", "source", "layout", "shape", "key"))
+def test_recovery_rejects_incompatible_simulator_state(mismatch: str) -> None:
+    """A physics upgrade or positional-leaf mismatch must not silently alter resumed training."""
+    env = make_cpu_env()
+    try:
+        trainer.reset_env(env, seed=321)
+        state = trainer.snapshot_environment(env)
+        before = np.asarray(env.unwrapped.sim.data.states.pos).copy()
+        if mismatch == "legacy":
+            state.pop("sim_leaf_paths")
+            state.pop("simulator_source_sha256")
+        elif mismatch == "source":
+            state["simulator_source_sha256"] = "different-physics"
+        elif mismatch == "layout":
+            state["sim_leaf_paths"][0] = ".different_controller_field"
+        elif mismatch == "shape":
+            state["sim_leaves"][0] = state["sim_leaves"][0].reshape(-1)
+        else:
+            state["key_leaves"][0] = not state["key_leaves"][0]
+        with pytest.raises(ValueError, match="Exact resume|shape/dtype/key mismatch"):
+            trainer.restore_environment(env, state)
+        np.testing.assert_array_equal(env.unwrapped.sim.data.states.pos, before)
+    finally:
+        env.close()

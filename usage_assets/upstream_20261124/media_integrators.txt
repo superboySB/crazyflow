@@ -1,0 +1,1 @@
+$ python docs/capture_example.py examples/control/integrators.py plot\,output usage_assets/upstream_20261124/docs_integrators

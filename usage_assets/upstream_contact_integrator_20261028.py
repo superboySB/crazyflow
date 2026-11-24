@@ -26,6 +26,14 @@ def contacts_experiment() -> dict:
     sim = Sim(n_worlds=3, n_drones=3, device="cpu")
     try:
         sim.reset()
+        # Resolve actual root body names so this historical experiment also runs after
+        # MuJoCo 4 changed drone instances from suffixes to prefixes.
+        drone_names = [
+            sim.mj_model.body(
+                int(np.flatnonzero(sim.mj_model.body_mocapid == int(mocap_id))[0])
+            ).name
+            for mocap_id in np.asarray(sim.data.core.drone_mocap_ids).reshape(-1)
+        ]
         # World 0: 0/1 overlap; world 1: drone 2 penetrates floor;
         # world 2: all drones are separated and above the floor.
         positions = jnp.array(
@@ -58,7 +66,7 @@ def contacts_experiment() -> dict:
             ("default", (), [[True, True, False], [False, False, True], [False, False, False]]),
             (
                 "ignore_drone_0_1_pair",
-                (("drone:0", "drone:1"),),
+                ((drone_names[0], drone_names[1]),),
                 [[False, False, False], [False, False, True], [False, False, False]],
             ),
             (
@@ -68,7 +76,7 @@ def contacts_experiment() -> dict:
             ),
             (
                 "ignore_drone_0",
-                ("drone:0",),
+                (drone_names[0],),
                 [[False, False, False], [False, False, True], [False, False, False]],
             ),
         ]
@@ -80,8 +88,8 @@ def contacts_experiment() -> dict:
             values[name] = actual
         pair_sets = [{frozenset(pair) for pair in world} for world in pairs]
         assert pair_sets == [
-            {frozenset(("drone:0", "drone:1"))},
-            {frozenset(("world", "drone:2"))},
+            {frozenset((drone_names[0], drone_names[1]))},
+            {frozenset(("world", drone_names[2]))},
             set(),
         ], pairs
         return {

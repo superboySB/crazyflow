@@ -8,7 +8,8 @@
 [`70d09e4`](https://github.com/learnsyslab/crazyflow/commit/70d09e4)。API 片段已按当前源码更新，
 历史数值并不代表新模型参数下的结果；2026-10-15已进一步同步官方0.4.0，完整预算训练、
 最佳演示及能力边界见第16节。旧随机目标耦合成绩的修正说明也见该节；2026-10-28
-的上游更新和 contact 接口迁移见第17节。
+的上游更新和 contact 接口迁移见第17节。2026-11-24 再同步官方 main 的20个提交，
+MuJoCo 4、控制器修正及本轮复现见第18节。
 
 > 镜像构建、容器启动和常用命令见 [`note.md`](note.md)。本文专注 Crazyflow API、示例、可视化和 drone racing 的具体用法。
 
@@ -30,6 +31,7 @@
 | 使用10月9日 main 新功能 | 15 | 32个提交、X500、body rate、sharding、地效/下洗 |
 | 查看充分训练后的最佳演示与边界 | 16 | 0.4.0、完整多种子训练、高速八字、直接电机和真赛道 |
 | 使用10月28日同步的新接口 | 17 | contact API 迁移、示例路径及本轮提交 |
+| 使用11月24日官方增量 | 18 | MuJoCo 4、控制器限幅/清积分、旋桨、splat与冻结策略重评 |
 
 文中的数值有三种含义：代码注释里的旧数值是 8 月版本的代表性输出；“实测”表格是标注日期的完整运行结果；
 训练结果则同时给出 observation、action、reward、终止条件和评估口径，避免只给一张曲线却无法解释。
@@ -41,8 +43,9 @@
 宿主机执行：
 
 ```bash
-docker exec -it dzp-crazyflow-research-20261009 bash
+docker exec -it dzp-crazyflow-research-20261124 bash
 cd /workspace/crazyflow
+source /opt/crazyflow/activate-research.sh
 ```
 
 后续 Crazyflow 命令默认都在 `/workspace/crazyflow` 执行；drone racing 命令会显式切换到
@@ -78,8 +81,8 @@ import torch
 x = (jnp.ones((1024, 1024)) @ jnp.ones((1024, 1024))).block_until_ready()
 y = torch.ones((1024, 1024), device="cuda") @ torch.ones((1024, 1024), device="cuda")
 
-print(jax.default_backend(), x.device)       # gpu cuda:0
-print(torch.__version__, y.device)           # 2.8.0+cu126 cuda:0
+print(jax.default_backend(), x.device)  # gpu cuda:0
+print(torch.__version__, y.device)  # 2.8.0+cu126 cuda:0
 ```
 
 预期第一行包含 `gpu cuda:0`，第二行包含 `2.8.0+cu126 cuda:0`。若 JAX 显示 `cpu` 或
@@ -130,9 +133,9 @@ from crazyflow.sim import Sim
 sim = Sim(n_worlds=4, n_drones=2, device="gpu")
 sim.reset()
 
-print(sim.data.states.pos.shape)     # (4, 2, 3)
-print(sim.data.states.quat.shape)    # (4, 2, 4)
-print(sim.data.states.pos[2, 0])     # world 2, drone 0
+print(sim.data.states.pos.shape)  # (4, 2, 3)
+print(sim.data.states.quat.shape)  # (4, 2, 4)
+print(sim.data.states.pos[2, 0])  # world 2, drone 0
 sim.close()
 ```
 
@@ -311,8 +314,8 @@ sim.step(50)
 # 只重置 world 0 和 2；另外两个 world 连续运行
 sim.reset(mask=jnp.array([True, False, True, False]))
 
-pos = sim.data.states.pos          # (4, 3, 3)
-pos_world0_drone1 = pos[0, 1]     # (3,)
+pos = sim.data.states.pos  # (4, 3, 3)
+pos_world0_drone1 = pos[0, 1]  # (3,)
 ```
 
 ## 3. Functional API 与 JAX 变换
@@ -347,11 +350,13 @@ step, reset = sim.build_step_fn(), sim.build_reset_fn()
 cmd = jnp.zeros((1, 1, 4), dtype=jnp.float32)
 cmd = cmd.at[..., 3].set(float(data.params.mass[0]) * 9.81)
 
+
 @jax.jit
 def rollout(data, default_data, cmd):
     data = reset(data, default_data)
     data = F.attitude_control(data, cmd)
     return step(data, 100)
+
 
 data = rollout(data, default_data, cmd)
 print(data.states.pos.shape, data.states.pos.device)  # (1, 1, 3), cuda:0
@@ -367,19 +372,17 @@ from crazyflow.sim import Sim
 
 sim = Sim(control=Control.attitude, attitude_freq=50, device="gpu")
 sim.reset()
-data = sim.data.replace(
-    states=sim.data.states.replace(pos=sim.data.states.pos.at[..., 2].set(0.5))
-)
+data = sim.data.replace(states=sim.data.states.replace(pos=sim.data.states.pos.at[..., 2].set(0.5)))
 step = sim.build_step_fn()
+
 
 def loss(cmd, data):
     data = data.replace(
-        controls=data.controls.replace(
-            attitude=data.controls.attitude.replace(staged_cmd=cmd)
-        )
+        controls=data.controls.replace(attitude=data.controls.attitude.replace(staged_cmd=cmd))
     )
     data = step(data, 10)
     return (data.states.pos[0, 0, 2] - 1.0) ** 2
+
 
 grad_fn = jax.jit(jax.grad(loss))
 cmd = jnp.zeros((1, 1, 4), dtype=jnp.float32)
@@ -431,9 +434,7 @@ quat = np.array([0.0, 0.0, 0.0, 1.0])
 cmd = np.full(4, 15_000.0)
 rotor_vel = np.full(4, 12_000.0)
 
-pos_dot, quat_dot, vel_dot, ang_vel_dot, rotor_vel_dot = fn(
-    pos, quat, vel, ang_vel, cmd, rotor_vel
-)
+pos_dot, quat_dot, vel_dot, ang_vel_dot, rotor_vel_dot = fn(pos, quat, vel, ang_vel, cmd, rotor_vel)
 ```
 
 拟合动力学的命令是 `[roll, pitch, yaw, thrust_N]`：
@@ -455,14 +456,20 @@ from crazyflow.dynamics import dynamics_features
 from crazyflow.dynamics.first_principles import dynamics as fp
 from crazyflow.dynamics.so_rpy import dynamics as srpy
 
-print(dynamics_features(fp))    # {'rotor_dynamics': True}
+print(dynamics_features(fp))  # {'rotor_dynamics': True}
 print(dynamics_features(srpy))  # {'rotor_dynamics': False}
 ```
 
 ### 4.3 参数加载、覆盖与后端
 
 ```python
-from crazyflow.dynamics import Dynamics, available_dynamics, load_fn_params, load_params, parametrize
+from crazyflow.dynamics import (
+    Dynamics,
+    available_dynamics,
+    load_fn_params,
+    load_params,
+    parametrize,
+)
 
 raw = load_params(Dynamics.first_principles, "cf2x_L250")
 print(raw["mass"])  # 物理和当前模型参数合并后的值
@@ -470,7 +477,7 @@ fn_params = load_fn_params(available_dynamics[Dynamics.first_principles], "cf2x_
 
 fn = parametrize(available_dynamics["first_principles"], "cf2x_L250")
 result = fn(pos, quat, vel, ang_vel, cmd, rotor_vel, mass=0.0419)  # 只覆盖本次调用
-fn.keywords["mass"] = np.float64(0.040)                           # 持久覆盖
+fn.keywords["mass"] = np.float64(0.040)  # 持久覆盖
 ```
 
 `load_params(model, drone)` 返回模型的全部参数（包括 simulator 使用的推力上限）；
@@ -533,12 +540,10 @@ JIT 下随机化参数的推荐方式是把 `mass`、`J`、`J_inv` 作为运行�
 ```python
 import jax
 
+
 @jax.jit
 def randomized_dynamics(pos, quat, vel, ang_vel, cmd, rotor_vel, mass, J, J_inv):
-    return fn(
-        pos, quat, vel, ang_vel, cmd, rotor_vel,
-        mass=mass, J=J, J_inv=J_inv,
-    )
+    return fn(pos, quat, vel, ang_vel, cmd, rotor_vel, mass=mass, J=J, J_inv=J_inv)
 ```
 
 ### 4.5 CasADi 符号动力学
@@ -551,11 +556,7 @@ from crazyflow.dynamics import parametrize
 from crazyflow.dynamics.first_principles import symbolic_dynamics
 
 symbolic = parametrize(symbolic_dynamics, "cf2x_L250")
-X_dot, X, U, Y = symbolic(
-    model_rotor_vel=True,
-    model_dist_f=False,
-    model_dist_t=False,
-)
+X_dot, X, U, Y = symbolic(model_rotor_vel=True, model_dist_f=False, model_dist_t=False)
 f = cs.Function("f", [X, U], [X_dot])
 ```
 
@@ -617,12 +618,7 @@ trans_params = sys_id_translation(
     verbose=0,
     plot=True,
 )
-rot_params = sys_id_rotation(
-    data=data,
-    data_validation=validation_data,
-    verbose=0,
-    plot=True,
-)
+rot_params = sys_id_rotation(data=data, data_validation=validation_data, verbose=0, plot=True)
 ```
 
 成功运行会记录 `Training success=True`，随后分别打印 training/validation 的 RMSE 和 R²，并
@@ -669,11 +665,7 @@ assert rpyt.shape == (4,) and pos_err_i.shape == (3,)
 from crazyflow.control.mellinger import attitude2force_torque
 
 ctrl = parametrize(attitude2force_torque, "cf2x_L250")
-force, torque, r_int_error = ctrl(
-    quat,
-    np.zeros(3),
-    np.array([0.0, 0.0, 0.0, 0.3]),
-)
+force, torque, rot_err_i = ctrl(quat, np.zeros(3), np.array([0.0, 0.0, 0.0, 0.3]))
 assert force.shape == (1,) and torque.shape == (3,)
 ```
 
@@ -689,7 +681,8 @@ assert rpm.shape == (4,)
 
 ### 5.4 积分误差、参数化、批处理与 JIT
 
-控制器无隐藏状态。需要把 `pos_err_i` 和 `r_int_error` 显式传到下一次调用：
+控制器无隐藏状态。需要把 `pos_err_i` 和 `rot_err_i` 显式传到下一次调用。
+当前版本在非正推力时清空相应积分；旧关键字 `r_int_error` 已更名，见18.2：
 
 ```python
 state_ctrl = parametrize(state2attitude, "cf2x_L250")
@@ -727,7 +720,7 @@ params = load_fn_params(state2attitude, "cf2x_L250")
 sections = load_params("mellinger", "cf2x_L250")  # core + 各函数的嵌套参数表
 ctrl = parametrize(state2attitude, "cf2x_L250")
 rpyt, _ = ctrl(pos, quat, vel, cmd, mass=0.035)  # 单次覆盖
-ctrl.keywords["mass"] = np.float64(0.035)       # 持久覆盖
+ctrl.keywords["mass"] = np.float64(0.035)  # 持久覆盖
 ```
 
 ## 6. Step/reset pipelines 与插件
@@ -762,13 +755,14 @@ from crazyflow.sim import Sim
 from crazyflow.sim.data import SimData
 from crazyflow.sim.pipeline import insert_fn_before
 
+
 def disturbance(data: SimData) -> SimData:
     key, subkey = jax.random.split(data.core.rng_key)
     force = jax.random.normal(subkey, data.states.force.shape) * 0.2
     return data.replace(
-        states=data.states.replace(force=force),
-        core=data.core.replace(rng_key=key),
+        states=data.states.replace(force=force), core=data.core.replace(rng_key=key)
     )
+
 
 sim = Sim(control="state", device="gpu")
 insert_fn_before(sim.step_pipeline, "integration", disturbance)
@@ -789,15 +783,16 @@ from crazyflow.sim.data import SimData
 from crazyflow.sim.pipeline import append_fn
 from crazyflow.utils import leaf_replace
 
+
 def randomize_mass(data: SimData, default_data: SimData, mask: Array | None) -> SimData:
     key, subkey = jax.random.split(data.core.rng_key)
     shape = (data.core.n_worlds, data.core.n_drones, 1)
     scale = jax.random.uniform(subkey, shape, minval=0.9, maxval=1.1)
     mass = default_data.params.mass * scale
     return data.replace(
-        params=leaf_replace(data.params, mask, mass=mass),
-        core=data.core.replace(rng_key=key),
+        params=leaf_replace(data.params, mask, mass=mass), core=data.core.replace(rng_key=key)
     )
+
 
 sim = Sim(n_worlds=16, device="gpu")
 append_fn(sim.reset_pipeline, randomize_mass)
@@ -821,6 +816,7 @@ from crazyflow.sim import Sim
 from crazyflow.sim.data import SimData
 from crazyflow.sim.pipeline import prepend_fn
 
+
 def action_delay(data: SimData) -> SimData:
     queue = data.plugins["queued_actions"]
     next_action = queue[0]
@@ -832,12 +828,11 @@ def action_delay(data: SimData) -> SimData:
         plugins=data.plugins | {"queued_actions": queue},
     )
 
+
 sim = Sim(control="state", device="gpu")
 delay_steps = int(0.03 * sim.data.controls.attitude.freq)
 sim.data = sim.data.replace(
-    plugins=sim.data.plugins | {
-        "queued_actions": jnp.zeros((delay_steps, 1, 1, 4))
-    }
+    plugins=sim.data.plugins | {"queued_actions": jnp.zeros((delay_steps, 1, 1, 4))}
 )
 prepend_fn(sim.step_pipeline, action_delay, name="action_delay")
 sim.build_default_data()
@@ -921,8 +916,8 @@ sim.reset()
 
 ```python
 sim.step(5)
-contacts = sim.contacts()                 # 在这里同步一次
-rgb = sim.render(mode="rgb_array")       # 复用已同步的 MJX data
+contacts = sim.contacts()  # 在这里同步一次
+rgb = sim.render(mode="rgb_array")  # 复用已同步的 MJX data
 ```
 
 紧循环里不要把整个 `mjx_data` 当作动态 JIT 参数；可以闭包捕获它，只把小型 `SimData` 与 obstacle position 作为输入。
@@ -952,11 +947,11 @@ contacts = sim.contacts()  # (n_worlds, n_drones) bool，逐机标记
 | `rgbd_tuple` | `(rgb, depth)` |
 
 ```python
-rgb = sim.render(mode="rgb_array", camera="fpv_cam:0", width=320, height=240)
+rgb = sim.render(mode="rgb_array", camera="0:fpv_cam", width=320, height=240)
 sim.close()
 depth = sim.render(mode="depth_array", camera=0, width=320, height=240)
 sim.close()
-rgb, depth = sim.render(mode="rgbd_tuple", camera="track_cam:0", width=160, height=120)
+rgb, depth = sim.render(mode="rgbd_tuple", camera="0:track_cam", width=160, height=120)
 sim.close()
 ```
 
@@ -971,13 +966,8 @@ FPV 相机跟随机体。原版 [`examples/rendering/cameras.py`](examples/rende
 ```python
 sim.render(
     mode="human",
-    camera="track_cam:0",
-    cam_config={
-        "distance": 3.0,
-        "elevation": -45.0,
-        "azimuth": 90.0,
-        "lookat": [0.0, 0.0, 1.0],
-    },
+    camera="0:track_cam",
+    cam_config={"distance": 3.0, "elevation": -45.0, "azimuth": 90.0, "lookat": [0.0, 0.0, 1.0]},
 )
 ```
 
@@ -1006,10 +996,7 @@ from crazyflow.sim.sensors.depth import build_render_depth_fn, render_depth
 depth = render_depth(sim, camera=0, resolution=(100, 100), include_drone=False)
 
 render_depth_compiled = build_render_depth_fn(
-    sim.mjx_model,
-    camera=0,
-    resolution=(200, 200),
-    geomgroup=(1, 1, 0, 1, 1, 1, 1, 1),
+    sim.mjx_model, camera=0, resolution=(200, 200), geomgroup=(1, 1, 0, 1, 1, 1, 1, 1)
 )
 depth_fast = render_depth_compiled(sim)
 ```
@@ -1026,7 +1013,8 @@ depth_fast = render_depth_compiled(sim)
 pip install "crazyflow[splats]"
 ```
 
-Web viewer 可在任意设备显示；splat camera sensor 必须使用 NVIDIA GPU。
+Web viewer 可在任意设备显示；当前 splat camera sensor 支持GPU和CPU，CPU会提示速度较慢，
+本轮两种后端都已实测，见第18节。
 
 本节图片和像素/深度范围保留自 8 月 CUDA 验证。当前 splat 插件改为 flax `SplatData`，
 颜色使用球谐系数 `sh_colors`（`N × K × 3`），不是旧字典中的 RGB；scene/drone 两份 PLY
@@ -1042,7 +1030,7 @@ from crazyflow.sim.splat import attach_splats
 
 assets = "https://huggingface.co/datasets/amacati/splats/resolve/main"
 scene = fetch(f"{assets}/robot_hall.ply")
-drone = fetch(f"{assets}/cf2x_L250.ply")
+drone = fetch(f"{assets}/cf21B_500.ply")
 
 sim = Sim(n_worlds=2, n_drones=2, control="state", device="gpu")
 attach_splats(sim, scene=scene, drone=drone)
@@ -1058,11 +1046,7 @@ from crazyflow.sim.sensors.splat import build_render_splat_fn, render_splat_rgb
 images = render_splat_rgb(sim, resolution=(320, 240))
 assert images.shape == (2, 2, 240, 320, 3)
 
-render_rgb = build_render_splat_fn(
-    sim,
-    resolution=(160, 120),
-    exclude_self=True,
-)
+render_rgb = build_render_splat_fn(sim, resolution=(160, 120), exclude_self=True)
 images = render_rgb(sim.data)  # 纯函数，可 JIT/grad
 ```
 
@@ -1075,21 +1059,11 @@ images = render_rgb(sim.data)  # 纯函数，可 JIT/grad
 ```python
 from crazyflow.sim.sensors.splat import build_render_splat_rgbd_fn, render_splat_rgbd
 
-rgbd = render_splat_rgbd(
-    sim,
-    drones=0,
-    resolution=(320, 240),
-    max_range=8.0,
-)
+rgbd = render_splat_rgbd(sim, drones=0, resolution=(320, 240), max_range=8.0)
 assert rgbd.shape == (2, 1, 240, 320, 4)
 rgb, depth = rgbd[..., :3], rgbd[..., 3]
 
-render_rgbd = build_render_splat_rgbd_fn(
-    sim,
-    drones=0,
-    resolution=(160, 120),
-    max_range=8.0,
-)
+render_rgbd = build_render_splat_rgbd_fn(sim, drones=0, resolution=(160, 120), max_range=8.0)
 rgbd = render_rgbd(sim.data)
 ```
 
@@ -1115,7 +1089,7 @@ for _ in range(500):
 viewer.close()
 ```
 
-访问 `http://localhost:8080`。实测 HTTP 与 WebSocket 均连接，scene tree 中出现 `/scene` 和 `/drone:0`：
+访问 `http://localhost:8080`。当前 scene tree 使用 `/scene` 和 `/0:drone`。下图是8月旧版的 HTTP/WebSocket 实测，旧名称为 `/drone:0`：
 
 ![viser Gaussian splat viewer](usage_assets/splat_viewer.png)
 
@@ -1901,7 +1875,9 @@ from crazyflow import Control, Dynamics, Sim
 sim = Sim(control=Control.body_rate, dynamics=Dynamics.first_principles, body_rate_freq=250)
 body_rate = sim.data.controls.body_rate
 params = body_rate.params | {"kR": jnp.zeros(3), "ki_m": jnp.zeros(3)}
-sim.data = sim.data.replace(controls=sim.data.controls.replace(body_rate=body_rate.replace(params=params)))
+sim.data = sim.data.replace(
+    controls=sim.data.controls.replace(body_rate=body_rate.replace(params=params))
+)
 sim.build_default_data()
 sim.reset()
 cmd = jnp.zeros((1, 1, 4)).at[..., 3].set(sim.data.params.mass[0] * 9.81)
@@ -1958,9 +1934,11 @@ from jax import Array
 from crazyflow import Sim
 from crazyflow.utils import CORE_NDIM_KEY, world_mask
 
+
 @flax.struct.dataclass
 class DelayState:
     queue: Array = flax.struct.field(metadata={CORE_NDIM_KEY: 3})  # delay × drones × command
+
 
 sim = Sim(n_worlds=4, n_drones=2)
 queue = jnp.zeros((4, 15, 2, 4))  # world 在第一轴，移位时沿 delay 轴1
@@ -2565,6 +2543,9 @@ body rate 是 `[wx,wy,wz,thrust]`（机体系 rad/s、N）；force/torque 是
 
 ### 17.2 碰撞接口迁移
 
+本节记录 MuJoCo 3.10 时的命名。当前 MuJoCo 4 使用 `0:drone`、`1:drone`，
+下面过滤代码中的 `drone:0` / `drone:1` 需对应替换；第18节使用当前接口重新实验。
+
 旧版 `sim.contacts()` 返回每个 contact slot 的布尔值，旧的 `sim.contacts(body=...)`
 可按 body 筛选；新版不接受 `body`，返回 `(n_worlds, n_drones)`，逐架表示该无人机是否
 与其他 body 接触。如果需要确定接触双方，使用 `sim.contact_bodies()`：
@@ -2590,8 +2571,8 @@ slot。当前实现以 contact distance `< 0` 标记接触。`contact_bodies()` 
 ```python
 # 在已创建的 sim 上设置过滤规则：忽略所有地面接触以及一对无人机的接触。
 contact_fn = sim.build_contact_fn(ignore=["world", ("drone:0", "drone:1")])
-filtered = sim.contacts()           # 使用刚设置的规则并按需同步 MJX
-same = contact_fn(sim.mjx_data)     # 直接用于已同步的 batched MJX data
+filtered = sim.contacts()  # 使用刚设置的规则并按需同步 MJX
+same = contact_fn(sim.mjx_data)  # 直接用于已同步的 batched MJX data
 sim.close()
 ```
 
@@ -2673,3 +2654,244 @@ CPU 上针对 sim、contacts、integrators、sharding 的测试为 **233 passed 
 `usage_assets/racing_fulltrain_20261015.py` 报 83 项，`ruff format --check --diff`
 在已有 `note.md`、`usage.md` 的代码块格式上报错；本轮未对历史文件进行整体重格式化。
 跳过或排除的项目不计为通过；本轮未重训或重新评估旧策略。
+
+
+## 18. 2026-11-24 官方 main 增量同步
+
+本轮从上次官方 `af31417` 合入至
+[`aa54a0e`](https://github.com/learnsyslab/crazyflow/commit/aa54a0e)，共20个官方提交。
+同步前 research 是 `685a1d5`，相对官方为9 ahead / 20 behind；这9个包含6个研究内容
+提交和3个合并提交。它们的核心 `crazyflow/` 与上次官方一致，独立工作位于研究训练器、
+验证脚本、Docker/racing补丁、手册及110份权重中。本轮保留这些历史工作，通过正常merge
+接入官方祖先，再提交增量复现；推送目标是 `superboySB/crazyflow:research`。
+
+### 18.1 这20个提交更新了什么
+
+20是提交数，不等于20个独立功能。以下按时间列出，并区分运行功能、修复和维护：
+
+| 官方提交 | 变化 | 对复现的影响 |
+|---|---|---|
+| `cc98938` | 自动生成官方示例图片、视频、输出 | 新增 `docs/capture_example.py` 与缓存生成流程 |
+| `b0a37eb` | Apple Silicon实验后端 | 实际使用 `jax-mps`/Metal、`device="mps"`；本机Linux无法验证 |
+| `0225a8b` | 修正文档渲染 | 示例页面展示修正 |
+| `dbf84ea` | splax升级与splat视频 | splax≥0.2.4，CPU也可渲染并发出性能提示 |
+| `f685e3c` | rotor velocity控制频率 | `Control.rotor_vel` 的 `sim.control_freq == sim.freq` |
+| `4ab38d1` | CI工具升级 | Pixi 0.84.1及更新后的Actions |
+| `d1291b0` | 文档覆盖多种无人机 | 定位和示例措辞更新，不是新增机型 |
+| `10780ba` | CI去掉子模块初始化 | 构建维护 |
+| `515f340` | 固件差分fuzzing | 固定Crazyflie固件，对照随机输入和边界条件 |
+| `7ee3be2` | 依赖时间截止 | Pixi排除最近7天发布的新包，锁定结果仍以 `pixi.lock` 为准 |
+| `7fb8259` | 矢量首页图 | 文档视觉更新 |
+| `74a9381` | MuJoCo / MJX 4.0、Python≥3.12 | 模型命名与MJX显式JAX后端迁移，见18.2 |
+| `b605d70` | 修正Crazyflie `kd_z`、启用fuzzing | 竖直速度增益从0.5变成0.4，会改变控制结果 |
+| `a601333` | 修正电机推力限幅 | 低于最小值关闭，超限时统一减去excess |
+| `e7b00b7` | 零推力清积分 | state及姿态/角速度积分在非正目标/投影推力时清空 |
+| `695a12e` | CasADi旋转转换修复 | degrees输出和导数函数名称修正 |
+| `3cf172e` | 修正控制链重复限幅 | 中间转换不重复裁剪，末端在物理RPM范围内限幅 |
+| `ef734e9` | 显示螺旋桨旋转 | first-principles、非fused模型按RPM和渲染间隔更新旋桨姿态 |
+| `78f3a11` | 控制器万向锁警告 | 欧拉角转换显式抑制预期警告，仍须检查数值有限性 |
+| `aa54a0e` | 更新首页视频链接 | 展示维护 |
+
+### 18.2 当前接口与迁移
+
+MuJoCo 4将实例标识放在前缀：
+
+| 用途 | 旧名称 | 当前名称 |
+|---|---|---|
+| 第0架机体 | `drone:0` | `0:drone` |
+| 第1架机体 | `drone:1` | `1:drone` |
+| 第0架FPV相机 | `fpv_cam:0` | `0:fpv_cam` |
+| 第0架跟随相机 | `track_cam:0` | `0:track_cam` |
+| fused机体 | `drone_fused:0` | `0:drone_fused` |
+
+```python
+from crazyflow.sim import Sim
+
+sim = Sim(n_worlds=1, n_drones=2, device="gpu")
+sim.build_contact_fn(ignore=["world", ("0:drone", "1:drone")])
+flags = sim.contacts()  # 仍为 (n_worlds, n_drones)
+rgb = sim.render(mode="rgb_array", camera="0:fpv_cam", width=320, height=240)
+sim.close()
+```
+
+splat相机参数从 `camera_prefix` 改为 `camera`，传未加实例前缀的 `"fpv_cam"` 或
+`"track_cam"`；渲染器为每架机自动构造 `0:fpv_cam` 等名称：
+
+```python
+# sim 已 attach_splats 后使用：
+from crazyflow.sim.sensors.splat import render_splat_rgbd
+
+rgbd = render_splat_rgbd(sim, camera="track_cam", resolution=(160, 120))
+```
+
+`attitude2force_torque` / `body_rate2force_torque` 及对应控制器数据的
+`r_int_error` 改名为 `rot_err_i`，函数移除了 `pwm_min` 参数。使用
+`parametrize` / `load_fn_params` 按当前签名加载参数；不要直接把旧参数字典全部传入。
+API控制命令仍是16D state、4D attitude/body-rate/force-torque/RPM。
+`first_principles` 的RPM允许零；固定推力拟合模型中的 `rotor_vel` 仍表示推力状态，不能
+把它解释为真实旋桨转速。零推力清积分也不表示所有控制链输出严格零RPM：当前
+推力多项式的逆映射在0 N时可有非零正根，应以RPM/推力实验输出分别解释。
+旋桨动画不改变飞行状态，也不是电机高频运动的数值积分器。
+
+本轮GPU环境保留Python3.12以读取既有PyTorch2.8/CUDA12.6策略；默认CPU、docs和
+fuzzing环境保留上游Python3.14。二者通过独立Pixi feature约束，避免3.12与3.14求交集。
+
+
+### 18.3 新功能的独立实验
+
+入口为 [`upstream_features_20261124.py`](usage_assets/upstream_features_20261124.py)。
+GPU五个section全部完成，CPU另验控制与splat；输出在
+[`upstream_features_20261124/`](usage_assets/upstream_features_20261124/)，包含严格JSON、
+原始NPZ、固定seed合成PLY、PNG与MP4。GPU实际设备为RTX4070Ti SUPER，Python3.12.16、
+JAX0.12.0.1、MuJoCo/MJX4.0.0、splax0.2.4；CPU结果明确限制JAX到CPU。
+
+| 实验 | 输入与断言 | 本轮输出 |
+|---|---|---|
+| 推力重分配 | 四电机请求 `[.10,.15,.25,.30]` N；与独立公式逐值比较 | 约 `[0,.05,.15,.20]` N，超限统一减去excess |
+| 五种控制链 | 极限命令、纯函数链与Sim最终RPM比较 | 五种均一致；500Hz下rotor控制频率返回500；RPM界限约0–21660.718 |
+| 清积分/增益/万向锁 | 非零积分后非正推力、万向锁姿态 | position/attitude/body-rate积分清零，`kd_z=.4`，预期万向锁警告为0 |
+| CasADi | 64组非万向锁姿态，rad/degree与SciPy比较 | 最大角度误差2.84e-14度；4个转换函数名称互异 |
+| MuJoCo4接触 | 3 worlds×3 drones；空中重合、接地、分离及4类过滤 | 与第17节同样的布尔矩阵；实际body/camera均为实例前缀命名 |
+| 螺旋桨 | 人为设置7.5RPM与1秒时间差 | first-principles四桨分别±π/4，其他3模型不假装具有真实RPM旋转 |
+| Gaussian RGB-D | 两相机、48×32、每份PLY192个固定seed合成Gaussian | RGB `(1,2,32,48,3)`，RGB-D `(1,2,32,48,4)`，光轴深度约.103–5m；JIT/相机选择/self-exclusion/range通过 |
+
+0 N推力经当前拟合曲线逆映射为约710.954 RPM；这与Sim显式RPM命令允许零是不同接口
+层的行为。JSON同时记录推力和RPM，避免把“关闭推力”误读成所有路径都严格0 RPM。
+
+![新版旋桨可视化对照](usage_assets/upstream_features_20261124/gpu/props.png)
+
+[旋桨视频](usage_assets/upstream_features_20261124/gpu/props.mp4)逐帧解码24帧、
+480×320 RGB、12fps，检测到23个非静态帧间变化，并保存SHA256。它是人为设置RPM/time
+验证渲染接口的演示，没有把画面当成闭环控制或真实飞行结果。
+
+![固定seed合成Gaussian的RGB-D及相机对照](usage_assets/upstream_features_20261124/gpu/splats.png)
+
+可微渲染额外做了两种实验。4个孤立Gaussian、固定深度顺序与黑背景下，在同一
+`[z=.013m,yaw=.007rad]` 点用4档有限差分步长检查位姿梯度，GPU最大相对L2误差0.4622%，
+每档都低于2%断言；CPU最大误差0.5483%。scene加两份drone共576个Gaussian的稠密场景中（该梯度渲染排除自身，实际使用384个），同一位置的有限差分随步长
+明显改变，原始断言失败日志和诊断保留；本轮不声称任意遮挡/排序场景的位姿梯度都与
+有限差分精确一致。详见`splats.json`中的`smooth_pose_gradient`与
+`dense_pose_gradient_diagnostic`。合成图像证明光栅化/API，不证明真实场景的视觉质量。
+
+
+### 18.4 官方自动文档媒体
+
+直接使用官方新增的`docs/capture_example.py`，没有重新实现一套媒体捕获器。
+[`hover视频`](usage_assets/upstream_20261124/docs_hover/video-01.mp4)为完整5秒、25fps、
+960×540 RGB，共125帧，逐帧读回125个不同帧哈希；
+[`积分器图`](usage_assets/upstream_20261124/docs_integrators/plot-01.svg)是有效SVG，
+[原始输出](usage_assets/upstream_20261124/docs_integrators/output.txt)包含三种积分器的终高度。
+同一官方脚本可捕获`video`、`plot`、`output`；完整网站生成器按源码与选项的哈希缓存媒体，
+`serve`复用缓存，不重新运行全部实验。
+
+这验证了两项代表性官方示例的实际媒体生成、保存及解码；未声称重新构建整个官网。
+编码时上游脚本触发一次JAX的`os.fork`警告，实际命令正常结束且125帧验证全部通过。
+逐帧尺寸、帧率、SHA256及SVG核验见
+[media_verification.json](usage_assets/upstream_20261124/media_verification.json)。
+
+
+### 18.5 既有冻结权重在新版本中的表现
+
+入口为[`revalidate_frozen_20261124.py`](usage_assets/revalidate_frozen_20261124.py)，
+结果和完整首episode原始数组保存在
+[`frozen_revalidation_20261124/`](usage_assets/frozen_revalidation_20261124/)。
+本轮固定使用第16节已选定的best权重、原始配置和预先约定的测试seed，不重新选模、
+不训练，也不以旧成绩代替当前结果。每个JSON记录输入检查点及历史记录SHA256、
+当前源码/上游提交、运行版本、评估配置和原始NPZ的SHA256。
+
+四个Gym任务沿用原研究的fused官方环境与首episode口径，seed31001、1024worlds、10秒。
+成功仍要求完整存活并满足原任务的末秒误差条件，Landing额外检查速度；默认三维ReachVel
+没有换成水平目标。下面同seed的成功数与旧版本完全相同，末秒误差仅有浮点舍入差异：
+
+| 固定权重任务 | 本轮成功 | 末秒RMSE |
+|---|---:|---:|
+| ReachPos，seed19 calibrated | 1023/1024 | 0.044809 m |
+| ReachVel，seed7 | 619/1024 | 0.109556 m/s |
+| Landing，seed43 calibrated | 1024/1024 | 0.023725 m |
+| Figure8，seed43 | 1024/1024 | 0.001376 m |
+
+first-principles策略沿用固定官方实验源码与参数：PPO/BPTT为3.5秒八字、seed14001、
+64worlds、20秒；TD3为固定点、seed10001、64worlds、7秒上限。
+
+| 策略 | 历史同seed → 本轮 | 解释 |
+|---|---|---|
+| PPO | 总体RMSE19.628 → 20.758 mm；64/64完整且RMSE<5cm | 新控制版本仍完成指定高速轨迹 |
+| BPTT | 总体RMSE52.253 → 75.323 mm；完整61/64 → 58/64；RMSE<5cm为61/64 → 56/64 | 保留6次崩溃，不能把仅存活者21.777mm当总体成绩 |
+| TD3 | 到点63/64，无越界64/64，平均首episode1.143125s | 到点提前终止不算崩溃；仅1/64运行完整7秒，不表示63架都持续悬停 |
+
+本轮同时更新控制实现与运行依赖，以上是冻结策略的版本兼容测量，不能把性能差异全部归因于
+某一个修复，也不能据此声称新版本所有策略都提高。旧权重、历史NPZ及旧报告保持原样。
+旧`_last`恢复状态缺少新布局/源码标识，或控制器版本与当前源码不同，会明确拒绝跨版本
+“精确续训”；actor权重可在新环境独立推理。新保存的恢复状态验证命名leaf路径、形状、dtype、
+PRNG类型和仿真源码哈希；同一锁定环境下的连续/断点对照另列入18.6。
+
+
+### 18.6 回归、精确续训与Racing兼容
+
+所有正式运行均在Docker中。最终启用pytest插件的GPU回归结果如下；复用基础镜像最初
+带有`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`，发现后已在激活脚本和复现入口清除，并完整重跑。
+首轮带未知timeout标记的记录单独保存，不作为最终配置的验收记录。
+
+| 验证 | 本轮结果 | 原始记录 |
+|---|---|---|
+| 官方核心与research单元/集成 | 810 passed / 53 skipped / 16 render deselected，206.80s | [core.txt](usage_assets/upstream_20261124/core.txt) |
+| Xvfb+EGL渲染 | 16 passed / 863 deselected，10.32s | [render.txt](usage_assets/upstream_20261124/render.txt) |
+| 官方可执行Markdown/docstring | 107 passed，55.03s | [markdown.txt](usage_assets/upstream_20261124/markdown.txt) |
+| research训练器CPU子集 | 13 passed，5.93s；已包含在核心数量中 | [research_training_cpu.txt](usage_assets/upstream_20261124/research_training_cpu.txt) |
+| 固定Crazyflie固件差分fuzzing | 8 passed / 1 xfailed，无skip；最终稳定入口3.34s | [firmware.txt](usage_assets/upstream_20261124/firmware.txt) |
+| Python/fused CUDA精确恢复 | 两种后端连续/断点策略、sim leaves、history逐元素一致 | [Python](usage_assets/upstream_20261124/continuation_python.txt)、[fused](usage_assets/upstream_20261124/continuation_fused.txt) |
+| fused与官方四任务环境 | 16worlds×64步；RNG及终止标志完全一致，最大浮点差5.96e-8 | [fused_equivalence.json](usage_assets/upstream_20261124/fused_equivalence.json) |
+| 历史实验独立核验 | 21个完整Gym run、93组测试群体、30份官方训练记录、126个场景的哈希/指标/预算一致 | [historical_artifact_verification.json](usage_assets/upstream_20261124/historical_artifact_verification.json) |
+| 新冻结结果独立核验 | 重读7份NPZ，不调用生成指标的函数，重算首episode成功数及有效样本RMSE，并检查输入/输出SHA256 | [frozen_artifact_verification.json](usage_assets/upstream_20261124/frozen_artifact_verification.json) |
+
+固件来自固定`d794c5ca081d19aa1e1bbcb6fd4a3711784fb8b1`，确实编译成Python3.14的native
+extension，不是用Python重写的参考模型。`xfail`是上游已声明的倒飞body-rate控制差异，
+未计为通过。跳过的53项与排除的16项也未计为通过。
+
+续训检查只用8个world、2次PPO update、256个vector-step slots：有效transition216，
+其余40个NEXT_STEP reset slots被排除。它验证恢复与计数，不是新策略训练成绩。
+旧权重仍按18.5做冻结推理，跨物理版本的`_last`需要回到对应源码和依赖环境使用。
+
+外部Racing固定提交仍为`065a6ecb7a7621f156bdd0bedc70020e3331a3e9`。
+本轮新加的[`MuJoCo4补丁`](.devcontainer/lsy_drone_racing-mujoco4.patch)仅修正两处
+`drone:{i}`→`{i}:drone`的body查询；修复前创建环境实际报KeyError。原13D→16D动作、
+播种及惯量兼容补丁保留，course的contact mask字段与内部逻辑保持原样。
+
+[`revalidate_racing_20261124.py`](usage_assets/revalidate_racing_20261124.py)独立检查了：
+2world重复seed的reset逐元素相等；4096份随机惯量正定、物理三角条件与逆矩阵；
+旧PPO检查点的哈希与推理；floor穿透/gate顶杆重叠/自由飞行三种构型。
+课程实际接触函数、正确初次同步后的旧slot mask、官方native `ignore=["world"]`函数
+三方均为`[[F],[T],[F]]`，未过滤结果为`[[T],[T],[F]]`。这些构型没有测到旧slot mask失效，
+没有以未经同步的探测结果宣称其漏检。
+
+完整首episode另存了两种真实赛道结果：冻结PPO使用原planner、level0、seed827451、
+15秒参考轨迹，两局均通过4/4门，平均13.33秒；未改课程StateController以seed20261124
+运行两个world，分别在4.60/4.62秒第一门前结束，均为0/4门。失败原始数组与报告保留，
+不直接归因于某个增益或接触修复。完整结果见
+[racing_cpu.json](usage_assets/upstream_20261124/racing_cpu.json)。本轮未重训，也未构建acados
+或重评MPC；旧16.50秒的state成绩仍属于旧版本的历史记录。
+
+核心、新增实验脚本及本轮修改的训练/验证脚本Ruff检查通过；全仓格式检查通过。
+全仓`ruff check`仍有历史`racing_fulltrain_20261015.py`的83个既有注解/格式问题，
+本轮为CPU重评只给`course_evaluate`增加带注解的可选`jax_device`参数，默认GPU行为不变。
+具体未通过范围见[ruff_full.txt](usage_assets/upstream_20261124/ruff_full.txt)，未将其称为全仓lint通过。
+
+### 18.7 重跑本轮实验
+
+在已恢复的容器内：
+
+```bash
+cd /workspace/crazyflow
+source /opt/crazyflow/activate-research.sh
+bash usage_assets/reproduce_upstream_20261124.sh all
+```
+
+也可将`all`换成`features`、`frozen`、`racing`、`regression`、`media`、`artifacts`或`fuzzing`。
+入口及每个子脚本都有独立输出，所有本轮结果使用20261124路径；历史训练结果不覆盖。
+`fuzzing`若尚未安装，会按锁构建独立Python3.14固件环境。Racing默认报告实际通过率；
+显式加`--require-state-success`才要求基础StateController两局必须全部过门。
+
+环境核验与Dockerfile依赖层布局/128个锁定wheel的版本、哈希元数据及文件名解析检查见
+[environment.txt](usage_assets/upstream_20261124/environment.txt)。本轮使用恢复的容器和源码bind
+mount，完整Dockerfile镜像未重新构建；重建命令在note中，不把依赖层核验当成完整镜像验收。
+Apple Silicon/Metal后端因本机是Linux未验证。

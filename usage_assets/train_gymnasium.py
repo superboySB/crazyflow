@@ -7,6 +7,7 @@ Crazyflow environments on CUDA while PyTorch trains the policy on the same GPU.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import random
 import time
 from dataclasses import asdict, dataclass
@@ -347,12 +348,28 @@ def checkpoint_last_path(path: Path) -> Path:
     return path.with_name(f"{path.stem}_last{path.suffix}")
 
 
+def simulator_source_sha256() -> str:
+    """Identify the simulator/controller source required for exact training recovery."""
+    root = Path(crazyflow.envs.__file__).resolve().parents[1]
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and path.suffix in (".py", ".toml", ".xml"):
+            digest.update(path.relative_to(root).as_posix().encode())
+            digest.update(b"\0")
+            digest.update(path.read_bytes())
+            digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def snapshot_environment(env: gymnasium.vector.VectorEnv) -> dict:
     """Serialize simulator leaves, task goals, and reset bookkeeping without device objects."""
     base = env.unwrapped
-    leaves = jax.tree.leaves(base.sim.data)
+    pairs, _ = jax.tree_util.tree_flatten_with_path(base.sim.data)
+    paths, leaves = zip(*pairs, strict=True)
     is_key = [jax.dtypes.issubdtype(leaf.dtype, jax.dtypes.prng_key) for leaf in leaves]
     state = {
+        "sim_leaf_paths": [jax.tree_util.keystr(path) for path in paths],
+        "simulator_source_sha256": simulator_source_sha256(),
         "sim_leaves": [
             np.asarray(jax.device_get(jax.random.key_data(leaf) if key else leaf)).copy()
             for leaf, key in zip(leaves, is_key, strict=True)
@@ -371,9 +388,31 @@ def snapshot_environment(env: gymnasium.vector.VectorEnv) -> dict:
 def restore_environment(env: gymnasium.vector.VectorEnv, state: dict) -> None:
     """Restore a checkpoint into a freshly constructed environment with matching configuration."""
     base = env.unwrapped
-    template, structure = jax.tree.flatten(base.sim.data)
-    if len(template) != len(state["sim_leaves"]):
-        raise ValueError("Checkpoint simulator structure does not match the installed Crazyflow")
+    pairs, structure = jax.tree_util.tree_flatten_with_path(base.sim.data)
+    paths, template = zip(*pairs, strict=True)
+    current_paths = [jax.tree_util.keystr(path) for path in paths]
+    if (
+        state.get("sim_leaf_paths") != current_paths
+        or state.get("simulator_source_sha256") != simulator_source_sha256()
+    ):
+        raise ValueError(
+            "Exact resume requires the same Crazyflow source and named simulator layout; "
+            "legacy recovery snapshots or changed controller/physics versions cannot be resumed. "
+            "Frozen policy weights remain available for evaluation in a fresh environment."
+        )
+    if len(template) != len(state["sim_leaves"]) or len(template) != len(state["key_leaves"]):
+        raise ValueError("Checkpoint simulator leaf count does not match the installed Crazyflow")
+    for path, expected, value, key in zip(
+        current_paths, template, state["sim_leaves"], state["key_leaves"], strict=True
+    ):
+        expected_key = jax.dtypes.issubdtype(expected.dtype, jax.dtypes.prng_key)
+        host_expected = np.asarray(jax.random.key_data(expected) if expected_key else expected)
+        if (
+            bool(key) != expected_key
+            or np.shape(value) != host_expected.shape
+            or np.asarray(value).dtype != host_expected.dtype
+        ):
+            raise ValueError(f"Checkpoint simulator leaf shape/dtype/key mismatch at {path}")
     leaves = [
         jax.device_put(jax.random.wrap_key_data(jnp.asarray(value)) if key else value, base.device)
         for value, key in zip(state["sim_leaves"], state["key_leaves"], strict=True)

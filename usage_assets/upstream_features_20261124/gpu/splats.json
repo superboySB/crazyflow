@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "versions": {
+      "crazyflow": "0.4.0",
+      "jax": "0.12.0.1",
+      "jaxlib": "0.12.0.1",
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "mujoco": "4.0.0",
+      "mujoco-mjx": "4.0.0",
+      "casadi": "3.8.2",
+      "splax": "0.2.4",
+      "warp-lang": "1.19.0"
+    },
+    "python": "3.12.16 (main, Oct 26 2026, 11:37:43) [GCC 15.3.0]",
+    "platform": "Linux-6.17.0-14-generic-x86_64-with-glibc2.35",
+    "device_requested": "gpu",
+    "devices": [
+      "cuda:0"
+    ],
+    "seed": 20261124,
+    "mujoco_gl": "egl",
+    "command": "usage_assets/upstream_features_20261124.py --device gpu --section splats",
+    "upstream_commit": "aa54a0e8efc6fc8916cebbd737f3949d72b550fc",
+    "source_head": "36e5faef21689e1a73f7a5c23e5b367728b416a5"
+  },
+  "experiment": "splats",
+  "result": {
+    "synthetic_gaussians_per_asset": 192,
+    "rgb_shape": [
+      1,
+      2,
+      32,
+      48,
+      3
+    ],
+    "rgbd_shape": [
+      1,
+      2,
+      32,
+      48,
+      4
+    ],
+    "depth_min_m": 0.10291612148284912,
+    "depth_max_m": 5.0,
+    "max_range_m": 5.0,
+    "cpu_warning_count": 0,
+    "jit_rgb_match": true,
+    "jit_rgbd_match": true,
+    "drone_selection_match": true,
+    "camera_api": "camera='track_cam' resolves to i:track_cam",
+    "exclude_self_changes_image": true,
+    "alpha_above_one_reports_max_range": true,
+    "smooth_pose_gradient": {
+      "parameters": [
+        "z_m",
+        "yaw_rad"
+      ],
+      "point": [
+        0.013000000268220901,
+        0.007000000216066837
+      ],
+      "objective": 0.007325335405766964,
+      "autodiff_gradient": [
+        0.002898040460422635,
+        0.0044988831505179405
+      ],
+      "finite_differences": [
+        {
+          "epsilon": 0.0002,
+          "gradient": [
+            0.0028975773602724075,
+            0.0044924672693014145
+          ],
+          "relative_l2_error": 0.001203281254412093
+        },
+        {
+          "epsilon": 0.0001,
+          "gradient": [
+            0.002898741513490677,
+            0.0045006163418293
+          ],
+          "relative_l2_error": 0.0003492410770278161
+        },
+        {
+          "epsilon": 5e-05,
+          "gradient": [
+            0.002905726432800293,
+            0.004493631422519684
+          ],
+          "relative_l2_error": 0.0017395640055161807
+        },
+        {
+          "epsilon": 2e-05,
+          "gradient": [
+            0.0029220245778560634,
+            0.004505272954702377
+          ],
+          "relative_l2_error": 0.004622200760795845
+        }
+      ],
+      "scene": "Four isolated Gaussians, distinct depths, black background",
+      "asserted_relative_l2_tolerance": 0.02,
+      "scene_gaussians": 4
+    },
+    "dense_pose_gradient_diagnostic": {
+      "parameters": [
+        "z_m",
+        "yaw_rad"
+      ],
+      "point": [
+        0.013000000268220901,
+        0.007000000216066837
+      ],
+      "objective": 0.3628178834915161,
+      "autodiff_gradient": [
+        -0.0016944962553679943,
+        -0.028445376083254814
+      ],
+      "finite_differences": [
+        {
+          "epsilon": 0.01,
+          "gradient": [
+            -0.004057586193084717,
+            -0.01233518123626709
+          ],
+          "relative_l2_error": 1.2539144462170713
+        },
+        {
+          "epsilon": 0.001,
+          "gradient": [
+            -0.0031888484954833984,
+            0.1494288444519043
+          ],
+          "relative_l2_error": 1.1901317187151326
+        },
+        {
+          "epsilon": 0.0005,
+          "gradient": [
+            -0.003159046173095703,
+            0.32851099967956543
+          ],
+          "relative_l2_error": 1.0865477175374343
+        },
+        {
+          "epsilon": 0.0001,
+          "gradient": [
+            -0.00014901161193847656,
+            -0.032335519790649414
+          ],
+          "relative_l2_error": 0.12945063000439866
+        }
+      ],
+      "interpretation": "Dense-scene finite differences vary across step sizes. This is a diagnostic; no exact dense-scene pose-gradient agreement is asserted."
+    },
+    "scope": "Synthetic fixed-seed rasterization; no real-world visual fidelity claim."
+  },
+  "wall_seconds_including_compilation": 6.781111927994061
+}

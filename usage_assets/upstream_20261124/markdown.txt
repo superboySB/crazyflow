@@ -1,0 +1,27 @@
+........................................................................ [ 67%]
+............................╭────── viser (listening *:8080) ───────╮
+│             ╷                         │
+│   HTTP      │ http://localhost:8080   │
+│   Websocket │ ws://localhost:8080     │
+│             ╵                         │
+╰───────────────────────────────────────╯
+(viser) Server stopped
+.╭────── viser (listening *:8080) ───────╮
+│             ╷                         │
+│   HTTP      │ http://localhost:8080   │
+│   Websocket │ ws://localhost:8080     │
+│             ╵                         │
+╰───────────────────────────────────────╯
+(viser) Server stopped
+Module splax._project._kernels fdd7e02 load on device 'cuda:0' took 0.58 ms  (cached)
+Module splax._rasterize._kernels b40ca15 load on device 'cuda:0' took 0.57 ms  (cached)
+Module splax._rasterize._sort._kernels 56a2bc2 load on device 'cuda:0' took 0.44 ms  (cached)
+.╭────── viser (listening *:8080) ───────╮
+│             ╷                         │
+│   HTTP      │ http://localhost:8080   │
+│   Websocket │ ws://localhost:8080     │
+│             ╵                         │
+╰───────────────────────────────────────╯
+(viser) Server stopped
+.....                                      [100%]
+107 passed in 55.03s

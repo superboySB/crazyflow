@@ -29,7 +29,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client \
     tmux \
     vim \
-    wget
+    wget \
+    xauth \
+    xvfb
 
 # Fail the image build immediately if the Docker builder's proxy/network path
 # reaches Google with an HTTP error (including the previously observed 503).
@@ -60,11 +62,13 @@ USER ${USERNAME}
 
 # Match the Pixi version used by CI and install the repository's exact locked
 # GPU test environment. Its Python 3.12 constraint also supports PyTorch 2.8,
-# and the Linux lock includes splax[viewer].
-RUN curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.76.0 bash
+# and the Linux lock includes splax[viewer] and PyTorch's CUDA 12.6 wheel.
+RUN curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.84.1 bash
 
 WORKDIR /opt/crazyflow
 COPY --chown=${USERNAME}:${USERNAME} pyproject.toml pixi.lock README.md LICENSE ./
+# Pixi validates native source paths in the full lock even when installing gpu-tests.
+COPY --chown=${USERNAME}:${USERNAME} tests/fuzzing/cffirmware/ ./tests/fuzzing/cffirmware/
 # Large concurrent HTTP/2 transfers stall behind some build proxies. Fetch the
 # exact locked wheels with four HTTP/1.1 range transfers, verify their hashes,
 # and check installed versions. Temporary wheels stay in this
@@ -77,7 +81,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 lock = Path("pixi.lock").read_text()
 block = re.search(r"^  gpu-tests:\n(.*?)(?=^  \S|\Z)", lock, re.M | re.S).group(1)
@@ -90,7 +94,7 @@ hashes = {
 assert urls and len(hashes) == len(urls), "Every GPU wheel must have a locked SHA256"
 pixi = ["pixi", "install", "--locked", "-e", "gpu-tests", "--skip", "crazyflow"]
 skips = [arg for url in urls for arg in
-         ("--skip", Path(urlsplit(url).path).name.split("-")[0].replace("_", "-").lower())]
+         ("--skip", Path(unquote(urlsplit(url).path)).name.split("-")[0].replace("_", "-").lower())]
 print(f"Install locked Conda packages; fetch {len(urls)} PyPI wheels separately", flush=True)
 subprocess.run(pixi + skips, check=True)
 curl = ["curl", "--http1.1", "--fail", "--location", "--silent", "--show-error",
@@ -115,7 +119,7 @@ with tempfile.TemporaryDirectory(prefix="crazyflow-wheels-") as directory:
         list(pool.map(fetch, parts))
     wheels = []
     for url in urls:
-        path = root / Path(urlsplit(url).path).name
+        path = root / Path(unquote(urlsplit(url).path)).name
         with path.open("wb") as destination:
             for part_url, _, _, segment in parts:
                 if part_url == url:
@@ -155,11 +159,11 @@ COPY --chown=${USERNAME}:${USERNAME} .devcontainer/lsy_drone_racing-compat.patch
 RUN python -m pip install --no-deps --no-build-isolation -e .
 
 # Keep MP4 training and evaluation exports available in clean image rebuilds.
-RUN python -m pip install imageio-ffmpeg==0.6.0
+RUN python -c 'from importlib.metadata import version; assert version("imageio-ffmpeg") == "0.6.0"'
 
-# The lock already selects a matching MuJoCo/MJX 3.10 pair. Gymnasium 1.4
+# The lock already selects a matching MuJoCo/MJX 4.0 pair. Gymnasium 1.4
 # supplies the updated camera API, so no post-install downgrade is needed.
-RUN python -c 'import sys, gymnasium, mujoco; from importlib.metadata import version; assert sys.version_info[:2] == (3, 12); assert gymnasium.__version__ == "1.4.0"; assert mujoco.__version__ == version("mujoco-mjx") == "3.10.0"'
+RUN python -c 'import sys, gymnasium, mujoco; from importlib.metadata import version; assert sys.version_info[:2] == (3, 12); assert gymnasium.__version__ == "1.4.0"; assert mujoco.__version__ == version("mujoco-mjx") == "4.0.0"'
 
 # Pin the externally maintained racing course so rebuilds do not silently
 # change behavior.  Install its simulation, optional gamepad, and RL packages
@@ -176,11 +180,7 @@ RUN git clone https://github.com/learnsyslab/lsy_drone_racing.git \
     && cd /opt/lsy_drone_racing \
     && git checkout --detach "${LSY_DRONE_RACING_REF}" \
     && git apply /opt/crazyflow/.devcontainer/lsy_drone_racing-compat.patch \
-    && python -m pip install \
-        --index-url https://download.pytorch.org/whl/cu126 \
-        torch==2.8.0 \
     && python -c 'import torch; assert torch.backends.cuda.is_built(); assert torch.version.cuda == "12.6"' \
-    && python -m pip install wandb==0.28.1 \
     && python -m pip install -e ".[gamepad,rl]"
 
 # The default racing controllers use acados.  The upstream setup script pins
@@ -205,7 +205,11 @@ COPY --chown=${USERNAME}:${USERNAME} . .
 RUN git -C /opt/lsy_drone_racing apply \
         /opt/crazyflow/.devcontainer/lsy_drone_racing-inertia.patch \
     && git -C /opt/lsy_drone_racing apply --reverse --check \
-        /opt/crazyflow/.devcontainer/lsy_drone_racing-inertia.patch
+        /opt/crazyflow/.devcontainer/lsy_drone_racing-inertia.patch \
+    && git -C /opt/lsy_drone_racing apply \
+        /opt/crazyflow/.devcontainer/lsy_drone_racing-mujoco4.patch \
+    && git -C /opt/lsy_drone_racing apply --reverse --check \
+        /opt/crazyflow/.devcontainer/lsy_drone_racing-mujoco4.patch
 
 # Recheck outbound HTTPS after all network-dependent build steps.  Keeping this
 # close to the end makes a source-changing rebuild perform a fresh check rather

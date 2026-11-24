@@ -1,5 +1,24 @@
 # Crazyflow Docker 用户手册
 
+2026-11-24 已接入官方 main 的20个新增提交至 [aa54a0e](https://github.com/learnsyslab/crazyflow/commit/aa54a0e)。
+本轮复现和当前接口见 [usage.md 第18节](usage.md#18-2026-11-24-官方-main-增量同步)：
+MuJoCo/MJX 4.0、控制器限幅与清积分、旋桨动画、splat及冻结策略重评。
+原9个ahead提交中的训练器、历史权重/实测和racing兼容工作保留。
+
+当前已恢复的容器入口：
+
+```bash
+docker exec -it dzp-crazyflow-research-20261124 bash
+cd /workspace/crazyflow
+source /opt/crazyflow/activate-research.sh
+```
+
+本轮在源码bind mount及重新安装的锁定GPU环境中验收；原Crazyflow镜像已不在本机，
+恢复容器复用了本机已有基础镜像。下面Dockerfile命令用于从CUDA基础镜像重建完整racing镜像，
+不把本轮的容器环境验收说成完整Dockerfile构建验收。
+
+以下2026-10-15及10-28段落保留为历史记录。
+
 2026-10-15已同步官方main至[c95f69b / 0.4.0](https://github.com/learnsyslab/crazyflow/commit/c95f69bc54f830e859fee4ac5734bf571acd81f3)，
 并回到research完成多种子、完整预算训练与独立测试。
 先看[3.5秒高速八字PPO视频](usage_assets/official_frontier_20261015/ppo_T3.5s_position_holdout.mp4)、
@@ -31,7 +50,7 @@ cd /home/dzp/projects/crazyflow
 
 ```bash
 docker build -f .devcontainer/Dockerfile \
-  -t dzp_crazyflow:0.4.0-research-20261015-cuda12.6-py312-racing-rl \
+  -t dzp_crazyflow:0.4.0-research-20261124-cuda12.6-py312-racing-rl \
   --progress=plain .
 ```
 
@@ -42,7 +61,7 @@ Dockerfile 会在构建开始和结束时访问 `https://www.google.com/`；HTTP
 ```bash
 test -f "$XAUTHORITY"
 
-docker run --name dzp-crazyflow-research-20261015 -itd \
+docker run --name dzp-crazyflow-research-20261124 -itd \
   --gpus all \
   --network host \
   --ipc host \
@@ -52,19 +71,20 @@ docker run --name dzp-crazyflow-research-20261015 -itd \
   -v "$XAUTHORITY:/tmp/.Xauthority:ro" \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /home/dzp/projects/crazyflow:/workspace/crazyflow \
-  dzp_crazyflow:0.4.0-research-20261015-cuda12.6-py312-racing-rl
+  dzp_crazyflow:0.4.0-research-20261124-cuda12.6-py312-racing-rl
 ```
 
 进入容器：
 
 ```bash
-docker exec -it dzp-crazyflow-research-20261015 bash
+docker exec -it dzp-crazyflow-research-20261124 bash
 cd /workspace/crazyflow
 ```
 
 代码通过 bind mount 实时映射到 `/workspace/crazyflow`；镜像内的固定环境位于
 `/opt/crazyflow/.pixi/envs/gpu-tests`。GPU 环境固定 Python 3.12，使 CUDA 动态库路径和
-PyTorch 2.8 wheel 保持兼容；Gymnasium 升级到 1.4，MuJoCo/MJX 使用锁定的 3.10.0。
+PyTorch 2.8 wheel 保持兼容；Gymnasium 升级到 1.4，MuJoCo/MJX 使用锁定的 4.0.0。
+PyTorch/CUDA依赖现与JAX一起由Pixi锁定；默认非GPU环境使用Python3.14。
 依赖和兼容补丁变更后应重建镜像。
 
 ## 检查运行环境
@@ -110,11 +130,7 @@ from crazyflow.control import Control
 from crazyflow.sim import Sim
 
 sim = Sim(
-    n_worlds=128,
-    n_drones=1,
-    control=Control.state,
-    dynamics="first_principles",
-    device="gpu",
+    n_worlds=128, n_drones=1, control=Control.state, dynamics="first_principles", device="gpu"
 )
 
 cmd = np.zeros((sim.n_worlds, sim.n_drones, 16))
@@ -214,7 +230,7 @@ state 命令从旧 13D 改为 16D；不要把 yaw 标量直接放到四元数位
 
 ## 可视化、相机与接触
 
-MuJoCo 支持交互窗口、离屏 RGB、深度和 RGB-D 渲染。`camera` 可传相机名称（如 `fpv_cam:0`、`track_cam:0`）、相机编号或 `-1` 全局视角。
+MuJoCo 支持交互窗口、离屏 RGB、深度和 RGB-D 渲染。`camera` 可传相机名称（如 `0:fpv_cam`、`0:track_cam`）、相机编号或 `-1` 全局视角。
 
 常用示例：
 
@@ -235,9 +251,9 @@ python -c 'from examples.rendering.cameras import main; main(show_plot=False, sa
 生成文件为 `cameras.gif`。程序中可按需调用：
 
 ```python
-rgb = sim.render(mode="rgb_array", camera="fpv_cam:0", width=320, height=240)
-depth = sim.render(mode="depth_array", camera="fpv_cam:0", width=320, height=240)
-rgb, depth = sim.render(mode="rgbd_tuple", camera="fpv_cam:0", width=320, height=240)
+rgb = sim.render(mode="rgb_array", camera="0:fpv_cam", width=320, height=240)
+depth = sim.render(mode="depth_array", camera="0:fpv_cam", width=320, height=240)
+rgb, depth = sim.render(mode="rgbd_tuple", camera="0:fpv_cam", width=320, height=240)
 contacts = sim.contacts()
 ```
 
@@ -467,13 +483,39 @@ docker run --rm --user "$(id -u):$(id -g)" \
 1 deselected**，官方文档测试 **103 passed**。默认排除的渲染测试另用 EGL 和 X11 运行，
 **12 passed / 843 deselected**。全仓 Ruff 有合并前已有的历史脚本和文档格式问题，具体范围见 [usage.md 第 17.5 节](usage.md#175-本轮回归检查)。
 
+## 2026-11-24：最新官方增量与本轮验收
+
+本轮接入20个官方提交至`aa54a0e`，保留原research的9个ahead提交。当前MuJoCo/MJX为4.0.0，
+相机名称使用`0:fpv_cam`等前缀形式。GPU环境锁定Python3.12、JAX0.12.0.1、Torch2.8.0+cu126，
+研究工具及CUDA依赖一起锁定；默认CPU/docs/fuzzing环境保留上游Python3.14。
+Racing固定外部版本不变，新增两行机体名称补丁，原动作、播种和惯量补丁保留。
+
+```bash
+# 宿主机
+docker exec -it dzp-crazyflow-research-20261124 bash
+# 容器内
+cd /workspace/crazyflow
+source /opt/crazyflow/activate-research.sh
+bash usage_assets/reproduce_upstream_20261124.sh all
+```
+
+完整GPU回归810 passed/53 skipped；单独渲染16 passed；官方文档107 passed；固件差分
+8 passed/1 xfailed。Python/fused精确续训及四任务fused一致性通过。新功能CPU/GPU实测、
+原始数组、旋桨视频和官方示例视频均另存；最终统计、完整命令及未通过项见
+[usage第18节](usage.md#18-2026-11-24-官方-main-增量同步)。
+
+7项冻结策略重评中，四Gym同seed成功数保持，PPO高速八字64/64完成；BPTT完整率下降为
+58/64，未掩盖失败。真实Racing冻结PPO两局均过4门、平均13.33秒；基础state控制器本轮
+两局第一门前失败。稠密splat有限差分边界、旧Ruff问题、未复验的Apple/MPC及完整镜像构建
+范围均明确记录。历史权重及指标保持原样，本轮不是重新训练全部历史策略。
+
 ## 常用操作
 
 ```bash
-docker stop dzp-crazyflow-research-20261015
-docker start dzp-crazyflow-research-20261015
-docker exec -it dzp-crazyflow-research-20261015 bash
-docker rm -f dzp-crazyflow-research-20261015
+docker stop dzp-crazyflow-research-20261124
+docker start dzp-crazyflow-research-20261124
+docker exec -it dzp-crazyflow-research-20261124 bash
+docker rm -f dzp-crazyflow-research-20261124
 ```
 
 Crazyflow 源码和示例在 `/workspace/crazyflow`；镜像内 drone racing 项目在 `/opt/lsy_drone_racing`。修改 Crazyflow Python 代码后无需重建镜像，重新启动对应程序即可；修改系统依赖或 drone racing 安装补丁后需要重建镜像。

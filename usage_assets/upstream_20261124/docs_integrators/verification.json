@@ -1,0 +1,24 @@
+{
+  "plot_path": "docs_integrators/plot-01.svg",
+  "plot_sha256": "5c9f608c10d0c674d9a395a610898861d7cc79dda16c17d8ea6c00a3de419378",
+  "plot_size_bytes": 32927,
+  "valid_svg_xml": true,
+  "svg_dimensions": {
+    "width": "460.8pt",
+    "height": "345.6pt",
+    "viewBox": "0 0 460.8 345.6"
+  },
+  "svg_path_elements": 61,
+  "output_path": "docs_integrators/output.txt",
+  "output_sha256": "268eb3ea129699fcfcc8e2a21c974ccca432cc960d849efa42eae5198cad79ad",
+  "heights_after_2s_m": {
+    "euler": 2.3218,
+    "rk4": 2.3179,
+    "symplectic_euler": 2.3263
+  },
+  "checks_passed": [
+    "SVG XML parses",
+    "SVG includes vector paths",
+    "stdout contains all three integrators"
+  ]
+}

@@ -1,0 +1,2 @@
+Running control on cpu
+PASS control: /workspace/crazyflow/usage_assets/upstream_features_20261124/cpu/control.json

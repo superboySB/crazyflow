@@ -1,0 +1,4 @@
+Running props on gpu
+/opt/crazyflow/.pixi/envs/gpu-tests/lib/python3.12/subprocess.py:1885: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = _fork_exec(
+PASS props: /workspace/crazyflow/usage_assets/upstream_features_20261124/gpu/props.json

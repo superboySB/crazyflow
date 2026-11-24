@@ -1,0 +1,9 @@
+{
+  "completed_main_runs": 12,
+  "completed_calibrated_runs": 6,
+  "completed_promoted_velocity_runs": 3,
+  "checked_gym_test_populations": 93,
+  "official_training_records": 30,
+  "checked_official_scenarios": 126,
+  "all_checked_hashes_and_scores_match": true
+}

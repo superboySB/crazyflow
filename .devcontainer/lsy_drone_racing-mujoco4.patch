@@ -1,0 +1,13 @@
+--- a/lsy_drone_racing/envs/race_core.py
++++ b/lsy_drone_racing/envs/race_core.py
+@@ -840,8 +840,8 @@
+     # We only need one world to create the mask
+     geom1, geom2 = (contact.geom1[0], contact.geom2[0])
+     for i in range(sim.n_drones):
+-        geom_start = sim.mj_model.body_geomadr[sim.mj_model.body(f"drone:{i}").id]
+-        geom_count = sim.mj_model.body_geomnum[sim.mj_model.body(f"drone:{i}").id]
++        geom_start = sim.mj_model.body_geomadr[sim.mj_model.body(f"{i}:drone").id]
++        geom_count = sim.mj_model.body_geomnum[sim.mj_model.body(f"{i}:drone").id]
+         geom1_valid = (geom1 >= geom_start) & (geom1 < geom_start + geom_count)
+         geom2_valid = (geom2 >= geom_start) & (geom2 < geom_start + geom_count)
+         masks[i, :] = geom1_valid | geom2_valid

@@ -1,0 +1,69 @@
+Crazyflow research environment verification
+Verified at (UTC): 2026-11-24T07:56:22.927849+00:00
+Python executable: /opt/crazyflow/.pixi/envs/gpu-tests/bin/python
+Python: 3.12.16 (main, Oct 26 2026, 11:37:43) [GCC 15.3.0]
+Host kernel: 6.17.0-14-generic
+NVIDIA GeForce RTX 4070 Ti SUPER, 580.126.09, 16376 MiB
+jax 0.12.0.1
+jaxlib 0.12.0.1
+jax-cuda12-plugin 0.12.0.1
+jax-cuda12-pjrt 0.12.0.1
+mujoco 4.0.0
+mujoco-core 4.0.0
+mujoco-mjx 4.0.0
+gymnasium 1.4.0
+splax 0.2.4
+numpy 2.5.5
+scipy 1.18.1
+flax 0.12.12
+torch 2.8.0+cu126
+imageio-ffmpeg 0.6.0
+PYTHONPATH: /workspace/crazyflow
+JAX backend: gpu device: cuda:0 matrix result: 512.0
+MuJoCo MJX step: [0.0, 0.0, 0.9999607801437378, 1.0, 0.0, 0.0, 0.0] device: cuda:0
+PyTorch CUDA: 12.6 device: NVIDIA GeForce RTX 4070 Ti SUPER matrix result: 512.0
+GPU verification: PASS
+No broken requirements found.
+Crazyflow source: /workspace/crazyflow/crazyflow/__init__.py
+fire 0.7.1
+wandb 0.28.1
+polars 1.44.2
+toml 0.10.2
+tqdm 4.70.1
+
+Installation and Dockerfile audit
+- All environment installation and verification ran inside dzp-crazyflow-research-20261124.
+- Recovery container base: pokrion:verified-20261104. The previous Crazyflow image was unavailable; this run restored the locked environment under /opt/crazyflow instead of rebuilding the full racing/acados image.
+- Pixi 0.84.1 installed the locked gpu-tests environment, preserving GPU Python 3.12 and the archived Torch 2.8 CUDA 12.6 policy runtime. Torch uses a dependency-specific cu126 index; other packages retain their existing indexes. imageio-ffmpeg 0.6.0 is also locked in the GPU feature.
+- The editable Crazyflow source is /workspace/crazyflow. Supplemental research tools fire 0.7.1, wandb 0.28.1, polars 1.44.2, toml 0.10.2 and tqdm 4.70.1 were installed without external experiment extras or dependency downgrades. pip check passed afterward.
+- Available development/render tools include ripgrep, cmake, swig, ninja, Xvfb and xauth.
+- GPU shell: source /opt/crazyflow/activate-research.sh
+- Independent CPU fuzzing environment: /opt/crazyflow/.pixi/envs/fuzzing (Python 3.14.10), with the actual pinned Crazyflie firmware compiled through the Pixi native recipe; see fuzzing.txt for 8 passed and 1 expected failure.
+- Final workspace pixi lock --check passed.
+- Docker dependency-layer layout was recreated under /tmp with only pyproject.toml, pixi.lock, README.md, LICENSE and tests/fuzzing/cffirmware/recipe.yaml, with no crazyflow core source. Both pixi lock --check and the exact Dockerfile Conda-only install command (all locked wheel packages plus crazyflow skipped) passed. The early native recipe COPY is required even for gpu-tests.
+- Dockerfile Python 3.12/CUDA library paths, MuJoCo/MJX 4.0.0 assertions, Torch cu126 index and imageio-ffmpeg 0.6.0 agree with the installed/locked versions.
+- The Dockerfile wheel parser was exercised independently against the final lock; it checks the SHA256 of every downloaded complete wheel before pip installation and compares every installed wheel version. This audit did not perform the full Docker image build or download all wheels a second time.
+Dockerfile parser audit: 115 GPU wheels; every locked SHA256 matched; every decoded wheel filename valid; every installed version matches the locked wheel version exactly.
+Decoded filename: torch-2.8.0+cu126-cp312-cp312-manylinux_2_28_x86_64.whl
+Decoded filename: imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl
+HTTP/1.1 HEAD audit: all 115 locked GPU wheel URLs are reachable and expose a positive Content-Length; total compressed size 4400735045 bytes.
+Torch encoded +cu126 URL HTTP/1.1 range audit: bytes 0-1023 returned exactly 1024 bytes; Dockerfile filename decoder preserves +cu126.
+
+Final research-tool lock update
+- All 268 existing GPU package artifact entries are unchanged; 13 previously supplemental tool/dependency packages were added to the GPU lock.
+- Fire 0.7.1, wandb 0.28.1, polars 1.44.2, toml 0.10.2 and tqdm 4.70.1 are now exact GPU feature dependencies and reproducible in clean images.
+- The existing exclude-newer=7d policy selected only these four supplemental dependency changes from the temporary pip environment: pydantic 2.14.4 -> 2.14.3; pydantic-core 2.50.5 -> 2.50.4; platformdirs 4.14.8 -> 4.14.5; sentry-sdk 3.0.0 -> 2.75.0. These were accepted before environment installation.
+- Core/JAX/MuJoCo/Torch/CUDA versions were preserved exactly; no GPU experiment was rerun for this packaging-only update.
+- Final Dockerfile parser/version audit: 128 locked wheel URLs, 128 SHA256 metadata matches, valid decoded filenames including Torch +cu126, and 128/128 installed wheel versions match the final lock.
+- All five newly locked research tools import successfully without starting GPU computation.
+  fire 0.7.1
+  wandb 0.28.1
+  polars 1.44.2
+  toml 0.10.2
+  tqdm 4.70.1
+  pydantic 2.14.3
+  pydantic-core 2.50.4
+  platformdirs 4.14.5
+  sentry-sdk 2.75.0
+No broken requirements found.
+✔ Lock-file was already up-to-date

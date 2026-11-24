@@ -1,0 +1,26 @@
+Training DroneReachVel-v0: 8 CUDA envs, 16 rollout steps, 2 PPO updates (256 slots)
+update 0001/2 | steps          128 | valid 112 | reward 0.2919 | distance 1.3431 | episode 1.4 | term 0.000% | KL 0.0009 | clip 0.009 | 89 SPS
+validation/1 seed=20123 success=0.000000 survival=1.000000 rmse=1.634937 best_update=1
+update 0002/2 | steps          256 | valid 216 | reward 0.3074 | distance 1.3405 | episode 1.6 | term 0.000% | KL 0.0003 | clip 0.000 | 86 SPS
+validation/2 seed=20123 success=0.000000 survival=1.000000 rmse=1.634489 best_update=2
+Training finished in 2.99 s; best validation update 2
+Training DroneReachVel-v0: 8 CUDA envs, 16 rollout steps, 1 PPO updates (128 slots)
+update 0001/1 | steps          128 | valid 112 | reward 0.2919 | distance 1.3431 | episode 1.4 | term 0.000% | KL 0.0009 | clip 0.009 | 129 SPS
+validation/1 seed=20123 success=0.000000 survival=1.000000 rmse=1.634937 best_update=1
+Training finished in 2.06 s; best validation update 1
+Resuming after update 1, 128 vector-step slots
+Training DroneReachVel-v0: 8 CUDA envs, 16 rollout steps, 2 PPO updates (256 slots)
+update 0002/2 | steps          256 | valid 216 | reward 0.3074 | distance 1.3405 | episode 1.6 | term 0.000% | KL 0.0003 | clip 0.000 | 132 SPS
+validation/2 seed=20123 success=0.000000 survival=1.000000 rmse=1.634489 best_update=2
+Training finished in 2.05 s; best validation update 2
+{
+  "purpose": "regression verification; not a trained policy demonstration",
+  "teacher_model": "legacy",
+  "env_backend": "python",
+  "task": "reach_vel",
+  "teacher_recipe_resume_mismatch_rejected": true,
+  "exact_policy_and_simulator_recovery": true,
+  "vector_step_slots": 256,
+  "valid_transitions": 216,
+  "ignored_reset_slots": 40
+}

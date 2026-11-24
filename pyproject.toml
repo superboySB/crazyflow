@@ -195,6 +195,12 @@ python = "3.12.*"
 # Limit the PyTorch wheel index to this dependency and GPU environments.
 torch = { version = "==2.8.0+cu126", index = "https://download.pytorch.org/whl/cu126" }
 imageio-ffmpeg = "==0.6.0"
+# Keep the archived official-policy evaluation runner reproducible in clean images.
+fire = "==0.7.1"
+wandb = "==0.28.1"
+polars = "==1.44.2"
+toml = "==0.10.2"
+tqdm = "==4.70.1"
 
 [tool.pixi.feature.build.pypi-dependencies]
 build = ">=1.3"

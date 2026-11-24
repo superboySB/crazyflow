@@ -1,0 +1,24 @@
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+/workspace/crazyflow/crazyflow/sim/sim.py:401: UserWarning: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+  mj_model = spec.compile()
+{
+  "seeded_race_reset_worlds": 2,
+  "frozen_policy_steps": 3,
+  "checkpoint": "trained_models/racing_s42_15000000_20261015.ckpt",
+  "passed": true
+}

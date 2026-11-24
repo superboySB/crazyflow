@@ -1,6 +1,7 @@
 .devcontainer/*
 !.devcontainer/lsy_drone_racing-compat.patch
 !.devcontainer/lsy_drone_racing-inertia.patch
+!.devcontainer/lsy_drone_racing-mujoco4.patch
 .dockerignore
 .git
 .github
@@ -41,3 +42,12 @@ usage_assets/*
 !usage_assets/teacher_reference_*
 !usage_assets/index_models_20261015.py
 usage_assets/fulltrain_20261015/fresh_image_checks.txt
+
+# Current upstream reproduction and frozen-policy compatibility study.
+!usage_assets/upstream_features_20261124.py
+!usage_assets/upstream_features_20261124/
+!usage_assets/upstream_20261124/
+!usage_assets/revalidate_frozen_20261124.py
+!usage_assets/frozen_revalidation_20261124/
+!usage_assets/reproduce_upstream_20261124.sh
+!usage_assets/revalidate_racing_20261124.py

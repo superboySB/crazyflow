@@ -63,7 +63,9 @@ def write_json(path: Path, data: Any) -> None:
 def bootstrap(path: Path) -> None:
     """Fetch an immutable official source tree, then verify it before importing."""
     if not path.exists():
-        subprocess.run(["git", "clone", OFFICIAL_URL, str(path)], check=True)
+        subprocess.run(["git", "clone", "--no-checkout", OFFICIAL_URL, str(path)], check=True)
+        # The immutable historical commit may no longer be reachable from advertised branches.
+        subprocess.run(["git", "-C", str(path), "fetch", "origin", OFFICIAL_COMMIT], check=True)
         subprocess.run(["git", "-C", str(path), "checkout", OFFICIAL_COMMIT], check=True)
     head = subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True).strip()
     if head != OFFICIAL_COMMIT:

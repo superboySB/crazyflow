@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "versions": {
+      "crazyflow": "0.4.0",
+      "jax": "0.12.0.1",
+      "jaxlib": "0.12.0.1",
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "mujoco": "4.0.0",
+      "mujoco-mjx": "4.0.0",
+      "casadi": "3.8.2",
+      "splax": "0.2.4",
+      "warp-lang": "1.19.0"
+    },
+    "python": "3.12.16 (main, Oct 26 2026, 11:37:43) [GCC 15.3.0]",
+    "platform": "Linux-6.17.0-14-generic-x86_64-with-glibc2.35",
+    "device_requested": "gpu",
+    "devices": [
+      "cuda:0"
+    ],
+    "seed": 20261124,
+    "mujoco_gl": "egl",
+    "command": "usage_assets/upstream_features_20261124.py --device gpu",
+    "upstream_commit": "aa54a0e8efc6fc8916cebbd737f3949d72b550fc",
+    "source_head": "685a1d54a3ea0772391a5e699ea191955e036c85"
+  },
+  "experiment": "control",
+  "result": {
+    "requested_motor_force_N": [
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.010681315327687495,
+        0.010681315327687495,
+        0.010681315327687495,
+        0.010681315327687495
+      ],
+      [
+        0.02157625696192874,
+        0.02157625696192874,
+        0.02157625696192874,
+        0.02157625696192874
+      ],
+      [
+        0.1,
+        0.15,
+        0.25,
+        0.3
+      ],
+      [
+        -0.1,
+        0.05,
+        0.3,
+        0.45
+      ]
+    ],
+    "redistributed_motor_force_N": [
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.02157625696192874,
+        0.02157625696192874,
+        0.02157625696192874,
+        0.02157625696192874
+      ],
+      [
+        2.7755575615628914e-17,
+        0.05000000000000002,
+        0.15000000000000002,
+        0.2
+      ],
+      [
+        0.0,
+        0.0,
+        0.04999999999999999,
+        0.2
+      ]
+    ],
+    "measured_rpm": [
+      [
+        710.954158295144,
+        710.954158295144,
+        710.954158295144,
+        710.954158295144
+      ],
+      [
+        710.954158295144,
+        710.954158295144,
+        710.954158295144,
+        710.954158295144
+      ],
+      [
+        7361.2946526617125,
+        7361.2946526617125,
+        7361.2946526617125,
+        7361.2946526617125
+      ],
+      [
+        710.954158295144,
+        11012.544868246534,
+        18807.212869494062,
+        21660.71783311243
+      ],
+      [
+        710.954158295144,
+        710.954158295144,
+        11012.544868246538,
+        21660.71783311243
+      ]
+    ],
+    "integral_reset": {
+      "position": {
+        "before": [
+          0.101,
+          0.199,
+          0.301
+        ],
+        "after": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "attitude2force_torque": {
+        "before": [
+          0.10062952401761843,
+          0.19966622127595346,
+          0.3008174736684838
+        ],
+        "after": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "body_rate2force_torque": {
+        "before": [
+          0.1,
+          0.2,
+          0.3
+        ],
+        "after": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "zero_force_rpm_note": "The fitted thrust curve maps zero force to its positive RPM root; the simulator independently permits RPM=0.",
+    "kd_z": 0.4,
+    "z_velocity_thrust_delta_N": 0.12890821698329147,
+    "pipelines": {
+      "state": {
+        "frequency_hz": 100,
+        "simulation_frequency_hz": 500,
+        "pipeline": [
+          "state_controller",
+          "attitude_controller",
+          "force_torque_controller",
+          "clip_rotor_vel_cmd",
+          "integration",
+          "clip_floor_pos",
+          "increment_steps"
+        ],
+        "rpm_limits": [
+          0.0,
+          21660.71783311243
+        ],
+        "rpm_command": [
+          [
+            [
+              12825.259765625,
+              18347.873046875,
+              21660.70703125,
+              18398.013671875
+            ]
+          ]
+        ],
+        "pure_chain_matches": true
+      },
+      "attitude": {
+        "frequency_hz": 500,
+        "simulation_frequency_hz": 500,
+        "pipeline": [
+          "attitude_controller",
+          "force_torque_controller",
+          "clip_rotor_vel_cmd",
+          "integration",
+          "clip_floor_pos",
+          "increment_steps"
+        ],
+        "rpm_limits": [
+          0.0,
+          21660.71783311243
+        ],
+        "rpm_command": [
+          [
+            [
+              17666.42578125,
+              710.9541625976562,
+              21660.71875,
+              9192.2734375
+            ]
+          ]
+        ],
+        "pure_chain_matches": true
+      },
+      "body_rate": {
+        "frequency_hz": 500,
+        "simulation_frequency_hz": 500,
+        "pipeline": [
+          "body_rate_controller",
+          "force_torque_controller",
+          "clip_rotor_vel_cmd",
+          "integration",
+          "clip_floor_pos",
+          "increment_steps"
+        ],
+        "rpm_limits": [
+          0.0,
+          21660.71783311243
+        ],
+        "rpm_command": [
+          [
+            [
+              710.9541625976562,
+              3634.969482421875,
+              710.9541625976562,
+              21660.71875
+            ]
+          ]
+        ],
+        "pure_chain_matches": true
+      },
+      "force_torque": {
+        "frequency_hz": 500,
+        "simulation_frequency_hz": 500,
+        "pipeline": [
+          "force_torque_controller",
+          "clip_rotor_vel_cmd",
+          "integration",
+          "clip_floor_pos",
+          "increment_steps"
+        ],
+        "rpm_limits": [
+          0.0,
+          21660.71783311243
+        ],
+        "rpm_command": [
+          [
+            [
+              710.9541625976562,
+              710.9541625976562,
+              710.9541625976562,
+              21660.70703125
+            ]
+          ]
+        ],
+        "pure_chain_matches": true
+      },
+      "rotor_vel": {
+        "frequency_hz": 500,
+        "simulation_frequency_hz": 500,
+        "pipeline": [
+          "clip_rotor_vel_cmd",
+          "integration",
+          "clip_floor_pos",
+          "increment_steps"
+        ],
+        "rpm_limits": [
+          0.0,
+          21660.71783311243
+        ],
+        "rpm_command": [
+          [
+            [
+              0.0,
+              0.0,
+              10830.359375,
+              21660.71875
+            ]
+          ]
+        ],
+        "pure_chain_matches": true
+      }
+    },
+    "gimbal_lock_warnings": 0
+  },
+  "wall_seconds_including_compilation": 2.4365743630041834
+}

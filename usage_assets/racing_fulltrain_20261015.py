@@ -581,6 +581,7 @@ def course_evaluate(
     save_trajectory=None,
     config_name="level0.toml",
     reference_time_s=15.0,
+    jax_device: str = "gpu",
 ):
     """Evaluate the official fixed course with frames, obstacles and collision detection."""
     from lsy_drone_racing.control.attitude_rl import AttitudeRL
@@ -599,7 +600,7 @@ def course_evaluate(
         disturbances=config.env.disturbances,
         randomizations=config.env.get("randomizations"),
         seed=seed,
-        device="gpu",
+        device=jax_device,
     )
     # Disable autoreset so a completed race cannot be overwritten by a new episode.
     env.settings = env.settings.replace(autoreset=False)
@@ -620,7 +621,7 @@ def course_evaluate(
     )
     start_offset = np.asarray(obs["pos"]) - first_obs["pos"][None]
     per_world = compressed[None] + start_basis[None, :, None] * start_offset[:, None]
-    trajectory = jp.array(per_world, device=jax.devices("gpu")[0])
+    trajectory = jp.array(per_world, device=jax.devices(jax_device)[0])
     agent = official.Agent((73,), (4,)).to(device)
     agent.load_state_dict(torch.load(checkpoint, map_location=device, weights_only=True))
     basic = jp.concatenate([obs[k] for k in ("pos", "quat", "vel", "ang_vel")], axis=-1)
