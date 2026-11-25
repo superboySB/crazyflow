@@ -1,0 +1,8 @@
+{
+  "image_width": 640,
+  "image_height": 480,
+  "hfov_deg": 120.0,
+  "camera_intrinsics": null,
+  "camera_offset": [0.03, 0.0, 0.0],
+  "camera_rpy": [0.0, 0.0, 0.0]
+}

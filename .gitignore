@@ -1,36 +1,22 @@
-**.egg-info/
-**/__pycache__/
-logs
-secrets
-**/*.secret
-saves
-.pytest_cache
-*.json
-**/*.csv
-.vscode
-build
-.venv
-!/.devcontainer/devcontainer.json
-!/.devcontainer/devcontainer.linux.json
-!/.devcontainer/devcontainer.wsl2.json
-**/*.pt
-tutorials/ppo/wandb
-dist
-benchmark/data
-# pixi environments
-.pixi
-*.egg-info
-
-# uv (lockfile intentionally not committed; pixi.lock is the reproducible env)
-uv.lock
-
-# ProperDocs build output
-site/
+.venv/
+.pixi/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
 .cache/
-# Temporary files
+build/
+dist/
+outputs/
+checkpoints/
+logs/
+saves/
+.env
+*.secret
+.vscode/
 .DS_Store
-Thumbs.db
-.claude
-
-# MuJoCo runtime warnings are archived with each reproduction run.
+.github/
+references/
 MUJOCO_LOG.TXT

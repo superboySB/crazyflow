@@ -7,7 +7,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from crazyflow.dynamics.utils.identification import _build_residuals_fun_translation
+from crazyflow.dynamics.utils.identification import (
+    _build_residuals_fun_translation,
+    _simulate_system_translation,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -50,7 +53,7 @@ def test_translation_jacobian(dynamics: str, active: list[bool]):
     residuals, jacobian = _build_residuals_fun_translation(dynamics)
     params = np.array([1.05, 0.3, -0.02, -0.03])
     jac = jacobian(params, *args)
-    assert jac.shape == (n, 4)
+    assert jac.shape == (3 * n, 4)
 
     eps = 1e-6
     fd = np.zeros_like(jac)
@@ -63,3 +66,23 @@ def test_translation_jacobian(dynamics: str, active: list[bool]):
     assert np.all(jac[:, ~active] == 0.0)
     assert np.all(fd[:, ~active] == 0.0)
     np.testing.assert_allclose(jac[:, active], fd[:, active], rtol=1e-6, atol=1e-8)
+
+
+@pytest.mark.unit
+def test_translation_residuals_keep_sse_and_finite_jacobian_at_exact_fit():
+    """A perfect forward-model observation must have a usable least-squares Jacobian."""
+    time = jnp.linspace(0.0, 1.0, 31)
+    quat = jnp.tile(jnp.array([0.0, 0.0, 0.0, 1.0]), (len(time), 1))
+    vel = jnp.stack((jnp.sin(time), jnp.cos(time), time), axis=-1)
+    cmd_f = 0.43 + 0.03 * jnp.sin(4 * time)
+    params = jnp.array([0.96, 11.3, -0.02, -0.025])
+    constants = {"mass": 0.0434, "gravity_vec": jnp.array([0.0, 0.0, -9.81])}
+    predicted = _simulate_system_translation(quat, vel, cmd_f, time, params, constants)
+    residuals, jacobian = _build_residuals_fun_translation("so_rpy_rotor_drag")
+    args = (quat, vel, cmd_f, time, constants, predicted)
+    np.testing.assert_allclose(residuals(params, *args), 0, atol=1e-12)
+    assert np.isfinite(jacobian(params, *args)).all()
+    observed = predicted + jnp.stack((0.1 * time, -0.2 * time, 0.3 * time), axis=-1)
+    flat = residuals(params, quat, vel, cmd_f, time, constants, observed)
+    old = jnp.linalg.norm(observed - predicted, axis=-1)
+    np.testing.assert_allclose(np.dot(flat, flat), np.dot(old, old), rtol=1e-12)

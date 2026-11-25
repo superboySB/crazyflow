@@ -4,7 +4,6 @@ import copy
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from functools import partial, wraps
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
 import jax
@@ -31,6 +30,7 @@ from crazyflow.drones import Drone
 from crazyflow.dynamics import Dynamics
 from crazyflow.dynamics import load_params as load_dynamics_params
 from crazyflow.exception import ConfigError, NotInitializedError
+from crazyflow.paths import resource_path
 from crazyflow.sim.data import SimControls, SimCore, SimData, SimParams, SimState, SimStateDeriv
 from crazyflow.sim.dynamics import (
     first_principles_dynamics,
@@ -45,6 +45,7 @@ from crazyflow.utils import grid_2d, pytree_replace, world_mask
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from pathlib import Path
 
     from jax.sharding import Mesh
     from mujoco.mjx import Data, Model
@@ -113,7 +114,7 @@ class Sim:
             body_rate_freq: Frequency in Hz at which the body rate controller runs.
             force_torque_freq: Frequency in Hz at which the force/torque controller runs.
             device: Device to place the simulation data on (e.g. ``"cpu"`` or ``"gpu"``).
-            xml_path: Path to a custom scene XML. Defaults to ``crazyflow/scene.xml``.
+            xml_path: Path to a custom scene XML. Defaults to outer ``assets/scene.xml``.
             rng_key: Seed for the JAX rng key.
             fused_mjx_model: If True, use the ``drone_fused`` body whose visual geometry is fused
                 into a single mesh. This shrinks the MJX model and reduces its memory footprint at
@@ -141,8 +142,8 @@ class Sim:
 
         # Initialize MuJoCo world and data
         self.fused_mjx_model = fused_mjx_model
-        self._xml_path = xml_path or Path(__file__).parents[1] / "scene.xml"
-        self.drone_path = Path(__file__).parents[1] / f"drones/{drone}.xml"
+        self._xml_path = xml_path or resource_path("assets/scene.xml")
+        self.drone_path = Drone(drone).path
         self.spec = self.build_mjx_spec()
         self.mj_model, self.mj_data, self.mjx_model, self.mjx_data = self.build_mjx_model(self.spec)
         self._contacts = self.build_contact_fn()

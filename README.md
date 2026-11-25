@@ -1,119 +1,136 @@
-<p align="center">
-  <img src="https://github.com/learnsyslab/crazyflow/raw/main/docs/img/logo.svg" alt="Crazyflow Logo" width="300"><br>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/learnsyslab/crazyflow/raw/main/docs/img/logo_text_white.svg">
-    <img src="https://github.com/learnsyslab/crazyflow/raw/main/docs/img/logo_text_black.svg" alt="Crazyflow" width="500">
-  </picture>
-</p>
-<div align="center">
+# Dani：cf21B_500 气球接触，纯 BPTT
 
---------------------------------------------------------------------------------
+按下面四步完成 Docker 配置、实物辨识、训练和评测。策略使用 bbox、姿态、机体角速度和历史信息，yaw 参与控制，不读取位置或线速度。训练通过 Crazyflow 的可微物理做 BPTT，使用官方 `cf21B_500` 完整动力学和姿态控制器。
 
-  **Fast, parallelizable simulations of quadrotor drones with JAX.**
+在项目根目录运行 `./dani`；无需激活 Python 环境或设置终端变量。先跑默认仿真时，只需 `setup → train → evaluate → play`；所有结果保存到 `outputs/`。
 
-  [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org)
-  [![arXiv](https://img.shields.io/badge/arXiv-2606.01478-b31b1b.svg)](https://arxiv.org/abs/2606.01478)
-  [![Tests](https://github.com/learnsyslab/crazyflow/actions/workflows/testing.yml/badge.svg)](https://github.com/learnsyslab/crazyflow/actions/workflows/testing.yml)
-  [![Fuzzing](https://github.com/learnsyslab/crazyflow/actions/workflows/fuzzing.yml/badge.svg)](https://github.com/learnsyslab/crazyflow/actions/workflows/fuzzing.yml)
-  [![Ruff](https://github.com/learnsyslab/crazyflow/actions/workflows/ruff.yml/badge.svg)](https://github.com/learnsyslab/crazyflow/actions/workflows/ruff.yml)
-  [![Docs](https://github.com/learnsyslab/crazyflow/actions/workflows/docs.yml/badge.svg)](https://learnsyslab.github.io/crazyflow)
+## 先看配置放在哪里
 
-</div>
+| 要调整什么 | 编辑文件 | 默认内容 |
+| --- | --- | --- |
+| 训练次数、并行数、学习率、随机种子 | [config/training.yaml](config/training.yaml) 的 `training` | 1500 次；GPU 1024 / CPU 32 个并行世界 |
+| 轨迹时长、历史长度、气球尺寸/距离、控制与终止界限 | 同文件的 `task` | 50 Hz 策略、500 Hz 物理/控制器，yaw 不锁定 |
+| 接触、视野、安全、速度与动作平滑等优化权重 | 同文件的 `objective` | 可微目标；实际成功仍以接触判定 |
+| 质量/推力/电机响应随机化，bbox/IMU 噪声、丢帧和延迟 | 同文件的 `noise` | 默认开启，属于训练假设，可按实测调整 |
+| 质量、惯量、力臂、推力/反扭矩曲线、旋翼动态和阻力 | [config/vehicle.toml](config/vehicle.toml) | 官方 `cf21B_500` 完整物理参数 |
+| 姿态控制器增益、混控、分配端推力映射 | [config/controller.toml](config/controller.toml) | 官方姿态与力矩分配参数 |
+| 图像分辨率、水平视场、相机内参与安装外参 | [config/camera.json](config/camera.json) | 640×480、水平 120°、向前偏置 3 cm |
+| 无人机外观、网格与基础场景 | [assets/](assets/) | 官方机体 XML、网格与场景；相机标定仍由 `camera.json` 控制 |
 
-Crazyflow is a research simulator for quadrotors. It runs batched, differentiable simulations on CPU and GPU via JAX, with analytical and abstracted dynamics.
+通常只修改上面四份配置。底层各模型的默认表也已移到 `config/dynamics/`、`config/control/`；`crazyflow/` 保留 BPTT、仿真、控制和辨识逻辑。详细字段、单位和坐标轴见 [config/README.md](config/README.md)。
 
-```python
-import numpy as np
-from crazyflow.sim import Sim
-from crazyflow.control import Control
-from scipy.spatial.transform import Rotation as R
+两份技术资料已放到本地：[Crazyflie/BPTT 与辨识说明](docs/Crazyflie与Crazyflow_BPTT关键问题与辨识方案.pdf)、[视觉可微仿真与实机控制说明](docs/苏黎世穿缝_可微分仿真与实机控制.pdf)。具体操作和当前默认值以本项目手册、配置为准。
 
-sim = Sim(n_worlds=4096, n_drones=1, control=Control.state)
-cmd = np.zeros((4096, 1, 16))
-cmd[..., 9:13] = R.from_euler("z", 0.0).as_quat()
-cmd[..., 2] = 0.5  # hover at 0.5 m across all worlds
-
-for _ in range(100):
-    sim.state_control(cmd)
-    sim.step(sim.freq // sim.control_freq)
-    sim.render()
-```
-
-## Documentation
-
-[learnsyslab.github.io/crazyflow](https://learnsyslab.github.io/crazyflow) — installation, user guide, examples, and API reference.
-
-## Features
-
-- **n\_worlds x n\_drones** — batched over independent environments and multi-drone swarms simultaneously
-- **GPU-accelerated** — up to 914 M steps/s on an RTX 4090 (first-principles dynamics, 262 K worlds)
-- **Differentiable** — `jax.grad` works through the full dynamics and control pipeline
-- **First-principles dynamics** — dynamics using first-principles equations and parameters identified from real-world measurements
-- **Abstracted dynamics** — simplified dynamics in three flavors fitted from real flight data
-- **Modular pipelines** — step and reset are tuples of plain JAX functions; insert anything, anywhere
-- **MuJoCo integration** — onscreen and offscreen rendering, raycasting, and contact detection via MJX
-
-## Supported drones
-
-Crazyflow supports a variety of drones:
-
-| Drone | Platform |
-|---|---|
-| `cf2x_L250` | Crazyflie 2.x |
-| `cf2x_P250` | Crazyflie 2.x, plus propellers |
-| `cf2x_T350` | Crazyflie 2.x, thrust upgrade kit |
-| `cf21B_500` | Crazyflie 2.1 Brushless (default) |
-| `hb_x500` | Holybro X500 V2 |
-
-New platforms can be added as described in the [docs](https://learnsyslab.github.io/crazyflow/user-guide/adding-drones/).
-
-## Installation
+## 1. 一键配置 Docker
 
 ```bash
-pip install crazyflow           # CPU
-pip install "crazyflow[gpu]"    # GPU (Linux x86-64, CUDA 12)
+./dani setup
 ```
 
-Developer install with editable install ([pixi](https://pixi.sh/) recommended):
+宿主先装好 Docker。脚本构建统一镜像，在容器内实际执行 JAX 计算，**优先 GPU，不可用时自动使用 CPU**。GPU 需要宿主已有 NVIDIA 驱动与 Container Toolkit；Python、JAX、CUDA 用户态库和 MuJoCo 都在镜像中。[配置脚本](scripts/setup.sh)和[设备检测](scripts/common.sh)中有说明。
+
+后续命令会自动选择设备；镜像不存在时自动构建。修改代码或依赖后重新运行 `./dani setup`。修改四份用户配置后可直接训练，启动器会读取当前文件，无需重新构建镜像。
+
+## 2. 实物测量与辨识（先跑仿真可跳过）
+
+直接使用默认飞机时，进入第 3 步。增加 RGB 模组、更换电机/桨后，先建立测量模板：
 
 ```bash
-git clone https://github.com/learnsyslab/crazyflow.git
-cd crazyflow
-pixi shell
+./dani identify init
 ```
 
-Or with [uv](https://docs.astral.sh/uv/):
+打开 `outputs/measurements/`，按[测量与日志采集手册](docs/identification.md)测量最终装机总重、质心、力臂与惯量，整理独立的训练和验证日志。核实真实测量后，才设置 `confirmed_measurements=true`。
+
+| 已准备的数据 | 一键入口 | 结果与覆盖范围 |
+| --- | --- | --- |
+| 机械 RPM、质心 IMU、已测质量/J | `./dani identify flight --negligible-drag` | `physical.toml`：拟合公共推力、yaw 反扭矩曲线，合并测量值和明确标记的继承项 |
+| 上述日志，加目标/实际 RPM 瞬态 | `./dani identify rotor --negligible-drag` | 重新联合导出 `physical.toml`，补充旋翼升降速系数 |
+| **可选**的推力/扭矩台数据 | `./dani identify static` | `static-check.toml`：单独交叉检查，不覆盖飞行拟合 |
+| 带参考位置/姿态的闭环飞行日志 | [辨识手册中的阻力步骤](docs/identification.md) | 官方简化闭环模型的推力延迟与阻力；不能直接替换第一性原理表 |
+
+**没有推力/扭矩台也可走飞行日志路线**，但仍需可信机械 RPM、IMU、质量与惯量；只有姿态和角速度不足以辨识全部参数。`--negligible-drag` 表示确认所选片段中阻力与其它外力可忽略。离线辨识可使用参考位置/速度，它们不会成为策略输入。
+
+没有硬件时，先用明确标记的[合成示例日志](examples/identification/README.md)检查流程：
 
 ```bash
-git clone https://github.com/learnsyslab/crazyflow.git
-cd crazyflow
-uv sync          # core + dev tooling (tests, docs, ruff)
+./dani identify check
+./dani identify drag-check
 ```
 
-## Performance
+辨识结果与用户配置的关系：
 
-First-principles dynamics, one drone. CPU: AMD Ryzen 9 7950X. GPU: NVIDIA RTX 4090.
+- `physical.toml` 可作为本次训练的机体参数覆盖，命令见下一步；JSON 报告说明哪些量经过测量、拟合或继承。
+- 姿态增益、分配端映射与真实固件的 N→驱动映射需另行核对；物理辨识不会自动调整 `controller.toml`。
+- 闭环阻力示例输出的是另一种模型，不能直接作为 `--model-params`。完整第一性原理阻力仍需按手册核对力、速度与坐标约定。
 
-| n\_worlds | CPU steps/s | GPU steps/s |
-|---|---|---|
-| 64 | 3.3 M | 1.2 M |
-| 1 024 | 9.2 M | 18.7 M |
-| 16 384 | 11.9 M | 257 M |
-| 65 536 | 15.6 M | 678 M |
-| 262 144 | 12.6 M | 914 M |
+示例保留独立的 train/valid 两段日志；官方底层拟合允许不提供验证日志，这里保留验证用于检查拟合之外的飞行。示例日志是合成数据，不是改装实机参数。
 
-Full benchmarks including multi-drone scaling are in the [documentation](https://learnsyslab.github.io/crazyflow).
+## 3. 一键训练 BPTT
 
-## Citation
-
-```bibtex
-@misc{schuck2026crazyflow,
-      title={Crazyflow: An Accurate, GPU-Accelerated, Differentiable Drone Simulator in JAX}, 
-      author={Martin Schuck and Marcel P. Rath and Yufei Hua and Abhishek Goudar and SiQi Zhou and Angela P. Schoellig},
-      year={2026},
-      eprint={2606.01478},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2606.01478}, 
-}
+```bash
+./dani train
 ```
+
+默认读取 `config/` 下的训练 YAML、机体 TOML、控制器 TOML 和相机 JSON，自动选择设备与对应并行数，并创建新结果目录。训练前不需要运行其它项目。
+
+调整训练时，先编辑 `training.yaml` 对应部分：`training` 管优化器，`task` 管任务与控制界限，`objective` 管可微目标，`noise` 管扰动。不确定时保留默认；质量和推力曲线等真实机体数值在 `vehicle.toml` 中设置。
+
+使用已测量验证的物理辨识结果：
+
+```bash
+./dani train --model-params outputs/measurements/physical.toml
+```
+
+核对并更新实机控制器后，可另加 `--controller-params outputs/measurements/controller.toml`。一次性覆盖训练次数/并行数可用 `--iterations`、`--batch-size`；完整选项见 `./dani train --help`。
+
+相机按 OV5647 广角的假定配置使用水平 **120°**。直接编辑 `camera.json` 的分辨率、内参与外参；真实广角图像需先去畸变，并在校正图上 track bbox，再填对应 K。修改标定后重新训练。
+
+每次训练会保存 `config/` 副本和 `policy.npz`。策略文件冻结有效的物理、控制器和相机参数，后续修改本地配置不会改变已有策略。`./dani train --smoke` 只做小规模流程检查，不替换最近一次正式训练。
+
+训练标量保存在 `training.jsonl`，结束后自动生成 `training.png`（损失、验证损失、梯度和耗时），无需 TensorBoard 服务。已有一份验证有效的[示例权重与曲线](examples/balloon/README.md)，与辨识示例并列保存在 `examples/balloon/`。
+
+显存参考：RTX 4070 Ti SUPER 16GB，默认 150×10 步展开、关闭预分配，每档 3 次完整 BPTT 更新，**1024 / 4096 / 8192 / 16384** 个环境的进程采样峰值约 **0.8 / 2.0 / 3.5 / 7.1 GiB**；另留桌面等进程的余量。修改 YAML 的 `batch_size.gpu` 调整并行数，[实测记录](examples/balloon/gpu-capacity.json)不代表其它显卡的容量上限。
+
+## 4. 一键 MuJoCo 评测与 GUI
+
+想先看已训练模型，直接打开示例 GUI：
+
+```bash
+./dani play --example
+```
+
+也可先用 `./dani evaluate --example` 重新评测示例。示例在 MuJoCo 三组各 256 次的实际接触数为 **256、255、244**，详细设置见[示例说明](examples/balloon/README.md)。
+
+```bash
+./dani evaluate
+```
+
+自动读取最近一次成功训练，默认用原生 MuJoCo 实际推进三组飞行：无噪声、训练噪声、更强扰动。以无人机与气球实际接触判定成功，保存 `metrics.json`、轨迹和视频。
+
+训练时由 Crazyflow 几何生成理想 bbox；测试时由 MuJoCo 当前位姿生成同样的理想 bbox，再按场景叠加噪声、裁剪、丢帧和延迟。无需先训练图像检测器。两端共用策略中冻结的相机标定和观测处理，MuJoCo 同时提供对应的相机画面。
+
+MuJoCo 刚体积分运行在 CPU，策略、官方控制器和旋翼力模型使用自动选定的 JAX 设备。需要对照训练物理时，可用 `./dani evaluate --plant crazyflow`。
+
+打开最近一次评测：
+
+```bash
+./dani play
+```
+
+Linux/X11 窗口中，绿色实线是理想 bbox，琥珀虚线是策略实际收到的框；Telemetry 显示指令、姿态、gyro、RPM、延迟和接触信息。`Space` 暂停，左右键逐帧，`R` 重置，`N` 新种子，`1/2/3` 切换场景，`T` 显示相机标定。
+
+没有显示设备时，检查 GUI 并保存截图：
+
+```bash
+./dani play --headless
+```
+
+各命令支持 `--help`，需要强制 CPU 时加 `--device cpu`。重复训练或评测会创建新目录；失败时保留已有成功结果，不覆盖最近成功指针。
+
+| 命令 | 常用参数（默认值） | 示例 |
+| --- | --- | --- |
+| `setup` | `--device auto/cpu/gpu`（auto） | `./dani setup --device cpu` |
+| `identify` | `--directory`（outputs/measurements）；其它量见辨识手册 | `./dani identify init --directory outputs/my-drone` |
+| `train` | `--batch-size`、`--iterations`、`--lr`（读取 YAML）；`--smoke` | `./dani train --batch-size 4096 --iterations 1500` |
+| `evaluate` | `--example` 或 `--checkpoint`；`--episodes`（256）、`--no-video`、`--plant`（mujoco） | `./dani evaluate --example --episodes 32 --no-video` |
+| `play` | `--example`、`--checkpoint` 或 `--evaluation`；`--seed`、`--headless` | `./dani play --example --seed 7` |

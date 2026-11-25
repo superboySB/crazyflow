@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+project_dir=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+command_name=${1:-help}
+if [[ $# -gt 0 ]]; then shift; fi
+case "$command_name" in
+  setup|train|identify|evaluate|play)
+    exec "$project_dir/scripts/$command_name.sh" "$@"
+    ;;
+  help|-h|--help)
+    cat <<'HELP'
+用法：./dani <步骤> [选项]
+  setup       构建 Docker，检测 GPU；不可用时自动选择 CPU
+  identify    建立测量模板、拟合推力/电机参数或检查辨识工具
+  train       训练纯 BPTT 策略，自动创建结果目录
+  evaluate    用 MuJoCo 评测最近一次成功训练
+  play        打开最近一次评测的 GUI（--headless 无窗口检查）
+
+每步可加 --help 查看选项。无需激活 Python 或保留终端变量。
+HELP
+    ;;
+  *) printf '未知步骤：%s。请运行 ./dani --help。\n' "$command_name" >&2; exit 2 ;;
+esac

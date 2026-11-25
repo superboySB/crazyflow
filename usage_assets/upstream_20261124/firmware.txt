@@ -1,3 +1,0 @@
-$ env JAX_PLATFORMS=cpu /opt/crazyflow/.pixi/envs/fuzzing/bin/python -m pytest -q -o addopts= tests/fuzzing
-......x..                                                                [100%]
-8 passed, 1 xfailed in 3.34s

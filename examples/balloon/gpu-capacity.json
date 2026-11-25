@@ -1,0 +1,96 @@
+{
+  "schema": "bptt-gpu-capacity-v1",
+  "gpu": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "total_memory_mib": 16376,
+  "image": "sha256:7fe333365b3e5891e99172d48768ba084574bd597370131d436ffc2c33134cf0",
+  "jax_version": "0.12.0.1",
+  "policy_steps": 150,
+  "physics_substeps_per_policy_step": 10,
+  "iterations_per_batch": 3,
+  "xla_python_client_preallocate": false,
+  "measurement": "nvidia-smi compute-process memory sampled every approximately 0.25 s; each fresh process runs initial validation, three complete BPTT updates, validation and checkpoint saves. Process memory excludes desktop/other processes; total GPU memory includes them. These are sampled peaks, not maximum supported capacities.",
+  "source": "outputs/gpu-capacity-20261125/capacity.json",
+  "source_sha256": "4aa32411b7692c5efe3a8a0bcef9d93969a83564cd96351c3f353bcea70682e1",
+  "samples": [
+    {
+      "batch_size": 1024,
+      "exit_code": 0,
+      "baseline_total_used_mib": 1201,
+      "peak_process_used_mib": 794,
+      "peak_total_used_mib": 1882,
+      "elapsed_seconds": 19.780826604983304,
+      "jax_device_memory_stats_bytes": {
+        "num_allocs": 2372,
+        "bytes_in_use": 0,
+        "peak_bytes_in_use": 268767488,
+        "largest_alloc_size": 268435456,
+        "bytes_limit": 12522094592,
+        "bytes_reserved": 0,
+        "peak_bytes_reserved": 0,
+        "largest_free_block_bytes": 268435456,
+        "pool_bytes": 538968064,
+        "peak_pool_bytes": 538968064
+      }
+    },
+    {
+      "batch_size": 4096,
+      "exit_code": 0,
+      "baseline_total_used_mib": 1074,
+      "peak_process_used_mib": 2076,
+      "peak_total_used_mib": 3189,
+      "elapsed_seconds": 22.068060602992773,
+      "jax_device_memory_stats_bytes": {
+        "num_allocs": 2499,
+        "bytes_in_use": 0,
+        "peak_bytes_in_use": 1074395136,
+        "largest_alloc_size": 1073741824,
+        "bytes_limit": 12522094592,
+        "bytes_reserved": 0,
+        "peak_bytes_reserved": 0,
+        "largest_free_block_bytes": 1073741824,
+        "pool_bytes": 1881145344,
+        "peak_pool_bytes": 1881145344
+      }
+    },
+    {
+      "batch_size": 8192,
+      "exit_code": 0,
+      "baseline_total_used_mib": 1098,
+      "peak_process_used_mib": 3612,
+      "peak_total_used_mib": 4730,
+      "elapsed_seconds": 24.32045245001791,
+      "jax_device_memory_stats_bytes": {
+        "num_allocs": 2529,
+        "bytes_in_use": 0,
+        "peak_bytes_in_use": 1961220864,
+        "largest_alloc_size": 1960148736,
+        "bytes_limit": 12522094592,
+        "bytes_reserved": 0,
+        "peak_bytes_reserved": 0,
+        "largest_free_block_bytes": 2147483648,
+        "pool_bytes": 3491758080,
+        "peak_pool_bytes": 3491758080
+      }
+    },
+    {
+      "batch_size": 16384,
+      "exit_code": 0,
+      "baseline_total_used_mib": 1105,
+      "peak_process_used_mib": 7306,
+      "peak_total_used_mib": 8302,
+      "elapsed_seconds": 28.466316724952776,
+      "jax_device_memory_stats_bytes": {
+        "num_allocs": 2522,
+        "bytes_in_use": 0,
+        "peak_bytes_in_use": 3931955712,
+        "largest_alloc_size": 3929999616,
+        "bytes_limit": 12522094592,
+        "bytes_reserved": 0,
+        "peak_bytes_reserved": 0,
+        "largest_free_block_bytes": 4294967296,
+        "pool_bytes": 6985613312,
+        "peak_pool_bytes": 6985613312
+      }
+    }
+  ]
+}

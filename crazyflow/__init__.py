@@ -16,7 +16,6 @@ if "scipy" in sys.modules and os.environ.get("SCIPY_ARRAY_API") != "1":
 os.environ["SCIPY_ARRAY_API"] = "1"
 import scipy  # noqa: F401, ensure scipy uses array API features
 
-import crazyflow.envs  # noqa: F401, ensure gymnasium envs are registered
 from crazyflow.control import Control
 from crazyflow.drones import Drone
 from crazyflow.dynamics import Dynamics

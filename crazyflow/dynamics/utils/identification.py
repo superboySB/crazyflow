@@ -133,7 +133,9 @@ def _build_residuals_fun_translation(
         acc_observed: Array,
     ) -> Array:
         acc = _simulate_system_translation(quat, vel, cmd_f, t, params, constants)
-        return jnp.linalg.norm(acc_observed - acc, axis=-1)
+        # Keep the same sum of squared 3D errors while avoiding the undefined
+        # derivative of norm(0) and retaining directional curvature for least_squares.
+        return (acc_observed - acc).reshape(-1)
 
     # JAX analytic Jacobian
     jac_fun = jax.jacfwd(_residuals_trans)  # Jacobian w.r.t. first arg (params)

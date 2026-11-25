@@ -1,7 +1,9 @@
-# SCM syntax highlighting & preventing 3-way merges
-pixi.lock merge=binary linguist-language=YAML linguist-generated=true
-
-# Preserve the exact SVG and stdout bytes emitted by the reproduction tools.
-usage_assets/upstream_20261124/**/*.svg -whitespace
-usage_assets/upstream_20261124/**/*.txt -whitespace
-usage_assets/upstream_20261124/*.txt -whitespace
+*.py text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.pdf binary
+*.stl binary
+*.npz binary
+*.png binary
+# Preserve whitespace in the byte-identical upstream README.
+docs/crazyflow_experiments_sysid/README.md whitespace=-blank-at-eol

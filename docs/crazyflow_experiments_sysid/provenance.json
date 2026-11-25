@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/learnsyslab/crazyflow_experiments",
+  "commit": "203ad4e31b9380fec985f17008bb7a68ad5cf768",
+  "status": "README.md and LICENSE are unmodified upstream files.",
+  "source_readme": "https://raw.githubusercontent.com/learnsyslab/crazyflow_experiments/203ad4e31b9380fec985f17008bb7a68ad5cf768/crazyflow_experiments/sysid/README.md",
+  "source_readme_sha256": "9f08cccb0036fd3cf95db84cadf428a96bbc24e34e0305d601aa2cb78e702c70",
+  "source_license": "https://raw.githubusercontent.com/learnsyslab/crazyflow_experiments/203ad4e31b9380fec985f17008bb7a68ad5cf768/LICENSE",
+  "source_license_sha256": "68b6ffac6d57c31fb27910b4878865f6d7a3a712b915c5915be88c8da68be7f5",
+  "license": "MIT"
+}

@@ -1,0 +1,52 @@
+{
+  "synthetic": true,
+  "source": "official cf21B_500 so_rpy_rotor_drag forward model; not hardware data",
+  "model": "so_rpy_rotor_drag",
+  "seed": 0,
+  "duration_s": 15.0,
+  "dt_s": 0.01,
+  "integrator": "explicit Euler, matching the official identification discretization",
+  "known_parameters": {
+    "mass": 0.0434,
+    "gravity_vec": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "thrust_dyn_coef": 11.332539603033299,
+    "acc_coef": 0.0,
+    "cmd_f_coef": 0.959471532998666,
+    "rpy_coef": [
+      -156.34812197843243,
+      -156.34812197843243,
+      -144.7222372741053
+    ],
+    "rpy_rates_coef": [
+      -16.300330418164553,
+      -16.300330418164553,
+      -17.368699336318954
+    ],
+    "cmd_rpy_coef": [
+      139.7494294272397,
+      139.7494294272397,
+      127.01037564242333
+    ],
+    "drag_matrix": [
+      [
+        -0.021643637770852733,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        -0.021643637770852733,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        -0.02477138502714662
+      ]
+    ]
+  }
+}

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import tomllib
 from enum import StrEnum
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 
 import numpy as np
 
 from crazyflow.drones import Drone
+from crazyflow.paths import resource_path
 from crazyflow.utils import filter_to_signature, to_xp
 from crazyflow.utils import parametrize as _parametrize
 
@@ -91,8 +91,8 @@ def load_params(
 ) -> dict:
     """Load all parameters of a drone for a dynamics model.
 
-    Merges the global parameters in ``crazyflow/dynamics/params.toml`` with the drone's section in
-    ``crazyflow/dynamics/<dynamics>/params.toml`` and adds ``J_inv``.
+    Merges ``config/dynamics/params.toml`` with the drone's section in
+    ``config/dynamics/<dynamics>/params.toml`` and adds ``J_inv``.
 
     Args:
         dynamics: The dynamics model, e.g. ``Dynamics.so_rpy``.
@@ -111,9 +111,9 @@ def load_params(
     dynamics = Dynamics(dynamics)
     if dynamics not in supported_dynamics(drone):
         raise KeyError(f"Drone `{drone}` not found in {dynamics}/params.toml")
-    with open(Path(__file__).parent / "params.toml", "rb") as f:
+    with open(resource_path("config/dynamics/params.toml"), "rb") as f:
         global_params = tomllib.load(f)
-    with open(Path(__file__).parent / f"{dynamics}/params.toml", "rb") as f:
+    with open(resource_path(f"config/dynamics/{dynamics}/params.toml"), "rb") as f:
         dynamics_params = tomllib.load(f)
     params = global_params | dynamics_params[drone]
     # Make sure J_inv does not have a dtype fixed before conversion to xp arrays to avoid fixing it
@@ -147,14 +147,14 @@ def load_fn_params(
 
 def _param_sections(dynamics: Dynamics) -> set[str]:
     """Return the drone sections declared in a dynamics model's ``params.toml``."""
-    with open(Path(__file__).parent / f"{dynamics}/params.toml", "rb") as f:
+    with open(resource_path(f"config/dynamics/{dynamics}/params.toml"), "rb") as f:
         return set(tomllib.load(f))
 
 
 def supported_drones(dynamics: Dynamics) -> tuple[Drone, ...]:
     """Return the drones that ``dynamics`` can be parametrized for.
 
-    A drone is supported when ``crazyflow/dynamics/<dynamics>/params.toml`` has a section for it.
+    A drone is supported when ``config/dynamics/<dynamics>/params.toml`` has a section for it.
 
     Args:
         dynamics: The dynamics model, e.g. ``Dynamics.so_rpy``.
@@ -169,7 +169,7 @@ def supported_drones(dynamics: Dynamics) -> tuple[Drone, ...]:
 def supported_dynamics(drone: Drone) -> tuple[Dynamics, ...]:
     """Return the dynamics models that ``drone`` can be simulated with.
 
-    A model is supported when its ``crazyflow/dynamics/<dynamics>/params.toml`` has a section for
+    A model is supported when its ``config/dynamics/<dynamics>/params.toml`` has a section for
     ``drone``.
 
     Args:

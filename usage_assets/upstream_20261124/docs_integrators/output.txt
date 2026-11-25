@@ -1,3 +1,0 @@
-euler: z = 2.3218 m after 2.0 s
-rk4: z = 2.3179 m after 2.0 s
-symplectic_euler: z = 2.3263 m after 2.0 s

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import tomllib
 from enum import StrEnum
-from pathlib import Path
 from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar
 
 import jax
 from jax import Array
 
+from crazyflow.paths import resource_path
 from crazyflow.utils import filter_to_signature, to_xp
 from crazyflow.utils import parametrize as _parametrize
 
@@ -100,7 +100,7 @@ def load_params(
 ) -> dict[str, dict[str, Array]]:
     """Load all parameters of a drone for a controller.
 
-    Returns the drone's table of ``crazyflow/control/<controller>/params.toml``: the ``core``
+    Returns the drone's table of ``config/control/<controller>/params.toml``: the ``core``
     section shared by all functions of the controller, and one section per controller function.
 
     Args:
@@ -112,9 +112,10 @@ def load_params(
     Raises:
         KeyError: If ``controller`` has no ``params.toml`` or ``drone`` has no section in it.
     """
-    params_path = Path(__file__).parent / f"{controller}/params.toml"
-    if not params_path.exists():
-        raise KeyError(f"Controller `{controller}` not found")
+    try:
+        params_path = resource_path(f"config/control/{controller}/params.toml")
+    except FileNotFoundError as error:
+        raise KeyError(f"Controller `{controller}` not found") from error
     with open(params_path, "rb") as f:
         params = tomllib.load(f)
     if drone not in params:

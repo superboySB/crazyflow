@@ -1,0 +1,432 @@
+{
+  "schema": "balloon-example-evaluation-summary-v1",
+  "checkpoint": {
+    "file": "policy.npz",
+    "sha256": "ccb9aeb74f6b2718dd34e4486dc1b7d69a4876a3c778c421e6d7703b00fd633f",
+    "schema": "cf21b_first_principles_visible_bbox_bptt_v3",
+    "feature_dim": 65,
+    "selected_iteration": 1150
+  },
+  "training": {
+    "algorithm": "BPTT",
+    "plant": "crazyflow.first_principles.cf21B_500",
+    "integrator": "official Euler;500Hz plant/attitude/motor control",
+    "seed": 42,
+    "scenario": "noisy",
+    "completed_iterations": 1500,
+    "selected_iteration": 1150,
+    "initial_validation_loss": 12.435049057006836,
+    "best_validation_loss": 1.3118246793746948,
+    "last_iteration_validation_loss": 1.392567753791809,
+    "last_record_seconds": 758.7963021550095,
+    "log_records": 61,
+    "selection": "最低已记录固定验证集损失的 checkpoint；policy.npz 不是最后一次更新的参数。",
+    "loss_note": "损失是仿真优化目标，不是接触成功率；日志损失每25次采样记录（另含第1次）。"
+  },
+  "evaluation": {
+    "protocol": "balloon-heldout-v1",
+    "seed": 20261125,
+    "episodes_per_scenario": 256,
+    "paired_scenarios": "same underlying initial-state, target, radius and noise draws",
+    "plant": "mujoco",
+    "training_dynamics": "crazyflow.first_principles.cf21B_500",
+    "dynamics": "MuJoCo native free rigid body + official cf21B_500 controller/actuator wrench",
+    "integrator": "native MuJoCo Euler (semi-implicit rigid body); official explicit Euler RPM",
+    "execution": "native MuJoCo CPU worlds; official controller, wrench and actor on selected JAX device",
+    "versions": {
+      "crazyflow": "0.4.0",
+      "jax": "0.12.0.1",
+      "numpy": "2.5.5",
+      "mujoco": "4.0.0",
+      "imageio": "2.38.2"
+    },
+    "requested_device": "gpu",
+    "devices": [
+      "cuda:0"
+    ],
+    "policy_inputs": "bounding box history, attitude, angular rates and previous command",
+    "metric_protocol": {
+      "denominator": "all sampled episodes, including every failure; no resets",
+      "collision": "first swept sphere entry at every integration substep",
+      "drone_collision_radius_m": 0.086,
+      "drone_collision_offset_body_m": [
+        0.0,
+        0.0,
+        0.02
+      ],
+      "min_center_altitude_m": 0.12,
+      "max_distance_from_start_m": 12.0,
+      "impact_speed_diagnostic_threshold_m_s": 2.5,
+      "success": "any first physical sphere contact; speed is only a diagnostic",
+      "tracking_timeout_s": 0.5,
+      "engine_role": "MuJoCo mj_step integrates position/quaternion/linear and angular velocity; shared official controller and motor/propeller model generate external wrench. A separate integrator, not independently identified aircraft/actuator dynamics."
+    },
+    "total_episodes": 768,
+    "camera": {
+      "model": "undistorted pinhole; rectified tracker pixels",
+      "resolution": [
+        640,
+        480
+      ],
+      "K": [
+        [
+          184.7520861406803,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          184.7520861406803,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "hfov_deg": 119.99999999999999,
+      "vfov_deg": 104.82182106205009,
+      "offset_body_m": [
+        0.03,
+        0.0,
+        0.0
+      ],
+      "mount_rpy_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_body_to_optical": [
+        [
+          0.0,
+          -1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    "scenarios": {
+      "nominal": {
+        "episodes": 256,
+        "successes": 256,
+        "success_rate": 1.0,
+        "success_rate_wilson95": [
+          0.9852161435741286,
+          0.9999999999999999
+        ],
+        "geometric_contact_rate": 1.0,
+        "safe_contacts": 256,
+        "safe_contact_rate": 1.0,
+        "high_speed_contact_rate": 0.0,
+        "outcomes": {
+          "hit": 256,
+          "too_fast_contact": 0,
+          "floor": 0,
+          "out_of_bounds": 0,
+          "tracking_lost": 0,
+          "nonfinite": 0,
+          "timeout": 0
+        },
+        "mean_event_time_s": 1.613410881325232,
+        "native_contact_diagnostic": {
+          "episodes_contacting_by_first_event": 256,
+          "note": "native collision cache at 500Hz poses; primary metric uses swept geometry"
+        }
+      },
+      "noisy": {
+        "episodes": 256,
+        "successes": 255,
+        "success_rate": 0.99609375,
+        "success_rate_wilson95": [
+          0.9782090246194175,
+          0.9993101178330381
+        ],
+        "geometric_contact_rate": 0.99609375,
+        "safe_contacts": 255,
+        "safe_contact_rate": 0.99609375,
+        "high_speed_contact_rate": 0.0,
+        "outcomes": {
+          "hit": 255,
+          "too_fast_contact": 0,
+          "floor": 0,
+          "out_of_bounds": 0,
+          "tracking_lost": 0,
+          "nonfinite": 0,
+          "timeout": 1
+        },
+        "mean_event_time_s": 1.7308367281203718,
+        "native_contact_diagnostic": {
+          "episodes_contacting_by_first_event": 255,
+          "note": "native collision cache at 500Hz poses; primary metric uses swept geometry"
+        }
+      },
+      "perturbed": {
+        "episodes": 256,
+        "successes": 244,
+        "success_rate": 0.953125,
+        "success_rate_wilson95": [
+          0.9198669811156821,
+          0.9729851489983719
+        ],
+        "geometric_contact_rate": 0.953125,
+        "safe_contacts": 244,
+        "safe_contact_rate": 0.953125,
+        "high_speed_contact_rate": 0.0,
+        "outcomes": {
+          "hit": 244,
+          "too_fast_contact": 0,
+          "floor": 0,
+          "out_of_bounds": 0,
+          "tracking_lost": 3,
+          "nonfinite": 0,
+          "timeout": 9
+        },
+        "mean_event_time_s": 1.8352552357312328,
+        "native_contact_diagnostic": {
+          "episodes_contacting_by_first_event": 244,
+          "note": "native collision cache at 500Hz poses; primary metric uses swept geometry"
+        }
+      }
+    }
+  },
+  "frozen_config": {
+    "dt": 0.02,
+    "substeps": 10,
+    "steps": 150,
+    "history": 5,
+    "hidden": 64,
+    "hfov_deg": 120.0,
+    "image_width": 640,
+    "image_height": 480,
+    "camera_offset": [
+      0.03,
+      0.0,
+      0.0
+    ],
+    "camera_rpy": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "camera_intrinsics": [
+      184.7520861406803,
+      184.7520861406803,
+      320.0,
+      240.0
+    ],
+    "collision_offset": [
+      0.0,
+      0.0,
+      0.02
+    ],
+    "drone_radius": 0.086,
+    "radius_min": 0.13,
+    "radius_max": 0.18,
+    "distance_min": 1.5,
+    "distance_max": 3.0,
+    "max_impact_speed": 2.5,
+    "min_altitude": 0.12,
+    "max_range": 12.0,
+    "max_unseen_seconds": 0.5,
+    "max_tilt": 0.5,
+    "max_yaw": 0.8,
+    "bbox_noise_std": 0.006,
+    "gyro_noise_std": 0.015,
+    "gyro_bias_std": 0.005,
+    "attitude_noise_std": 0.005,
+    "dropout_prob": 0.015,
+    "max_delay_steps": 2,
+    "mass_fraction": 0.05,
+    "thrust_fraction": 0.08,
+    "response_fraction": 0.1,
+    "wind_std": 0.12,
+    "action_delay_steps": 1,
+    "model_params": {
+      "gravity_vec": [
+        0.0,
+        0.0,
+        -9.8100004196167
+      ],
+      "mass": 0.04340000078082085,
+      "J": [
+        [
+          2.499999936844688e-05,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.8000000384054147e-05,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          4.8999998398358e-05
+        ]
+      ],
+      "thrust_min": 0.021362630650401115,
+      "thrust_max": 0.20000000298023224,
+      "L": 0.03535500168800354,
+      "prop_inertia": 3.8930000556547384e-08,
+      "rpm2thrust": [
+        0.0,
+        -3.133427242119069e-07,
+        4.4073547589285056e-10
+      ],
+      "rpm2torque": [
+        0.0,
+        1.658863602038707e-09,
+        2.469347859870852e-12
+      ],
+      "rotor_dyn_coef": [
+        13.996002197265625,
+        0.00011093208013335243,
+        5.933168411254883,
+        0.00031951311393640935
+      ],
+      "mixing_matrix": [
+        [
+          -1.0,
+          -1.0,
+          1.0,
+          1.0
+        ],
+        [
+          -1.0,
+          1.0,
+          1.0,
+          -1.0
+        ],
+        [
+          -1.0,
+          1.0,
+          -1.0,
+          1.0
+        ]
+      ],
+      "drag_matrix": [
+        [
+          -0.021643638610839844,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.021643638610839844,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -0.02477138489484787
+        ]
+      ]
+    },
+    "controller_params": {
+      "attitude": {
+        "L": 0.03535500168800354,
+        "int_err_max": [
+          1.0,
+          1.0,
+          1500.0
+        ],
+        "kR": [
+          70000.0,
+          70000.0,
+          60000.0
+        ],
+        "kd_omega": [
+          200.0,
+          200.0,
+          0.0
+        ],
+        "ki_m": [
+          0.0,
+          0.0,
+          500.0
+        ],
+        "kw": [
+          20000.0,
+          20000.0,
+          12000.0
+        ],
+        "mixing_matrix": [
+          [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        ],
+        "pwm_max": 65535.0,
+        "thrust2torque": 0.005938934162259102,
+        "thrust_max": 0.20000000298023224,
+        "torque_pwm_max": [
+          32000.0,
+          32000.0,
+          32000.0
+        ]
+      },
+      "force_torque": {
+        "L": 0.03535500168800354,
+        "mixing_matrix": [
+          [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        ],
+        "rpm2thrust": [
+          0.0,
+          -3.133427242119069e-07,
+          4.4073547589285056e-10
+        ],
+        "thrust2torque": 0.005938934162259102,
+        "thrust_max": 0.20000000298023224,
+        "thrust_min": 0.021362630650401115
+      }
+    }
+  },
+  "limitations": [
+    "训练和评测都是仿真，不是实机飞行或硬件测量。",
+    "MuJoCo mj_step 独立积分刚体；两后端共享官方控制器、旋翼响应和力/力矩模型及冻结参数，不能视为独立辨识的飞机动力学验证。",
+    "bounding box 来自已校准针孔相机下的理想球体投影，再施加指定传感噪声、丢帧与延迟；未验证真实视觉检测器。",
+    "接触采用所有积分子步的扫掠球体首次相交；超过2.5m/s只作速度诊断，仍算实际接触。"
+  ]
+}

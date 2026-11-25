@@ -1,0 +1,69 @@
+{
+  "schema": "balloon-example-provenance-v1",
+  "origin": "实际完成的纯 BPTT 仿真训练及冻结策略的原生 MuJoCo 评测记录。",
+  "raw_training_directory": "outputs/train-20261125-142931-BnLH54",
+  "raw_evaluation_directory": "outputs/train-20261125-142931-BnLH54/evaluation-20261125-144409-3790872",
+  "files": {
+    "policy.npz": {
+      "raw_source": "outputs/train-20261125-142931-BnLH54/policy.npz",
+      "sha256": "ccb9aeb74f6b2718dd34e4486dc1b7d69a4876a3c778c421e6d7703b00fd633f",
+      "bytes": 35803,
+      "copy": "byte-identical"
+    },
+    "training.jsonl": {
+      "raw_source": "outputs/train-20261125-142931-BnLH54/training.jsonl",
+      "sha256": "89eae5452bd5647073ee4772feefa47c201b65f17c9f7c4c80ef92d987301ece",
+      "bytes": 9298,
+      "copy": "byte-identical"
+    }
+  },
+  "derived_files": {
+    "evaluation-summary.json": {
+      "raw_source": "outputs/train-20261125-142931-BnLH54/evaluation-20261125-144409-3790872/metrics.json",
+      "raw_source_sha256": "1d4428edfd26d96bb82e3cae609db3aaac26ecc95763e0b7e1ccb67fb8a8c839",
+      "raw_source_bytes": 438393,
+      "sha256": "d78e09800cd899a6ee97b7b2c3f787d9c8db83d1cf027102f72d066c9c3a2024",
+      "derivation": "保留三场景聚合统计、随机种子、相机、冻结配置与执行/物理模型角色；删除逐episode记录、轨迹和视频路径。"
+    },
+    "training.png": {
+      "source": "training.jsonl and policy.npz initial_validation_loss/iterations",
+      "generator": "crazyflow.balloon.logs.write_training_plot",
+      "sha256": "98a79cc2156f920ebafe8ad936d18019352564ff1e4814d2906c36bc1f8ac210"
+    },
+    "gpu-capacity.json": {
+      "raw_source": "outputs/gpu-capacity-20261125/capacity.json",
+      "raw_source_sha256": "4aa32411b7692c5efe3a8a0bcef9d93969a83564cd96351c3f353bcea70682e1",
+      "sha256": "f78ace0fef1cb8f28bab71dc1f0aaecb8cd78ae05cd5209e3b2ad09a57083431",
+      "derivation": "Capacity smoke measurements on separate fresh training processes; independent of the example policy training."
+    },
+    "gui.png": {
+      "raw_source": "outputs/example-policy-20261125-151103-VfMvYv/gui-headless-20261125-151103-3838737.png",
+      "command": "./dani play --example --headless",
+      "plant": "mujoco",
+      "sha256": "1de2e8b2039122539cacb12e7ee98dfd9da21b16b3b2d8b63c6c3bbcc3aca4c7",
+      "note": "10-frame native GUI interaction self-test; screenshot after changing seed and returning to nominal."
+    }
+  },
+  "checkpoint_selection": {
+    "completed_iterations": 1500,
+    "policy_iteration": 1150,
+    "policy_validation_loss": 1.3118246793746948,
+    "minimum_logged_validation_iteration": 1150,
+    "minimum_logged_validation_loss": 1.3118246793746948,
+    "initial_validation_loss": 12.435049057006836,
+    "last_iteration_validation_loss": 1.392567753791809,
+    "last_checkpoint_raw_source": "outputs/train-20261125-142931-BnLH54/last.npz",
+    "last_checkpoint_sha256": "ec3f4c76a7bcd7cd8939e96408d49def5e2d6486d6e368c42390dbdbeec2cf80",
+    "last_checkpoint_included": false,
+    "policy_metadata_matches_evaluated_checkpoint": true,
+    "evaluation_checkpoint_sha256_matches_copy": true,
+    "log_complete_through_iteration": 1500,
+    "log_records": 61,
+    "elapsed_seconds_scope": "training.jsonl 的最后 seconds 从初始验证结束后计时，包含首次 update 编译，不含启动及初始验证。"
+  },
+  "not_included": [
+    "last.npz",
+    "逐episode轨迹NPZ",
+    "评测视频"
+  ]
+}
