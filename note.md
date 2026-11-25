@@ -1,5 +1,13 @@
 # Crazyflow Docker 用户手册
 
+2026-11-25 已在当前最新实现上从头重训3.5秒八字BPTT/PPO各三个种子，
+六次完整训练共124,729,344 transitions；选模仅用validation。新BPTT名义RMSE7.46mm，
+位置扰动49.97mm、63/64完成；新PPO对应15.17mm、21.47mm、64/64完成，联合初速扰动下也更稳。
+PPO实测1024个物理仿真world及网络均在CUDA。两者本轮均未启用DR，扰动加在测试阶段；
+BPTT可以接入DR训练。完整定义、全部种子和复现命令见
+[usage第19节](usage.md#19-2026-11-25-最新实现八字-bptt--ppo-重训)及
+[本轮独立报告](usage_assets/figure8_retrain_20261125/README.md)。旧权重与历史报告保留。
+
 2026-11-24 已接入官方 main 的20个新增提交至 [aa54a0e](https://github.com/learnsyslab/crazyflow/commit/aa54a0e)。
 本轮复现和当前接口见 [usage.md 第18节](usage.md#18-2026-11-24-官方-main-增量同步)：
 MuJoCo/MJX 4.0、控制器限幅与清积分、旋桨动画、splat及冻结策略重评。

@@ -1,0 +1,10 @@
+{"actual_training_devices": {"state_shape_after_step": [1024, 1, 3], "state_device_after_step": "cuda:0", "state_platform": "gpu", "observation_device_after_step": "cuda:0", "actor_devices": ["cuda:0"], "one_step_device_probe_discarded": true}}
+Train figure8_retrain_20261125_ppo_T3.5s_seed42: 39,976,960 transitions on gpu, 1024 parallel worlds
+{"evaluated": "figure8_retrain_20261125_ppo_T3.5s_seed42", "scenario": "validation", "rmse_mm": 15.172554611248888, "complete": 64, "success_5cm": 64}
+{"trained": "figure8_retrain_20261125_ppo_T3.5s_seed42", "seconds": 73.39309541002149, "late_learning": {"last_10pct_reward": 0.9245527386665344, "prior_10pct_reward": 0.9197490215301514, "last_10pct_minus_prior": 0.004803717136383057}}
+Train figure8_retrain_20261125_ppo_T3.5s_seed43: 39,976,960 transitions on gpu, 1024 parallel worlds
+{"evaluated": "figure8_retrain_20261125_ppo_T3.5s_seed43", "scenario": "validation", "rmse_mm": 18.89402577763512, "complete": 64, "success_5cm": 64}
+{"trained": "figure8_retrain_20261125_ppo_T3.5s_seed43", "seconds": 72.4737950010167, "late_learning": {"last_10pct_reward": 0.9191279411315918, "prior_10pct_reward": 0.9113497138023376, "last_10pct_minus_prior": 0.00777822732925415}}
+Train figure8_retrain_20261125_ppo_T3.5s_seed44: 39,976,960 transitions on gpu, 1024 parallel worlds
+{"evaluated": "figure8_retrain_20261125_ppo_T3.5s_seed44", "scenario": "validation", "rmse_mm": 16.469962489794543, "complete": 64, "success_5cm": 64}
+{"trained": "figure8_retrain_20261125_ppo_T3.5s_seed44", "seconds": 72.87901479800348, "late_learning": {"last_10pct_reward": 0.9237480759620667, "prior_10pct_reward": 0.9126101732254028, "last_10pct_minus_prior": 0.011137902736663818}}

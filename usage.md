@@ -9,7 +9,7 @@
 历史数值并不代表新模型参数下的结果；2026-10-15已进一步同步官方0.4.0，完整预算训练、
 最佳演示及能力边界见第16节。旧随机目标耦合成绩的修正说明也见该节；2026-10-28
 的上游更新和 contact 接口迁移见第17节。2026-11-24 再同步官方 main 的20个提交，
-MuJoCo 4、控制器修正及本轮复现见第18节。
+MuJoCo 4、控制器修正及本轮复现见第18节。2026-11-25在最新实现上从头重训八字BPTT/PPO，结果见第19节。
 
 > 镜像构建、容器启动和常用命令见 [`note.md`](note.md)。本文专注 Crazyflow API、示例、可视化和 drone racing 的具体用法。
 
@@ -32,6 +32,7 @@ MuJoCo 4、控制器修正及本轮复现见第18节。
 | 查看充分训练后的最佳演示与边界 | 16 | 0.4.0、完整多种子训练、高速八字、直接电机和真赛道 |
 | 使用10月28日同步的新接口 | 17 | contact API 迁移、示例路径及本轮提交 |
 | 使用11月24日官方增量 | 18 | MuJoCo 4、控制器限幅/清积分、旋桨、splat与冻结策略重评 |
+| 比较最新实现重训的八字BPTT/PPO | 19 | 六次完整训练、GPU并行实证、初态扰动与DR的区别 |
 
 文中的数值有三种含义：代码注释里的旧数值是 8 月版本的代表性输出；“实测”表格是标注日期的完整运行结果；
 训练结果则同时给出 observation、action、reward、终止条件和评估口径，避免只给一张曲线却无法解释。
@@ -2895,3 +2896,75 @@ bash usage_assets/reproduce_upstream_20261124.sh all
 [environment.txt](usage_assets/upstream_20261124/environment.txt)。本轮使用恢复的容器和源码bind
 mount，完整Dockerfile镜像未重新构建；重建命令在note中，不把依赖层核验当成完整镜像验收。
 Apple Silicon/Metal后端因本机是Linux未验证。
+
+## 19. 2026-11-25 最新实现八字 BPTT / PPO 重训
+
+本轮在18节同步后的当前源码上，从头训练BPTT和PPO各三个种子，延续16.4节3.5秒高速八字定义。
+Crazyflow官方main仍为`aa54a0e`；官方实验源码更新至当日main `203ad4e`，关键训练/环境源码
+与旧固定版本逐字节一致。旧权重与历史结果保持，新增入口为
+[`retrain_figure8_20261125.py`](usage_assets/retrain_figure8_20261125.py)，完整记录见
+[独立报告](usage_assets/figure8_retrain_20261125/README.md)。
+
+### 19.1 完整预算、设备与评估口径
+
+BPTT每seed为16个CPU环境×64控制步，请求1.6M、实际1,599,488 transitions；
+PPO为1024个GPU环境×32步，请求40M、实际39,976,960 transitions。种子均为42/43/44，
+六次训练总实际124,729,344 transitions。全部重置网络和优化器，不加载旧权重。
+训练曲线、完整配置和最终权重均保留；仅用validation seed9001的完成率/RMSE选模，均选中seed42。
+这不是相同样本量或算力预算比较，网络、preview和奖励也沿用各自官方配方。
+
+PPO并行的是实际Crazyflow物理仿真：一步后状态shape为`(1024,1,3)`，状态、观测、actor
+均位于`cuda:0`，记录于每run的`actual_training_devices`；并非只有神经网络在GPU。
+BPTT沿用官方CPU配方，64步局部反传窗口为1.28秒，20秒是评估时长。
+
+统一CPU测试，每场景64worlds、20秒，只统计首episode有效轨迹。精度成功要求完整飞行
+且该world全程RMSE<5cm；总体RMSE保留失败world终止前的有效轨迹，未以仅存活者替代。
+初始位置扰动各轴±0.1m；联合场景额外加入真正的初速扰动各轴±0.5m/s，
+在参考速度reset后注入并刷新观测。14001/14002用于历史对照；25001/25002在训练前固定为新测试种子。
+
+| 场景 | 新训BPTT：RMSE mm / 完成 / 精度成功 | 新训PPO：RMSE mm / 完成 / 精度成功 |
+|---|---|---|
+| 名义validation 9001 | 7.460 / 64 / 64 | 15.173 / 64 / 64 |
+| 位置14001 | 49.966 / 63 / 61 | 21.473 / 64 / 63 |
+| 位置+速度14002 | 97.968 / 51 / 49 | 56.350 / 62 / 58 |
+| 新位置25001 | 22.693 / 64 / 62 | 20.663 / 64 / 64 |
+| 新位置+速度25002 | 102.375 / 51 / 48 | 72.043 / 61 / 57 |
+
+旧BPTT在同CPU位置14001测试为75.323mm、58/64完成、56/64精度成功，重训确有改善。
+旧PPO同CPU为20.764mm、64/64完整且精度成功；18.5节的20.758mm属于GPU执行，
+微小差别来自执行后端，不将旧数据冒充当前同设备成绩。
+本轮结论是BPTT名义精度更高，PPO在所测初态扰动下总体更稳；没有据此声称普遍算法排名。
+
+![最新重训全部64world比较](usage_assets/figure8_retrain_20261125/all_world_comparison.png)
+
+全部种子的训练曲线和固定world0误差见
+[完整图](usage_assets/figure8_retrain_20261125/learning_and_holdout.png)。world0不是挑选的最好样本，
+但它仍不能代替全体统计；BPTT在world0很准确，其他world的失稳才拉高总体误差。
+
+### 19.2 扰动测试、DR训练和观测噪声
+
+本轮PPO `dr_scale=0`，PPO/BPTT训练均`reset_random=False`；有多轨迹相位起点和动作采样，
+未训练本节测试用的位置/速度扰动、动力学参数DR或观测噪声。不能把PPO的扰动测试优势
+归因于它启用了DR。GPU并行与DR也是不同概念。
+
+BPTT可以加入随机初态、质量/惯量/推力参数及观测噪声训练；对每次已采样的物理参数和噪声，
+仍可对策略参数通过仿真反传，多个随机world的平均损失就是训练目标。官方BPTT入口当前
+未接入PPO的`dr_scale`选项，需要把已有随机化环境接到BPTT训练入口，而非更换算法。
+初速随机化应放在参考速度reset之后；带噪观测应显式供给策略，默认真值观测不会自动变带噪。
+这会改变训练分布，需要重新验证学习率、反传窗口和预算；本轮没有执行DR/带噪重训。
+
+### 19.3 复现与独立核验
+
+```bash
+cd /workspace/crazyflow
+source /opt/crazyflow/activate-research.sh
+JAX_PLATFORMS=cpu python usage_assets/retrain_figure8_20261125.py --algorithm bptt
+python usage_assets/retrain_figure8_20261125.py --algorithm ppo
+JAX_PLATFORMS=cpu python usage_assets/retrain_figure8_20261125.py --evaluate
+```
+
+[协议](usage_assets/figure8_retrain_20261125/protocol.json)在训练前固定预算和种子，记录源码/锁文件指纹。
+[比较JSON](usage_assets/figure8_retrain_20261125/comparison.json)索引全部20个场景的64world原始NPZ；
+[独立审计](usage_assets/figure8_retrain_20261125/source_and_training_audit.json)重新读取训练曲线、
+权重和评估数组，核验预算、finite、设备、选模、扰动及完整统计，并检查旧49份官方权重不变。
+新入口Ruff/格式检查通过，六次实际训练和20场景重算用于本轮验收；未重跑18节无关功能全量回归。

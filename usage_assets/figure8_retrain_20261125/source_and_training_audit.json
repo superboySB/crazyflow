@@ -1,0 +1,5709 @@
+{
+  "audit_date": "2026-11-25",
+  "status": "passed_complete_training_and_comparison_audit",
+  "scope": "Independent file hashing, pickle parameter inspection and NumPy recomputation; no training, GPU work or git commands.",
+  "historical_experiment_commit_recorded": "bfc6414da1f4405e4e41e3a3d0656bb5f38e09e3",
+  "current_experiment_commit_recorded": "203ad4e31b9380fec985f17008bb7a68ad5cf768",
+  "source_files_equal_count": 7,
+  "source_file_checks": [
+    {
+      "path": "figure8/train_bptt.py",
+      "historical_sha256": "926e30453d160f35500472f36f8993a63d7343b5014264eae269661dd2ce00fd",
+      "current_sha256": "926e30453d160f35500472f36f8993a63d7343b5014264eae269661dd2ce00fd",
+      "equal": true,
+      "matches_protocol": true
+    },
+    {
+      "path": "figure8/train_ppo.py",
+      "historical_sha256": "9ef23c4607ee4cdc214edeb0aad23a654b45df38e2bb38f8e14d40db42f0feb2",
+      "current_sha256": "9ef23c4607ee4cdc214edeb0aad23a654b45df38e2bb38f8e14d40db42f0feb2",
+      "equal": true,
+      "matches_protocol": true
+    },
+    {
+      "path": "core/agents/bptt_agent.py",
+      "historical_sha256": "7866f27102a43bef83f41520415e5b96fbc565ac598ed1a73fbfcf1075b55a74",
+      "current_sha256": "7866f27102a43bef83f41520415e5b96fbc565ac598ed1a73fbfcf1075b55a74",
+      "equal": true,
+      "matches_protocol": true
+    },
+    {
+      "path": "core/agents/ppo_agent.py",
+      "historical_sha256": "229f37d3f434569327e80a47d6d4fce0485902040f145fd52cb6b58ffa904fd6",
+      "current_sha256": "229f37d3f434569327e80a47d6d4fce0485902040f145fd52cb6b58ffa904fd6",
+      "equal": true,
+      "matches_protocol": true
+    },
+    {
+      "path": "core/envs/drone_env.py",
+      "historical_sha256": "c5eeeef56a3c60c8a14699ca946dfb53b3f2e0beaca7dd813d86de76cab0a9f3",
+      "current_sha256": "c5eeeef56a3c60c8a14699ca946dfb53b3f2e0beaca7dd813d86de76cab0a9f3",
+      "equal": true,
+      "matches_protocol": true
+    },
+    {
+      "path": "core/envs/figure8_env.py",
+      "historical_sha256": "db3b3ae08c1828db5f8c2a0d88e91e9cacf1a18c74fed18c860373c3fb089344",
+      "current_sha256": "db3b3ae08c1828db5f8c2a0d88e91e9cacf1a18c74fed18c860373c3fb089344",
+      "equal": true,
+      "matches_protocol": true
+    },
+    {
+      "path": "core/envs/wrappers.py",
+      "historical_sha256": "96ab76c06e4e64fa6dcf810ad86c7cce66740a7990c4f2e1535d10c740aa1301",
+      "current_sha256": "96ab76c06e4e64fa6dcf810ad86c7cce66740a7990c4f2e1535d10c740aa1301",
+      "equal": true,
+      "matches_protocol": true
+    }
+  ],
+  "historical_manifest": "trained_models/official_manifest_20261015.json",
+  "historical_manifest_sha256": "7465f2b1031832e425b5c1658988ae3b6b2b3324ef0e5234b1567bbd1c5c36bf",
+  "historical_checkpoint_count": 49,
+  "historical_checkpoints_unchanged": [
+    {
+      "checkpoint": "trained_models/official_bptt_10s_budget1_20261015_seed42.ckpt",
+      "sha256": "cbc477a0feb9f5f256fe4619c42fbfefc70605b021aaa8c6043b9cc47c312053",
+      "bytes": 1990,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_10s_budget1_20261015_seed43.ckpt",
+      "sha256": "612a600c7747af0879b98abb7df3135f658891bff01624fbe0a11c8f39a2969a",
+      "bytes": 1990,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_10s_budget1_20261015_seed44.ckpt",
+      "sha256": "182ea14bafab009294d31fb7d8a58b42f9e9b451c961bca3f522e614f1231007",
+      "bytes": 1990,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_10s_budget2_20261015_seed42.ckpt",
+      "sha256": "9d44bee0e7fc8c9b85cfb48ceb31396ebfd5c3b854c6e670d683d7c430d8fc5d",
+      "bytes": 1990,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_10s_budget2_20261015_seed43.ckpt",
+      "sha256": "7ae021777102407ce13c05f849e47f0b4db8ec8859e8fc52b6037aa905132ccc",
+      "bytes": 1990,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_10s_budget2_20261015_seed44.ckpt",
+      "sha256": "abfa22f7249812a13a582951b6c1089b94080eb04c175352b61ba3ac02f52016",
+      "bytes": 1990,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_5_5s_budget1_20261015_seed42.ckpt",
+      "sha256": "a006ff41ca14bb5c9eef9a707589ed1e7cd638d3287cda0db1619a2d2f5cf191",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_5_5s_budget1_20261015_seed43.ckpt",
+      "sha256": "e7c5e93abd562c6a719afaf599e147bb2388b36fccd9e33d497f17750461063e",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_5_5s_budget1_20261015_seed44.ckpt",
+      "sha256": "468cae95368a9b6a7795bdcc9af3221289a884d6b419417b5d83e86d638b1286",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_5_5s_budget2_20261015_seed42.ckpt",
+      "sha256": "890c992b9971929749a2f675dff08238bfbe48be1177528ad0eca6a0786bd127",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_5_5s_budget2_20261015_seed43.ckpt",
+      "sha256": "5fd68d2b4fddd579cd23000bcf3bc910c643d11362438f1ffb2c89bca793c228",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_bptt_5_5s_budget2_20261015_seed44.ckpt",
+      "sha256": "1fc6966769cab95af995cad8debf00a55316695b5a42812e1357ad1618cc0590",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T2.5s_budget1_seed42.ckpt",
+      "sha256": "7167843de3966bf17c9aa4762ca566c800f185f2bc17834a280f8cb42b2a9413",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T2.5s_budget1_seed43.ckpt",
+      "sha256": "302fa040488b79bf92575fe7fd52436dbe9a93f147407a5a25bc040a1a0dbb1a",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T2.5s_budget1_seed44.ckpt",
+      "sha256": "0d23893e2c7caa496e12b26fd472f6b2d0112d74c7c1daaca4fcdae14e6be737",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed42.ckpt",
+      "sha256": "be558bb844faf6f504f4e032e9c992a044bcbf083bb7e5a3a2021400664f907b",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed43.ckpt",
+      "sha256": "ec189420127bf9ebb0db3d2deb900d2bf2ff9296e467b90b804f2ca133aaeaad",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T3.5s_budget1_seed44.ckpt",
+      "sha256": "959eb7b4316384520140ddfa5232b3bab975d3016d608629e15541cb3212e3aa",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T3s_budget1_seed42.ckpt",
+      "sha256": "1f54c1cec016f4342d8551eed70f3bf23512ac66166fbd08be19ff2994c94fe2",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T3s_budget1_seed43.ckpt",
+      "sha256": "56e6aed43849333b2ee1c0612c2ee1e2ea6e05c42d4b0bf2216423d073aed9f8",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_bptt_T3s_budget1_seed44.ckpt",
+      "sha256": "0206c66e9a625d8bccac70d649de95f499a088f890028ae4ab05100123f97163",
+      "bytes": 3913,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T2.5s_budget1_seed42.ckpt",
+      "sha256": "b998902633f95c1560211b48b1e86e3850ecd46fc93f75cff4aeed69d6772130",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T2.5s_budget1_seed43.ckpt",
+      "sha256": "fa7e35e23b0eb58ed1f099d6d9c3ea2ac957da53437d08d15a894df47b72f41b",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T2.5s_budget1_seed44.ckpt",
+      "sha256": "9ccb4518435f7952d2f923f163d92a632c4b6f6f68c9711e1e4b49563ff10918",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget1_seed42.ckpt",
+      "sha256": "ebe8ac99b586c724f4f7f2536ecf27a8ab715858eb3e1e639b3ce77bb4f29e41",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget1_seed43.ckpt",
+      "sha256": "1e29a372eb1ba1ada831498a4efda07910ee4b6ddbb065fa3e9bdd3cacc8c7e5",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget1_seed44.ckpt",
+      "sha256": "cb83780739beb35b34ea6fbff4abbeec8e908e62b464c40f65038326c7fe729b",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3.5s_budget2_seed43.ckpt",
+      "sha256": "db248e0ec560b5dfad5e4b9111e419e747562d3439659752a7c0388e4ce50175",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3s_budget1_seed42.ckpt",
+      "sha256": "70c8959ae0e8dcb40b4dc428365772409b263a6dd7375baf708966f3112e6ad5",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3s_budget1_seed43.ckpt",
+      "sha256": "58259cb028e6d2772f0b06ab473b9e52e4225bbb9d332868b0b15c7d5efe63ac",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_frontier_ppo_T3s_budget1_seed44.ckpt",
+      "sha256": "7413d4961190386b1994e12ed6d78650f381a7d6a45d3a8ea2c594c7e68a8d58",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_10s_budget1_20261015_seed42.ckpt",
+      "sha256": "324e31ca7aadeb990a92e1495e2c9a7f6e82151d45d4c62c02e385358bc09115",
+      "bytes": 15848,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_10s_budget1_20261015_seed43.ckpt",
+      "sha256": "62cff4ed70f6ac814788af57315f0fd759e2bcde4e71babceafb8ec612f4497f",
+      "bytes": 15848,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_10s_budget1_20261015_seed44.ckpt",
+      "sha256": "459933e9a3caf1eb508a256b9ada3899d509d2c3603701d55a12a5001a3bf1a4",
+      "bytes": 15848,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_10s_budget2_20261015_seed42.ckpt",
+      "sha256": "3b1fc821d1ed7d93287ef26a52676343d514cde50a408225d5b8e79d09e83c0e",
+      "bytes": 15848,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_10s_budget2_20261015_seed43.ckpt",
+      "sha256": "40153d18168fabd3578e6c139dd6d856283f872b6523644fa50672b2a484a500",
+      "bytes": 15848,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_10s_budget2_20261015_seed44.ckpt",
+      "sha256": "3d3aea86a5de2cb89f164638ad18353232a956632ebab688e9d5304663c5c8e6",
+      "bytes": 15848,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_5_5s_budget1_20261015_seed42.ckpt",
+      "sha256": "28d9e20b4a5bbf0cc19c379f4b740c47c31b2227b1c54fd2b3d27bd96ad51e19",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_5_5s_budget1_20261015_seed43.ckpt",
+      "sha256": "2f7ef07471bd7dff475f0731efa10b67c6da8c43c2c5f494c59bb7fbf178f9d2",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_5_5s_budget1_20261015_seed44.ckpt",
+      "sha256": "0fd4917253f1a4d9410f4f622e2f8b24f211ecac92256b547864de4d61d6c9ad",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_5_5s_budget2_20261015_seed42.ckpt",
+      "sha256": "f1769c4bb1f25ba28231f01daef757b7ab55146b583582d78bc7a546449f8fa1",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_5_5s_budget2_20261015_seed43.ckpt",
+      "sha256": "8eec104b79a22f79382c91ac08f2102719227c63d8eb4c8b66abcc2105a781de",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_ppo_5_5s_budget2_20261015_seed44.ckpt",
+      "sha256": "8847c55dd33897955f1fbf02eea2c0ff360e783a8a488054d26aea51da4f0295",
+      "bytes": 22920,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_td3_rotor_reach_budget1_20261015_seed42.ckpt",
+      "sha256": "edf15060bd7db3aeaa2a0bef119a74455bf29ee1016a68c9b61ca195a36dd4d7",
+      "bytes": 27067,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_td3_rotor_reach_budget1_20261015_seed43.ckpt",
+      "sha256": "2e1a67bb01f9aa2dd62f89964f5efe4bae77bf8742a550083f3b298d7eb50fbd",
+      "bytes": 27067,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_td3_rotor_reach_budget1_20261015_seed44.ckpt",
+      "sha256": "8b1d5ae9d63963b11ceaf992736d7007c110cb28571e46d8dca936eb1a741be3",
+      "bytes": 27067,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_td3_rotor_reach_budget2_20261015_seed42.ckpt",
+      "sha256": "f5213f1f763434b16eeaca3cf6ba82119528dcfb9b5d72698bf64bc79c370c71",
+      "bytes": 27067,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_td3_rotor_reach_budget2_20261015_seed43.ckpt",
+      "sha256": "53ae405c79aa26cf4bd188231d8a3902ea77fd9be14c167ad9b902f7428ee4b4",
+      "bytes": 27067,
+      "matches_manifest": true
+    },
+    {
+      "checkpoint": "trained_models/official_td3_rotor_reach_budget2_20261015_seed44.ckpt",
+      "sha256": "be70c2aab1bd56dff21754442fc74c75ad5ab5ab81d9a54ebe3bc9a56a051bcb",
+      "bytes": 27067,
+      "matches_manifest": true
+    }
+  ],
+  "completed_fresh_training_count": 6,
+  "completed_fresh_training_runs": [
+    {
+      "algorithm": "bptt",
+      "seed": 42,
+      "record": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42.json",
+      "record_sha256": "91d08b26405d977bdc19c5c62592ce0b088370283b9a0e613cdd9df490dec3f0",
+      "checkpoint": "trained_models/figure8_retrain_20261125_bptt_T3.5s_seed42.ckpt",
+      "checkpoint_sha256": "19046e7f139cd73d44c6094d47cf306cd22faa1cbb4630319692a54a90335381",
+      "checkpoint_bytes": 3913,
+      "parameter_summary": {
+        "actor": {
+          "leaves": 7,
+          "parameters": 860,
+          "leaf_shapes": [
+            [
+              12
+            ],
+            [
+              53,
+              12
+            ],
+            [
+              12
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              4
+            ],
+            [
+              12,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      },
+      "all_checkpoint_parameters_finite": true,
+      "curve": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42_training.npz",
+      "curve_sha256": "ec785ed87dbbe5e5da6d477ecc0b0ddff6342f7f38e3deca6d7bc1d860533ca2",
+      "curve_shapes": {
+        "done_fraction": [
+          1562
+        ],
+        "mean_step_reward": [
+          1562
+        ],
+        "policy_loss": [
+          1562
+        ]
+      },
+      "all_curve_arrays_finite": true,
+      "requested_transitions": 1600000,
+      "actual_transitions": 1599488,
+      "discarded_incomplete_update_remainder": 512,
+      "complete_updates": 1562,
+      "rollout_transition_quantum": 1024,
+      "training_worlds": 16,
+      "training_device": "cpu:0",
+      "actual_training_device_evidence": {
+        "state_shape_after_step": [
+          16,
+          1,
+          3
+        ],
+        "state_device_after_step": "cpu:0",
+        "state_platform": "cpu",
+        "observation_device_after_step": "cpu:0",
+        "actor_devices": [
+          "cpu:0"
+        ],
+        "one_step_device_probe_discarded": true
+      },
+      "train_seconds_including_compile": 25.54037656102446,
+      "late_learning_recomputed": {
+        "last_10pct_reward": 0.9410290718078613,
+        "prior_10pct_reward": 0.9393606185913086,
+        "last_10pct_minus_prior": 0.0016684532165527344
+      },
+      "validation_raw_sha256": "56fbc32b6876ffb708bf3a526a212727b6f3081a053127f1d3a17772b7c7f336",
+      "validation_rmse_m_recomputed": 0.0074603382132590315,
+      "validation_completed_worlds_recomputed": 64,
+      "validation_crashed_worlds_recomputed": 0,
+      "validation_5cm_success_worlds_recomputed": 64
+    },
+    {
+      "algorithm": "bptt",
+      "seed": 43,
+      "record": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed43.json",
+      "record_sha256": "26bf9556f0e2ddd8d0faf90314bb5f452cb14d4cbe4044226435c18f83357b77",
+      "checkpoint": "trained_models/figure8_retrain_20261125_bptt_T3.5s_seed43.ckpt",
+      "checkpoint_sha256": "1951d7005dfda0cbcfbec0905ca8828f2a2cdcdf991b72a5077ce96dda713ea0",
+      "checkpoint_bytes": 3913,
+      "parameter_summary": {
+        "actor": {
+          "leaves": 7,
+          "parameters": 860,
+          "leaf_shapes": [
+            [
+              12
+            ],
+            [
+              53,
+              12
+            ],
+            [
+              12
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              4
+            ],
+            [
+              12,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      },
+      "all_checkpoint_parameters_finite": true,
+      "curve": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed43_training.npz",
+      "curve_sha256": "954b508f2ca91ec5a5d68ada31e948b4d1c4e350eb70ef9db84ff1d19e10e8b2",
+      "curve_shapes": {
+        "done_fraction": [
+          1562
+        ],
+        "mean_step_reward": [
+          1562
+        ],
+        "policy_loss": [
+          1562
+        ]
+      },
+      "all_curve_arrays_finite": true,
+      "requested_transitions": 1600000,
+      "actual_transitions": 1599488,
+      "discarded_incomplete_update_remainder": 512,
+      "complete_updates": 1562,
+      "rollout_transition_quantum": 1024,
+      "training_worlds": 16,
+      "training_device": "cpu:0",
+      "actual_training_device_evidence": {
+        "state_shape_after_step": [
+          16,
+          1,
+          3
+        ],
+        "state_device_after_step": "cpu:0",
+        "state_platform": "cpu",
+        "observation_device_after_step": "cpu:0",
+        "actor_devices": [
+          "cpu:0"
+        ],
+        "one_step_device_probe_discarded": true
+      },
+      "train_seconds_including_compile": 22.652093704004074,
+      "late_learning_recomputed": {
+        "last_10pct_reward": 0.9422566294670105,
+        "prior_10pct_reward": 0.9406570196151733,
+        "last_10pct_minus_prior": 0.0015996098518371582
+      },
+      "validation_raw_sha256": "de6211afb0bae2f9ec7edaafa6d2885c03581af005ce27928c166e574a4da4d8",
+      "validation_rmse_m_recomputed": 0.007571115102630372,
+      "validation_completed_worlds_recomputed": 64,
+      "validation_crashed_worlds_recomputed": 0,
+      "validation_5cm_success_worlds_recomputed": 64
+    },
+    {
+      "algorithm": "bptt",
+      "seed": 44,
+      "record": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed44.json",
+      "record_sha256": "77a91f9dec9edd0837bcdef34696a763beade465717663e41b63e463b9b6ed34",
+      "checkpoint": "trained_models/figure8_retrain_20261125_bptt_T3.5s_seed44.ckpt",
+      "checkpoint_sha256": "a697cc81a42980d782bf43322269927b94a2995290014dd45969102d807af31e",
+      "checkpoint_bytes": 3913,
+      "parameter_summary": {
+        "actor": {
+          "leaves": 7,
+          "parameters": 860,
+          "leaf_shapes": [
+            [
+              12
+            ],
+            [
+              53,
+              12
+            ],
+            [
+              12
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              4
+            ],
+            [
+              12,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      },
+      "all_checkpoint_parameters_finite": true,
+      "curve": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed44_training.npz",
+      "curve_sha256": "5db1589ccf34bacf43f50eb546b44ccb9a618237850333e8a78b963931edab96",
+      "curve_shapes": {
+        "done_fraction": [
+          1562
+        ],
+        "mean_step_reward": [
+          1562
+        ],
+        "policy_loss": [
+          1562
+        ]
+      },
+      "all_curve_arrays_finite": true,
+      "requested_transitions": 1600000,
+      "actual_transitions": 1599488,
+      "discarded_incomplete_update_remainder": 512,
+      "complete_updates": 1562,
+      "rollout_transition_quantum": 1024,
+      "training_worlds": 16,
+      "training_device": "cpu:0",
+      "actual_training_device_evidence": {
+        "state_shape_after_step": [
+          16,
+          1,
+          3
+        ],
+        "state_device_after_step": "cpu:0",
+        "state_platform": "cpu",
+        "observation_device_after_step": "cpu:0",
+        "actor_devices": [
+          "cpu:0"
+        ],
+        "one_step_device_probe_discarded": true
+      },
+      "train_seconds_including_compile": 25.01668869299465,
+      "late_learning_recomputed": {
+        "last_10pct_reward": 0.9402257204055786,
+        "prior_10pct_reward": 0.9386215209960938,
+        "last_10pct_minus_prior": 0.0016041994094848633
+      },
+      "validation_raw_sha256": "688caa58bb4f0faca52df3d520901062150693273e05b6b5010fa6bfb0d5718f",
+      "validation_rmse_m_recomputed": 0.00864550182828114,
+      "validation_completed_worlds_recomputed": 64,
+      "validation_crashed_worlds_recomputed": 0,
+      "validation_5cm_success_worlds_recomputed": 64
+    },
+    {
+      "algorithm": "ppo",
+      "seed": 42,
+      "record": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42.json",
+      "record_sha256": "1d7a7c82aa7ed9c792cb0d36d1b59bafde0f5ec449bd6cd00c536bddf53e91aa",
+      "checkpoint": "trained_models/figure8_retrain_20261125_ppo_T3.5s_seed42.ckpt",
+      "checkpoint_sha256": "94a748175c27d74c66511f02da80c44f5cd0ccd069bd576523e4b5d53ea46deb",
+      "checkpoint_bytes": 22920,
+      "parameter_summary": {
+        "actor": {
+          "leaves": 7,
+          "parameters": 2824,
+          "leaf_shapes": [
+            [
+              32
+            ],
+            [
+              50,
+              32
+            ],
+            [
+              32
+            ],
+            [
+              32,
+              32
+            ],
+            [
+              4
+            ],
+            [
+              32,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        },
+        "critic": {
+          "leaves": 6,
+          "parameters": 2721,
+          "leaf_shapes": [
+            [
+              32
+            ],
+            [
+              50,
+              32
+            ],
+            [
+              32
+            ],
+            [
+              32,
+              32
+            ],
+            [
+              1
+            ],
+            [
+              32,
+              1
+            ]
+          ]
+        }
+      },
+      "all_checkpoint_parameters_finite": true,
+      "curve": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42_training.npz",
+      "curve_sha256": "92aebfd4f0af99a6ee865fa384c3e110d75be76201074f25f03af40f9e544ed0",
+      "curve_shapes": {
+        "done_fraction": [
+          1220
+        ],
+        "mean_step_reward": [
+          1220
+        ],
+        "policy_loss": [
+          1220
+        ],
+        "value_loss": [
+          1220
+        ]
+      },
+      "all_curve_arrays_finite": true,
+      "requested_transitions": 40000000,
+      "actual_transitions": 39976960,
+      "discarded_incomplete_update_remainder": 23040,
+      "complete_updates": 1220,
+      "rollout_transition_quantum": 32768,
+      "training_worlds": 1024,
+      "training_device": "cuda:0",
+      "actual_training_device_evidence": {
+        "state_shape_after_step": [
+          1024,
+          1,
+          3
+        ],
+        "state_device_after_step": "cuda:0",
+        "state_platform": "gpu",
+        "observation_device_after_step": "cuda:0",
+        "actor_devices": [
+          "cuda:0"
+        ],
+        "one_step_device_probe_discarded": true
+      },
+      "train_seconds_including_compile": 73.39309541002149,
+      "late_learning_recomputed": {
+        "last_10pct_reward": 0.9245527386665344,
+        "prior_10pct_reward": 0.9197490215301514,
+        "last_10pct_minus_prior": 0.004803717136383057
+      },
+      "validation_raw_sha256": "cd1cb9e247cedcaeee7a2d7594a56471b54fd2806a156f3ea2e833c96b46461f",
+      "validation_rmse_m_recomputed": 0.015172554611248888,
+      "validation_completed_worlds_recomputed": 64,
+      "validation_crashed_worlds_recomputed": 0,
+      "validation_5cm_success_worlds_recomputed": 64
+    },
+    {
+      "algorithm": "ppo",
+      "seed": 43,
+      "record": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed43.json",
+      "record_sha256": "6b6dbe1f350340d660f98e64086e7445c9a5b5e1b1aeb444dcf599fb05e36fab",
+      "checkpoint": "trained_models/figure8_retrain_20261125_ppo_T3.5s_seed43.ckpt",
+      "checkpoint_sha256": "a530b3a98f1b3b2ce0a57b7dba0d0134b00a36ae420a2ff266b1c9d54f989502",
+      "checkpoint_bytes": 22920,
+      "parameter_summary": {
+        "actor": {
+          "leaves": 7,
+          "parameters": 2824,
+          "leaf_shapes": [
+            [
+              32
+            ],
+            [
+              50,
+              32
+            ],
+            [
+              32
+            ],
+            [
+              32,
+              32
+            ],
+            [
+              4
+            ],
+            [
+              32,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        },
+        "critic": {
+          "leaves": 6,
+          "parameters": 2721,
+          "leaf_shapes": [
+            [
+              32
+            ],
+            [
+              50,
+              32
+            ],
+            [
+              32
+            ],
+            [
+              32,
+              32
+            ],
+            [
+              1
+            ],
+            [
+              32,
+              1
+            ]
+          ]
+        }
+      },
+      "all_checkpoint_parameters_finite": true,
+      "curve": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed43_training.npz",
+      "curve_sha256": "be83cdc34c794b5116d90ddc09b781d668e6b02429a07d2c19052d997e3d5475",
+      "curve_shapes": {
+        "done_fraction": [
+          1220
+        ],
+        "mean_step_reward": [
+          1220
+        ],
+        "policy_loss": [
+          1220
+        ],
+        "value_loss": [
+          1220
+        ]
+      },
+      "all_curve_arrays_finite": true,
+      "requested_transitions": 40000000,
+      "actual_transitions": 39976960,
+      "discarded_incomplete_update_remainder": 23040,
+      "complete_updates": 1220,
+      "rollout_transition_quantum": 32768,
+      "training_worlds": 1024,
+      "training_device": "cuda:0",
+      "actual_training_device_evidence": {
+        "state_shape_after_step": [
+          1024,
+          1,
+          3
+        ],
+        "state_device_after_step": "cuda:0",
+        "state_platform": "gpu",
+        "observation_device_after_step": "cuda:0",
+        "actor_devices": [
+          "cuda:0"
+        ],
+        "one_step_device_probe_discarded": true
+      },
+      "train_seconds_including_compile": 72.4737950010167,
+      "late_learning_recomputed": {
+        "last_10pct_reward": 0.9191279411315918,
+        "prior_10pct_reward": 0.9113497138023376,
+        "last_10pct_minus_prior": 0.00777822732925415
+      },
+      "validation_raw_sha256": "4547bc583dcded0477190b8b8188c57dacb861bb44b6f9ed09cfa1423a01da83",
+      "validation_rmse_m_recomputed": 0.01889402577763512,
+      "validation_completed_worlds_recomputed": 64,
+      "validation_crashed_worlds_recomputed": 0,
+      "validation_5cm_success_worlds_recomputed": 64
+    },
+    {
+      "algorithm": "ppo",
+      "seed": 44,
+      "record": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed44.json",
+      "record_sha256": "ef9a0b9a53b335d99f6e1e85dbbb66ac1652121737ce4dc888de7ea76d770e82",
+      "checkpoint": "trained_models/figure8_retrain_20261125_ppo_T3.5s_seed44.ckpt",
+      "checkpoint_sha256": "80e5c3a9533364381cd0a2e4200891ca9ba6860ff08ae0f77c3a1de51c7722f2",
+      "checkpoint_bytes": 22920,
+      "parameter_summary": {
+        "actor": {
+          "leaves": 7,
+          "parameters": 2824,
+          "leaf_shapes": [
+            [
+              32
+            ],
+            [
+              50,
+              32
+            ],
+            [
+              32
+            ],
+            [
+              32,
+              32
+            ],
+            [
+              4
+            ],
+            [
+              32,
+              4
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        },
+        "critic": {
+          "leaves": 6,
+          "parameters": 2721,
+          "leaf_shapes": [
+            [
+              32
+            ],
+            [
+              50,
+              32
+            ],
+            [
+              32
+            ],
+            [
+              32,
+              32
+            ],
+            [
+              1
+            ],
+            [
+              32,
+              1
+            ]
+          ]
+        }
+      },
+      "all_checkpoint_parameters_finite": true,
+      "curve": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed44_training.npz",
+      "curve_sha256": "bce4c2346c1494d6559552005aca88785c338b3de1d637a3130d892c5e79840e",
+      "curve_shapes": {
+        "done_fraction": [
+          1220
+        ],
+        "mean_step_reward": [
+          1220
+        ],
+        "policy_loss": [
+          1220
+        ],
+        "value_loss": [
+          1220
+        ]
+      },
+      "all_curve_arrays_finite": true,
+      "requested_transitions": 40000000,
+      "actual_transitions": 39976960,
+      "discarded_incomplete_update_remainder": 23040,
+      "complete_updates": 1220,
+      "rollout_transition_quantum": 32768,
+      "training_worlds": 1024,
+      "training_device": "cuda:0",
+      "actual_training_device_evidence": {
+        "state_shape_after_step": [
+          1024,
+          1,
+          3
+        ],
+        "state_device_after_step": "cuda:0",
+        "state_platform": "gpu",
+        "observation_device_after_step": "cuda:0",
+        "actor_devices": [
+          "cuda:0"
+        ],
+        "one_step_device_probe_discarded": true
+      },
+      "train_seconds_including_compile": 72.87901479800348,
+      "late_learning_recomputed": {
+        "last_10pct_reward": 0.9237480759620667,
+        "prior_10pct_reward": 0.9126101732254028,
+        "last_10pct_minus_prior": 0.011137902736663818
+      },
+      "validation_raw_sha256": "315f8f1ccfa5c22abeec114f0a3d1acd653530c7532a7396c931c962246a5cca",
+      "validation_rmse_m_recomputed": 0.016469962489794543,
+      "validation_completed_worlds_recomputed": 64,
+      "validation_crashed_worlds_recomputed": 0,
+      "validation_5cm_success_worlds_recomputed": 64
+    }
+  ],
+  "fresh_actual_training_transitions_total": 124729344,
+  "validation_selection": {
+    "bptt": {
+      "selected_seed": 42,
+      "checkpoint": "trained_models/figure8_retrain_20261125_bptt_T3.5s_seed42.ckpt",
+      "checkpoint_sha256": "19046e7f139cd73d44c6094d47cf306cd22faa1cbb4630319692a54a90335381",
+      "candidate_validation": [
+        {
+          "seed": 42,
+          "completion": 1.0,
+          "tracking_rmse_m": 0.0074603382132590315
+        },
+        {
+          "seed": 43,
+          "completion": 1.0,
+          "tracking_rmse_m": 0.007571115102630372
+        },
+        {
+          "seed": 44,
+          "completion": 1.0,
+          "tracking_rmse_m": 0.00864550182828114
+        }
+      ]
+    },
+    "ppo": {
+      "selected_seed": 42,
+      "checkpoint": "trained_models/figure8_retrain_20261125_ppo_T3.5s_seed42.ckpt",
+      "checkpoint_sha256": "94a748175c27d74c66511f02da80c44f5cd0ccd069bd576523e4b5d53ea46deb",
+      "candidate_validation": [
+        {
+          "seed": 42,
+          "completion": 1.0,
+          "tracking_rmse_m": 0.015172554611248888
+        },
+        {
+          "seed": 43,
+          "completion": 1.0,
+          "tracking_rmse_m": 0.01889402577763512
+        },
+        {
+          "seed": 44,
+          "completion": 1.0,
+          "tracking_rmse_m": 0.016469962489794543
+        }
+      ]
+    }
+  },
+  "selection_evidence": {
+    "selected_before_test_sha256": "760cda46f0d256de2677c701001057ad8dbd1738e6c318d71417f6f04fa81c6f",
+    "earlier_selected_bptt_before_test_sha256": "c24c03948b2605f74d15e1fcedc5d4045b3c1b202fd868f2547ec3bae0f57aa3",
+    "earlier_BPTT_selection_preserved": true,
+    "tests_used_for_selection": false
+  },
+  "comparison_json_sha256": "6d04cf7fafab42ca40d8869e6d8cdc7a999cd52ac84f175b4c0d052930dd6f21",
+  "comparison_scenario_count": 20,
+  "comparison_world_episodes": 1280,
+  "comparison_scenarios": [
+    {
+      "policy": "retrained_bptt",
+      "scenario": "validation",
+      "seed": 9001,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42_validation.npz",
+      "raw_sha256": "56fbc32b6876ffb708bf3a526a212727b6f3081a053127f1d3a17772b7c7f336",
+      "record_sha256": "ce56b741643309bb9bd6784b8bb9db3c44e2cc3842d4c154b7e4d0f8a954088f",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.0074603382132590315,
+      "survivor_rmse_m_recomputed": 0.0074603382132590315,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 64,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        0.0,
+        0.0
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "nominal"
+    },
+    {
+      "policy": "retrained_bptt",
+      "scenario": "position_holdout",
+      "seed": 14001,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42_position_holdout.npz",
+      "raw_sha256": "6e51139b556029897ecf115456b17a083d165adcb10f85bbd97b47a2fc3e27f9",
+      "record_sha256": "d27238e0f63eed0771fb9d37f61068a2c8d969c4b2118b8fbfee1cc87e98125f",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.04996608625765287,
+      "survivor_rmse_m_recomputed": 0.02231845725320796,
+      "completed_worlds": 63,
+      "crashed_worlds": 1,
+      "rmse_5cm_success_worlds": 61,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09953629970550537,
+        0.09864121675491333
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "retrained_bptt",
+      "scenario": "velocity_holdout",
+      "seed": 14002,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42_velocity_holdout.npz",
+      "raw_sha256": "0b14a87c5ab7a27a5b6eb6b348f68c313513a3fc7345c8db5d1a627c76da6404",
+      "record_sha256": "8424358233681ba8d4e056c0f286cdc224dc2a3a6241adaf4bf60f3deccae89e",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.0979684740048118,
+      "survivor_rmse_m_recomputed": 0.02567283228369603,
+      "completed_worlds": 51,
+      "crashed_worlds": 13,
+      "rmse_5cm_success_worlds": 49,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09874916076660156,
+        0.09900128841400146
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.49754464626312256,
+        0.4989053010940552
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "retrained_bptt",
+      "scenario": "position_unseen",
+      "seed": 25001,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42_position_unseen.npz",
+      "raw_sha256": "8f50222937661ba639b18e6a26db7530689121787f1db179dcdcd3e7827a9564",
+      "record_sha256": "643616b461897ec95dff9712a4e176edc2b6e827bf733a2d1a1abca56e295f31",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.022692753045229205,
+      "survivor_rmse_m_recomputed": 0.022692753045229205,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 62,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.0998593345284462,
+        0.09997215121984482
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "retrained_bptt",
+      "scenario": "velocity_unseen",
+      "seed": 25002,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_bptt_T3.5s_seed42_velocity_unseen.npz",
+      "raw_sha256": "183a9abd0baeca7b6e97743d59d70f98a303cc4ebe8e4637eba5720c68b9ac89",
+      "record_sha256": "ae65ba9beba0eb4df1a6781b22ec4adb3aa00687723256324db84952b4672ff5",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.10237469971325044,
+      "survivor_rmse_m_recomputed": 0.0272305688126086,
+      "completed_worlds": 51,
+      "crashed_worlds": 13,
+      "rmse_5cm_success_worlds": 48,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09837193787097931,
+        0.0997963547706604
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.4987844228744507,
+        0.49416089057922363
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "retrained_ppo",
+      "scenario": "validation",
+      "seed": 9001,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42_validation.npz",
+      "raw_sha256": "cd1cb9e247cedcaeee7a2d7594a56471b54fd2806a156f3ea2e833c96b46461f",
+      "record_sha256": "f726ab76e3daa2ebfb6afc8cb9d605d4b2645c89a8d859f267d31c012497a057",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.015172554611248888,
+      "survivor_rmse_m_recomputed": 0.015172554611248888,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 64,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        0.0,
+        0.0
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "nominal"
+    },
+    {
+      "policy": "retrained_ppo",
+      "scenario": "position_holdout",
+      "seed": 14001,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42_position_holdout.npz",
+      "raw_sha256": "f4fc7f81e046f9f7f65630dac1c4e0cab2b8273b101ccb2cebc07453281b1d66",
+      "record_sha256": "e978643c10c87839bb7e289a5b12ca761c08fa061686d29d0fa19d76ad730ac2",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.021473438764457217,
+      "survivor_rmse_m_recomputed": 0.021473438764457217,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 63,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09953629970550537,
+        0.09864121675491333
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "retrained_ppo",
+      "scenario": "velocity_holdout",
+      "seed": 14002,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42_velocity_holdout.npz",
+      "raw_sha256": "bf1ee3adc448cb99b0ff5bcb716a24f450c1a16db3c325117da00f9f588e06ee",
+      "record_sha256": "01cfad0d2ecfb0b78ee93967ec870e0d0e738e68d933362cb7c08f53a20a31b3",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.05635019546939244,
+      "survivor_rmse_m_recomputed": 0.03127271166942466,
+      "completed_worlds": 62,
+      "crashed_worlds": 2,
+      "rmse_5cm_success_worlds": 58,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09874916076660156,
+        0.09900128841400146
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.49754464626312256,
+        0.4989053010940552
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "retrained_ppo",
+      "scenario": "position_unseen",
+      "seed": 25001,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42_position_unseen.npz",
+      "raw_sha256": "2aeb4873eb946317de94267a3ffaf19959e6ab054adc0592351eb56014827233",
+      "record_sha256": "019842f81a1ef251848140c952d6b48222c7b085972fa48d3b5a3b4de9d2c0b8",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.020663355563843234,
+      "survivor_rmse_m_recomputed": 0.020663355563843234,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 64,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.0998593345284462,
+        0.09997215121984482
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "retrained_ppo",
+      "scenario": "velocity_unseen",
+      "seed": 25002,
+      "raw": "usage_assets/figure8_retrain_20261125/figure8_retrain_20261125_ppo_T3.5s_seed42_velocity_unseen.npz",
+      "raw_sha256": "f40f42be07daf2104c65c528fbb0ac3c039acf57b3381068a92f3ebb35543cd4",
+      "record_sha256": "e300f57a946de1dde2d7d291e97f7ba6a5abb7a48476a2ac3c379f3adfc9ee20",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.0720433520558799,
+      "survivor_rmse_m_recomputed": 0.02947219757190881,
+      "completed_worlds": 61,
+      "crashed_worlds": 3,
+      "rmse_5cm_success_worlds": 57,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09837193787097931,
+        0.0997963547706604
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.4987844228744507,
+        0.49416089057922363
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "frozen_bptt",
+      "scenario": "validation",
+      "seed": 9001,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_bptt_T3.5s_budget1_seed43_validation.npz",
+      "raw_sha256": "f7add581c553c286e42ad877aaa1334a0428da7521e52f55fe991f1b96fabe4d",
+      "record_sha256": "fdf53b6a2c9a328557a5407124b6c9437ecb6d72c1380ec86f91adbfc824b0d1",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.00768366612202177,
+      "survivor_rmse_m_recomputed": 0.00768366612202177,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 64,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        0.0,
+        0.0
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "nominal"
+    },
+    {
+      "policy": "frozen_bptt",
+      "scenario": "position_holdout",
+      "seed": 14001,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_bptt_T3.5s_budget1_seed43_position_holdout.npz",
+      "raw_sha256": "18536eee934768ab690ccdca2ae3e8846c6cfd02983bae8f4923eef08b8a60ca",
+      "record_sha256": "9c02cd53ced8d656dd8d745478399a744f0c2fb7bd83a2dc9309a1bcffeecd65",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.07532274517776573,
+      "survivor_rmse_m_recomputed": 0.02177658598834833,
+      "completed_worlds": 58,
+      "crashed_worlds": 6,
+      "rmse_5cm_success_worlds": 56,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09953629970550537,
+        0.09864121675491333
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "frozen_bptt",
+      "scenario": "velocity_holdout",
+      "seed": 14002,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_bptt_T3.5s_budget1_seed43_velocity_holdout.npz",
+      "raw_sha256": "49911ae299a0222c4ecedba0c4229b4db08409173c72be331f0b354f66827f41",
+      "record_sha256": "28990693d74a5df20b8ed872287d47da63d7ef2dbf43d7de42eef5859ed7cd2e",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.11153078254944786,
+      "survivor_rmse_m_recomputed": 0.02788572545753254,
+      "completed_worlds": 47,
+      "crashed_worlds": 17,
+      "rmse_5cm_success_worlds": 43,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09874916076660156,
+        0.09900128841400146
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.49754464626312256,
+        0.4989053010940552
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "frozen_bptt",
+      "scenario": "position_unseen",
+      "seed": 25001,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_bptt_T3.5s_budget1_seed43_position_unseen.npz",
+      "raw_sha256": "38e9e976b5b4c3f18e83d556c18f1875024997322c0eb0e0aa9c2a01e04630d4",
+      "record_sha256": "e8c6137bad26132b488481941879386a4a457883947d99970b79a55dc7cd2a9d",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.03606596551197358,
+      "survivor_rmse_m_recomputed": 0.02373408829688046,
+      "completed_worlds": 61,
+      "crashed_worlds": 3,
+      "rmse_5cm_success_worlds": 57,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.0998593345284462,
+        0.09997215121984482
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "frozen_bptt",
+      "scenario": "velocity_unseen",
+      "seed": 25002,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_bptt_T3.5s_budget1_seed43_velocity_unseen.npz",
+      "raw_sha256": "74b8a8e255ac6faf81cfa6857d4a8a6582f5cf8e2d878df0767e54c1b9b1e789",
+      "record_sha256": "fea3d68c96c2afb14f751d2353d14944914bb8e950bdc0b891e99f8faad8b802",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.09717767991100368,
+      "survivor_rmse_m_recomputed": 0.03106846196296498,
+      "completed_worlds": 49,
+      "crashed_worlds": 15,
+      "rmse_5cm_success_worlds": 45,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09837193787097931,
+        0.0997963547706604
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.4987844228744507,
+        0.49416089057922363
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "frozen_ppo",
+      "scenario": "validation",
+      "seed": 9001,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_ppo_T3.5s_budget2_seed43_validation.npz",
+      "raw_sha256": "96bc9d5851b569247d156aa7468db24269421381340235c5a9f3835d1cee4ed0",
+      "record_sha256": "321151c2368311c9fdd417e1fb59c1008849d5708e0958539ecf0a97e5629841",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.013238760254197799,
+      "survivor_rmse_m_recomputed": 0.013238760254197799,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 64,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        0.0,
+        0.0
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "nominal"
+    },
+    {
+      "policy": "frozen_ppo",
+      "scenario": "position_holdout",
+      "seed": 14001,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_ppo_T3.5s_budget2_seed43_position_holdout.npz",
+      "raw_sha256": "4a9e060d60f649495f5d558b728a217cbc7d88ed7873d05e2a918e33710a787f",
+      "record_sha256": "a21d5e444513963275ee938301361685e783088b4c51f12f6c8ae2ff97235048",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.020763890774265006,
+      "survivor_rmse_m_recomputed": 0.020763890774265006,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 64,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09953629970550537,
+        0.09864121675491333
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "frozen_ppo",
+      "scenario": "velocity_holdout",
+      "seed": 14002,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_ppo_T3.5s_budget2_seed43_velocity_holdout.npz",
+      "raw_sha256": "fa18429cb9caa8e149a42a061304badd6763362635bcc99aaa85c52a7fa3cb66",
+      "record_sha256": "bd2a06c0cbeb1de63af334d0a6acdb27c522ccbb91ee4a7f4deb61343623d7fc",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.07740749454222974,
+      "survivor_rmse_m_recomputed": 0.02820274968528033,
+      "completed_worlds": 59,
+      "crashed_worlds": 5,
+      "rmse_5cm_success_worlds": 54,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09874916076660156,
+        0.09900128841400146
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.49754464626312256,
+        0.4989053010940552
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    },
+    {
+      "policy": "frozen_ppo",
+      "scenario": "position_unseen",
+      "seed": 25001,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_ppo_T3.5s_budget2_seed43_position_unseen.npz",
+      "raw_sha256": "591ceae254dffd61f5f945a251956fb9e7a2f61f0035d34ed81ffc07653c0685",
+      "record_sha256": "f709a2ade9e249d30d69352c6cb8fe5d7ee77dcad0b6abb64a8fe961923eb383",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.022519430064204652,
+      "survivor_rmse_m_recomputed": 0.022519430064204652,
+      "completed_worlds": 64,
+      "crashed_worlds": 0,
+      "rmse_5cm_success_worlds": 63,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.0998593345284462,
+        0.09997215121984482
+      ],
+      "initial_velocity_delta_range_mps": [
+        0.0,
+        0.0
+      ],
+      "nonzero_velocity_worlds": 0,
+      "perturbation_scope": "position +/-0.1m; velocity equals reference"
+    },
+    {
+      "policy": "frozen_ppo",
+      "scenario": "velocity_unseen",
+      "seed": 25002,
+      "raw": "usage_assets/figure8_retrain_20261125/official_frontier_ppo_T3.5s_budget2_seed43_velocity_unseen.npz",
+      "raw_sha256": "ff7be24340773e4c4259b8b7d8aed98d6233fb1a03b6144b9d62c4da87e8c739",
+      "record_sha256": "055928ea80cb29ad9f1bed5e160c736fefcf4ac48a53c4a2f7e7df7f373041da",
+      "worlds": 64,
+      "requested_policy_steps": 1000,
+      "all_raw_arrays_finite": true,
+      "rmse_m_recomputed": 0.07773405894374558,
+      "survivor_rmse_m_recomputed": 0.02935085174216143,
+      "completed_worlds": 60,
+      "crashed_worlds": 4,
+      "rmse_5cm_success_worlds": 55,
+      "all_reported_metrics_match": true,
+      "initial_position_delta_range_m": [
+        -0.09837193787097931,
+        0.0997963547706604
+      ],
+      "initial_velocity_delta_range_mps": [
+        -0.4987844228744507,
+        0.49416089057922363
+      ],
+      "nonzero_velocity_worlds": 64,
+      "perturbation_scope": "position +/-0.1m plus velocity +/-0.5m/s"
+    }
+  ],
+  "initial_condition_comparisons": [
+    {
+      "scenario": "validation",
+      "policy": "retrained_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "validation",
+      "policy": "retrained_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "validation",
+      "policy": "frozen_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "validation",
+      "policy": "frozen_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "position_holdout",
+      "policy": "retrained_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 63216
+    },
+    {
+      "scenario": "position_holdout",
+      "policy": "retrained_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 63216
+    },
+    {
+      "scenario": "position_holdout",
+      "policy": "frozen_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 59005
+    },
+    {
+      "scenario": "position_holdout",
+      "policy": "frozen_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 63216
+    },
+    {
+      "scenario": "velocity_holdout",
+      "policy": "retrained_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 53222
+    },
+    {
+      "scenario": "velocity_holdout",
+      "policy": "retrained_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 53139
+    },
+    {
+      "scenario": "velocity_holdout",
+      "policy": "frozen_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 47751
+    },
+    {
+      "scenario": "velocity_holdout",
+      "policy": "frozen_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 52356
+    },
+    {
+      "scenario": "position_unseen",
+      "policy": "retrained_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "position_unseen",
+      "policy": "retrained_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "position_unseen",
+      "policy": "frozen_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 61339
+    },
+    {
+      "scenario": "position_unseen",
+      "policy": "frozen_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 63936
+    },
+    {
+      "scenario": "velocity_unseen",
+      "policy": "retrained_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 53003
+    },
+    {
+      "scenario": "velocity_unseen",
+      "policy": "retrained_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 53003
+    },
+    {
+      "scenario": "velocity_unseen",
+      "policy": "frozen_bptt",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.0,
+      "common_active_samples": 46692
+    },
+    {
+      "scenario": "velocity_unseen",
+      "policy": "frozen_ppo",
+      "baseline": "retrained_bptt",
+      "initial_field_max_abs_differences": {
+        "initial_pos": 0.0,
+        "initial_vel": 0.0,
+        "initial_quat": 0.0,
+        "initial_reference": 0.0,
+        "initial_reference_vel": 0.0
+      },
+      "initial_states_exactly_equal": true,
+      "common_active_reference_max_abs_difference_m": 0.000274658203125,
+      "common_active_samples": 52919
+    }
+  ],
+  "learning_plot": {
+    "path": "usage_assets/figure8_retrain_20261125/learning_and_holdout.png",
+    "sha256": "034f2aef394f4b6f2293bdb9b2c727227a1014240a32460c69c49af26a2b17d1",
+    "decoded_size": [
+      1800,
+      1350
+    ]
+  },
+  "checks_passed": 951,
+  "checks": [
+    {
+      "check": "strict finite JSON: protocol.json",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: figure8/train_bptt.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: figure8/train_bptt.py",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: figure8/train_ppo.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: figure8/train_ppo.py",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: core/agents/bptt_agent.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: core/agents/bptt_agent.py",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: core/agents/ppo_agent.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: core/agents/ppo_agent.py",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: core/envs/drone_env.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: core/envs/drone_env.py",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: core/envs/figure8_env.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: core/envs/figure8_env.py",
+      "passed": true
+    },
+    {
+      "check": "old/new source equality: core/envs/wrappers.py",
+      "passed": true
+    },
+    {
+      "check": "protocol source hash: core/envs/wrappers.py",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_manifest_20261015.json",
+      "passed": true
+    },
+    {
+      "check": "49 historical checkpoints",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_10s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_10s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_10s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_10s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_10s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_10s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_10s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_10s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_10s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_10s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_10s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_10s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_5_5s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_5_5s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_5_5s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_5_5s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_5_5s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_5_5s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_5_5s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_5_5s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_5_5s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_5_5s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_bptt_5_5s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_bptt_5_5s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T2.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T2.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T2.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T2.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T2.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T2.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T3.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T3.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T3.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T3.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T3.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T3.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T3s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T3s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T3s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T3s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_bptt_T3s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_bptt_T3s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T2.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T2.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T2.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T2.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T2.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T2.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3.5s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3.5s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3.5s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3.5s_budget2_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3.5s_budget2_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3s_budget1_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3s_budget1_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_frontier_ppo_T3s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_frontier_ppo_T3s_budget1_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_10s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_10s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_10s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_10s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_10s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_10s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_10s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_10s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_10s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_10s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_10s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_10s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_5_5s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_5_5s_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_5_5s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_5_5s_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_5_5s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_5_5s_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_5_5s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_5_5s_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_5_5s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_5_5s_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_ppo_5_5s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_ppo_5_5s_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_td3_rotor_reach_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_td3_rotor_reach_budget1_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_td3_rotor_reach_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_td3_rotor_reach_budget1_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_td3_rotor_reach_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_td3_rotor_reach_budget1_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_td3_rotor_reach_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_td3_rotor_reach_budget2_20261015_seed42.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_td3_rotor_reach_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_td3_rotor_reach_budget2_20261015_seed43.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint hash: official_td3_rotor_reach_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "historical checkpoint size: official_td3_rotor_reach_budget2_20261015_seed44.ckpt",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42.json",
+      "passed": true
+    },
+    {
+      "check": "algorithm and seed: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "fresh initialization declaration: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "rollout shape: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "period and device configuration: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "complete update dimensions: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "requested budget: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "executed complete update budget: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "actual recorded worlds/platform: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "actual state/observation/actor placement: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "checkpoint hash: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "training curve hash: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "checkpoint payload fields: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite actor parameter tree: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "checkpoint observation timing: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_training.npz",
+      "passed": true
+    },
+    {
+      "check": "reduced curve fields: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "curve length per update: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "valid done fractions: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "gamma-one pathwise loss/reward relation: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "recomputed learning summaries: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42_validation.json",
+      "passed": true
+    },
+    {
+      "check": "validation record consistency: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "validation checkpoint: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "validation raw hash: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "validation population: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "validation RMSE: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation population metadata: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation crash rate: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation completion: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation 5cm success: figure8_retrain_20261125_bptt_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed43.json",
+      "passed": true
+    },
+    {
+      "check": "algorithm and seed: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "fresh initialization declaration: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "rollout shape: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "period and device configuration: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "complete update dimensions: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "requested budget: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "executed complete update budget: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "actual recorded worlds/platform: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "actual state/observation/actor placement: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "checkpoint hash: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "training curve hash: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "checkpoint payload fields: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite actor parameter tree: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "checkpoint observation timing: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed43_training.npz",
+      "passed": true
+    },
+    {
+      "check": "reduced curve fields: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "curve length per update: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "valid done fractions: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "gamma-one pathwise loss/reward relation: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "recomputed learning summaries: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed43_validation.json",
+      "passed": true
+    },
+    {
+      "check": "validation record consistency: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "validation checkpoint: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "validation raw hash: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed43_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "validation population: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "validation RMSE: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation population metadata: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation crash rate: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation completion: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation 5cm success: figure8_retrain_20261125_bptt_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed44.json",
+      "passed": true
+    },
+    {
+      "check": "algorithm and seed: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "fresh initialization declaration: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "rollout shape: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "period and device configuration: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "complete update dimensions: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "requested budget: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "executed complete update budget: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "actual recorded worlds/platform: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "actual state/observation/actor placement: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "checkpoint hash: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "training curve hash: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "checkpoint payload fields: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite actor parameter tree: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "checkpoint observation timing: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed44_training.npz",
+      "passed": true
+    },
+    {
+      "check": "reduced curve fields: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "curve length per update: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "valid done fractions: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "gamma-one pathwise loss/reward relation: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "recomputed learning summaries: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed44_validation.json",
+      "passed": true
+    },
+    {
+      "check": "validation record consistency: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "validation checkpoint: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "validation raw hash: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed44_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "validation population: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "validation RMSE: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation population metadata: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation crash rate: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation completion: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation 5cm success: figure8_retrain_20261125_bptt_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42.json",
+      "passed": true
+    },
+    {
+      "check": "algorithm and seed: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "fresh initialization declaration: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "rollout shape: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "period and device configuration: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "complete update dimensions: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "requested budget: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "executed complete update budget: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "actual recorded worlds/platform: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "actual state/observation/actor placement: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "checkpoint hash: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "training curve hash: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "checkpoint payload fields: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite actor parameter tree: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite critic parameter tree: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "checkpoint observation timing: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_training.npz",
+      "passed": true
+    },
+    {
+      "check": "reduced curve fields: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "curve length per update: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "valid done fractions: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "recomputed learning summaries: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42_validation.json",
+      "passed": true
+    },
+    {
+      "check": "validation record consistency: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "validation checkpoint: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "validation raw hash: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "validation population: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "validation RMSE: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation population metadata: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation crash rate: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation completion: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "candidate validation 5cm success: figure8_retrain_20261125_ppo_T3.5s_seed42",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed43.json",
+      "passed": true
+    },
+    {
+      "check": "algorithm and seed: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "fresh initialization declaration: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "rollout shape: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "period and device configuration: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "complete update dimensions: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "requested budget: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "executed complete update budget: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "actual recorded worlds/platform: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "actual state/observation/actor placement: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "checkpoint hash: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "training curve hash: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "checkpoint payload fields: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite actor parameter tree: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite critic parameter tree: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "checkpoint observation timing: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed43_training.npz",
+      "passed": true
+    },
+    {
+      "check": "reduced curve fields: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "curve length per update: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "valid done fractions: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "recomputed learning summaries: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed43_validation.json",
+      "passed": true
+    },
+    {
+      "check": "validation record consistency: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "validation checkpoint: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "validation raw hash: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed43_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "validation population: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "validation RMSE: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation population metadata: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation crash rate: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation completion: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "candidate validation 5cm success: figure8_retrain_20261125_ppo_T3.5s_seed43",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed44.json",
+      "passed": true
+    },
+    {
+      "check": "algorithm and seed: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "fresh initialization declaration: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "rollout shape: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "period and device configuration: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "complete update dimensions: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "requested budget: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "executed complete update budget: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "actual recorded worlds/platform: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "actual state/observation/actor placement: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "checkpoint hash: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "training curve hash: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "checkpoint payload fields: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite actor parameter tree: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite critic parameter tree: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "checkpoint observation timing: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed44_training.npz",
+      "passed": true
+    },
+    {
+      "check": "reduced curve fields: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "curve length per update: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "valid done fractions: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "recomputed learning summaries: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed44_validation.json",
+      "passed": true
+    },
+    {
+      "check": "validation record consistency: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "validation checkpoint: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "validation raw hash: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed44_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "validation population: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "validation RMSE: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation population metadata: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation crash rate: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation completion: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "candidate validation 5cm success: figure8_retrain_20261125_ppo_T3.5s_seed44",
+      "passed": true
+    },
+    {
+      "check": "six distinct fresh checkpoint hashes",
+      "passed": true
+    },
+    {
+      "check": "fresh weights differ from 49 old checkpoints",
+      "passed": true
+    },
+    {
+      "check": "dependency lock matches protocol",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: selected_before_test.json",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: selected_bptt_before_test.json",
+      "passed": true
+    },
+    {
+      "check": "validation-only winner seed42: bptt",
+      "passed": true
+    },
+    {
+      "check": "selected checkpoint matches recomputation: bptt",
+      "passed": true
+    },
+    {
+      "check": "selected validation evidence: bptt",
+      "passed": true
+    },
+    {
+      "check": "validation-only winner seed42: ppo",
+      "passed": true
+    },
+    {
+      "check": "selected checkpoint matches recomputation: ppo",
+      "passed": true
+    },
+    {
+      "check": "selected validation evidence: ppo",
+      "passed": true
+    },
+    {
+      "check": "earlier BPTT-only selection unchanged in final selection",
+      "passed": true
+    },
+    {
+      "check": "selection rule consistent with preregistered protocol",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: comparison.json",
+      "passed": true
+    },
+    {
+      "check": "runtime simulator_source_sha256: comparison",
+      "passed": true
+    },
+    {
+      "check": "runtime pixi_lock_sha256: comparison",
+      "passed": true
+    },
+    {
+      "check": "runtime official_experiment_commit: comparison",
+      "passed": true
+    },
+    {
+      "check": "runtime experiment_source_sha256: comparison",
+      "passed": true
+    },
+    {
+      "check": "runtime protocol: comparison",
+      "passed": true
+    },
+    {
+      "check": "four compared policies",
+      "passed": true
+    },
+    {
+      "check": "comparison checkpoint integrity: retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "comparison uses validation-selected checkpoint: retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "five scenarios: retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42_validation.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "nominal initial state: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42_position_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_position_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42_velocity_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_velocity_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42_position_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_position_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_bptt_T3.5s_seed42_velocity_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_bptt_T3.5s_seed42_velocity_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison checkpoint integrity: retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "comparison uses validation-selected checkpoint: retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "five scenarios: retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42_validation.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "nominal initial state: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42_position_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_position_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42_velocity_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_velocity_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42_position_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_position_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: figure8_retrain_20261125_ppo_T3.5s_seed42_velocity_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: figure8_retrain_20261125_ppo_T3.5s_seed42_velocity_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: retrained_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison checkpoint integrity: frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "frozen comparison checkpoint in historical manifest: frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "five scenarios: frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_bptt_T3.5s_budget1_seed43_validation.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_bptt_T3.5s_budget1_seed43_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "nominal initial state: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_bptt/validation",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_bptt_T3.5s_budget1_seed43_position_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_bptt_T3.5s_budget1_seed43_position_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_bptt/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_bptt_T3.5s_budget1_seed43_velocity_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_bptt_T3.5s_budget1_seed43_velocity_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_bptt/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_bptt_T3.5s_budget1_seed43_position_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_bptt_T3.5s_budget1_seed43_position_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_bptt/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_bptt_T3.5s_budget1_seed43_velocity_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_bptt_T3.5s_budget1_seed43_velocity_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_bptt/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison checkpoint integrity: frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "frozen comparison checkpoint in historical manifest: frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "five scenarios: frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_ppo_T3.5s_budget2_seed43_validation.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_ppo_T3.5s_budget2_seed43_validation.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "nominal initial state: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_ppo/validation",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_ppo_T3.5s_budget2_seed43_position_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_ppo_T3.5s_budget2_seed43_position_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_ppo/position_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_ppo_T3.5s_budget2_seed43_velocity_holdout.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_ppo_T3.5s_budget2_seed43_velocity_holdout.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_ppo/velocity_holdout",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_ppo_T3.5s_budget2_seed43_position_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_ppo_T3.5s_budget2_seed43_position_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "reference velocity retained: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_ppo/position_unseen",
+      "passed": true
+    },
+    {
+      "check": "fixed evaluation seed: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded CPU evaluation: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "scenario checkpoint consistency: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "comparison raw hash: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "strict finite JSON: official_frontier_ppo_T3.5s_budget2_seed43_velocity_unseen.json",
+      "passed": true
+    },
+    {
+      "check": "comparison/standalone record equality: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "finite arrays: official_frontier_ppo_T3.5s_budget2_seed43_velocity_unseen.npz",
+      "passed": true
+    },
+    {
+      "check": "20-second 64-world raw population: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "first-episode masks never reactivate: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "complete metric schema: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed worlds: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed frequency_hz: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_tracked_steps: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed crash_rate: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed full_horizon_completion_rate: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed alive_without_crash_rate: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed goal_success_rate: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed mean_first_episode_seconds: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tracking_rmse_m: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed survivor_tracking_rmse_m: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed tail_rmse_m: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_rmse_5cm: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed success_rate_tail_10cm: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recomputed per_world_rmse_m: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "initial-state shapes: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "nonzero position perturbation bounded by +/-0.1m: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "all 64 true velocity perturbations nonzero within +/-0.5m/s: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "recorded velocity perturbation magnitude: frozen_ppo/velocity_unseen",
+      "passed": true
+    },
+    {
+      "check": "20 comparison scenarios audited",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: validation/retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: validation/retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: validation/frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: validation/frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_holdout/retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_holdout/retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_holdout/frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_holdout/frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_holdout/retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_holdout/retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_holdout/frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_holdout/frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_unseen/retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_unseen/retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_unseen/frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: position_unseen/frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_unseen/retrained_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_unseen/retrained_ppo",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_unseen/frozen_bptt",
+      "passed": true
+    },
+    {
+      "check": "identical initial conditions across policies: velocity_unseen/frozen_ppo",
+      "passed": true
+    },
+    {
+      "check": "comparison PNG decodes",
+      "passed": true
+    }
+  ],
+  "limits": [
+    "Training device placement is verified against saved actual post-step probes and record consistency; training was not rerun.",
+    "Checkpoints contain actor parameters and optional PPO critic parameters, not complete optimizer state; full-agent finiteness is asserted by the trainer but cannot be independently reconstructed from these checkpoints.",
+    "Fresh initialization is a source/record declaration consistent with six distinct weights, not an independent replay of optimization.",
+    "Selection is recomputed from validation only and agrees with both saved selection files; file write chronology is not cryptographically attested.",
+    "Velocity scenarios combine position +/-0.1m and true velocity +/-0.5m/s perturbations, rather than velocity-only perturbations.",
+    "Per-algorithm training budgets and reward coefficients differ; results are not an equal-time or equal-sample comparison.",
+    "Initial conditions are exactly equal across all four policies. Reference differences on common active samples are recorded; trajectories are not required to be globally equal after crashes/autoresets."
+  ]
+}
