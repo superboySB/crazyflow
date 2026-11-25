@@ -1,0 +1,80 @@
+{
+  "fps": 20,
+  "frames": 59,
+  "last_sim_time_s": 1.9291279750763106,
+  "reached_first_event": true,
+  "truncated": false,
+  "suite": "noisy",
+  "episode": 0,
+  "seed": 20261125,
+  "flight_plant": "mujoco",
+  "first_event": {
+    "episode": 0,
+    "outcome": "hit",
+    "success": true,
+    "event_time_s": 1.9291279750763106,
+    "contact_time_s": 1.9291279750763106,
+    "impact_speed_m_s": 0.8561308480507563,
+    "minimum_distance_m": 0.24046536242961894,
+    "minimum_surface_clearance_m": 1.1102230246251565e-16,
+    "terminal_distance_m": 0.24046536242961894,
+    "visible_fraction": 0.9484536082474226,
+    "native_contact_time_s": 1.9300000000000002,
+    "native_contact_by_first_event": true
+  },
+  "checkpoint": "policy.npz",
+  "hardware": {
+    "enabled": true,
+    "camera_delay_ms": [
+      0.0,
+      40.0
+    ],
+    "camera_packet_loss_prob": 0.0,
+    "camera_stale_ms": 100.0,
+    "bbox_bias_std": 0.0,
+    "gyro_delay_ms": [
+      0.0,
+      0.0
+    ],
+    "attitude_delay_ms": [
+      0.0,
+      0.0
+    ],
+    "gyro_packet_loss_prob": 0.0,
+    "attitude_packet_loss_prob": 0.0,
+    "gyro_drift_std": 0.0,
+    "gyro_scale_std": 0.0,
+    "attitude_bias_std": 0.0,
+    "bias_tau_s": 30.0,
+    "attitude_command_delay_ms": [
+      0.0,
+      20.0
+    ],
+    "thrust_command_delay_ms": [
+      0.0,
+      20.0
+    ],
+    "command_jitter_std_ms": 0.0,
+    "command_jitter_tau_s": 0.1,
+    "inertia_fraction": 0.0,
+    "drag_fraction": 0.0,
+    "motor_thrust_fraction": 0.0,
+    "motor_response_fraction": 0.0,
+    "gust_std": 0.0,
+    "gust_tau_s": 0.5
+  },
+  "role": "native GUI framebuffer recording of the saved trajectory",
+  "checkpoint_sha256": "2844682f1a674e5fefd1fd481712a9903a6304fea76f44d383c0c87b6e649540",
+  "checkpoint_sha256_source": "matching evaluation metrics and checked source file",
+  "gif_sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
+  "encoded_timing": {
+    "encoded_frames": 40,
+    "total_duration_ms": 2950,
+    "last_frame_hold_ms": 1000,
+    "delay_values_ms": [
+      50,
+      1000
+    ],
+    "loop": 0
+  }
+}

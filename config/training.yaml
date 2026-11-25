@@ -77,17 +77,18 @@ objective:
 
 noise:
   # 开发先验，需用实测误差替换；幅度更大覆盖更多失配，但训练更难，不保证鲁棒性随之提高。
-  # model.py:sample_batch/initialize 管物理与固定偏置；rollout.py:observe/rollout 管逐拍观测与 FIFO。
+  # model.py:sample_batch/initialize 管物理；hardware.py 管新版观测/链路；rollout.py:observe 管旧 FIFO。
   # noisy 使用本节值；perturbed 将三个 fraction、gyro_bias_std、wind_std 放大 1.5 倍，其它观测项不变。
   # --nominal 关闭本节扰动，任务初态采样仍存在；同次 rollout 的采样固定，BPTT 对该轨迹反传。
   # 每个 50 Hz bbox 的 cx/cy/w/h 独立加 N(0,std²)，以图像半宽/半高归一化，随后按边缘裁剪。
   bbox_noise_std: 0.006
-  gyro_noise_std: 0.015  # 每拍、每轴 body gyro 的加性高斯白噪声 std，rad/s；不是乘性噪声或谱密度。
+  gyro_noise_std: 0.015  # 每样本、每轴 gyro 白噪声 std，rad/s；新版 500 Hz、旧版 50 Hz，非谱密度。
   gyro_bias_std: 0.005  # 每回合、每轴 N(0,std²) 的固定 gyro 零偏，rad/s；回合内不漂移。
-  attitude_noise_std: 0.005  # 每拍、每轴旋转向量高斯 std，rad；R_obs=R_true·Exp(δφ)，保持合法旋转。
+  attitude_noise_std: 0.005  # 每样本旋转向量高斯 std，rad；新版 500 Hz；R_obs=R_true·Exp(δφ)。
   dropout_prob: 0.015  # 每个视觉包独立漏检概率；无效框入 FIFO，不用真值或上一框替补。
-  max_delay_steps: 2  # 每回合均匀整数采样 0..此值，整回合固定的视觉 FIFO 延迟；默认最长 40 ms。
-  action_delay_steps: 1  # 每回合均匀整数采样 0..此值，四通道共用动作 FIFO；默认最长 20 ms。
+  # 以下旧整数 FIFO 仅 hardware.enabled=false 时生效；与硬件管线互斥，不串联重复延迟。
+  max_delay_steps: 2  # 旧视觉 FIFO：每回合均匀整数采样 0..此值，最长 40 ms。
+  action_delay_steps: 1  # 旧动作 FIFO：每回合均匀整数采样 0..此值，四通道共同最长 20 ms。
   # FIFO 是额外链路等待，电机自身响应另由 rotor_dyn_coef 推进；增大延迟更难及时修正。
   # 三个 fraction 均为无量纲半宽，要求 0<=f<2/3，以保持 perturbed 的物理倍率为正。
   mass_fraction: 0.05  # 每回合物理质量乘 U[1-f,1+f]；不同时缩放 J 或控制器参数，f 为无量纲半宽。
@@ -96,3 +97,29 @@ noise:
   response_fraction: 0.1  # 四个升/降速系数同乘每回合 U[1-f,1+f]；倍率越大响应越快，不是乘时间常数。
   # 每回合固定世界系外扰加速度的每轴高斯 std，m/s²；施加 F=m_random·a，不是风速或时变阵风。
   wind_std: 0.12
+  hardware:
+    # 硬件链路管线；此处范围只沿用本项目旧 40 ms 视觉/20 ms 指令先验，不是实测结论。
+    # 旧 checkpoint 没有本节时默认关闭；新 YAML 开启后不叠加上述两个旧 FIFO。
+    enabled: true
+    camera_delay_ms: [0.0, 40.0]
+    camera_packet_loss_prob: 0.0  # 传输丢包，独立于上方视觉漏检；未知，测量后开启。
+    camera_stale_ms: 100.0  # 最近收到相机包的失效年龄 ms，至少覆盖最大相机延迟。
+    bbox_bias_std: 0.0  # 回合内相关框偏置，归一化单位；未知，测量后开启。
+    gyro_delay_ms: [0.0, 0.0]  # IMU gyro 包链路延迟 ms；未知，测量后开启。
+    attitude_delay_ms: [0.0, 0.0]  # 姿态包链路延迟 ms；未知，测量后开启。
+    gyro_packet_loss_prob: 0.0  # 未知，测量后开启；不是 gyro 白噪声。
+    attitude_packet_loss_prob: 0.0  # 未知，测量后开启。
+    gyro_drift_std: 0.0  # gyro 相关漂移的稳态 std，rad/s；未知，测量后开启。
+    gyro_scale_std: 0.0  # 相对乘性 gyro 噪声；参考 CrazyRL 机制，默认 0，勿抄别机 10% 幅度。
+    attitude_bias_std: 0.0  # 旋转向量相关偏置的稳态 std，rad；未知，测量后开启。
+    bias_tau_s: 30.0  # 相关偏置的时间常数 s；零幅度时不制造漂移，须实测。
+    attitude_command_delay_ms: [0.0, 20.0]  # RPY 指令链路范围 ms，来自本项目旧 FIFO 先验。
+    thrust_command_delay_ms: [0.0, 20.0]  # 总推力指令链路范围 ms，同一旧先验边界。
+    command_jitter_std_ms: 0.0  # 相关指令延迟抖动 std，ms；未知，测量后开启。
+    command_jitter_tau_s: 0.1  # 抖动时间常数 s，须实测；零幅度不增加抖动。
+    inertia_fraction: 0.0  # 整体正惯量倍率半宽；未知，测量后开启，同时重算 J_inv。
+    drag_fraction: 0.0  # 阻力矩阵正倍率半宽；未知，测量后开启，保留原阻尼符号。
+    motor_thrust_fraction: 0.0  # 各电机独立推力/反扭矩倍率半宽；未知，测量后开启。
+    motor_response_fraction: 0.0  # 各电机独立升/降速倍率半宽；未知，实测后开启，同方向两系数共倍率。
+    gust_std: 0.0  # 世界系相关阵风加速度稳态 std，m/s²；未知，测量后开启。
+    gust_tau_s: 0.5  # 阵风时间常数 s，须实测；零幅度不产生阵风。

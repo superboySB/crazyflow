@@ -1,69 +1,276 @@
 {
   "schema": "balloon-example-provenance-v1",
-  "origin": "实际完成的纯 BPTT 仿真训练及冻结策略的原生 MuJoCo 评测记录。",
-  "raw_training_directory": "outputs/train-20261125-142931-BnLH54",
-  "raw_evaluation_directory": "outputs/train-20261125-142931-BnLH54/evaluation-20261125-144409-3790872",
+  "origin": "实际纯BPTT仿真训练、冻结策略原生MuJoCo评测及完整GUI录制。",
+  "raw_training_directory": "outputs/hardware-train-seed42",
+  "raw_evaluation_directory": "outputs/hardware-train-seed42/evaluation",
+  "raw_sources": {
+    "outputs/hardware-train-seed42/config/training.yaml": {
+      "sha256": "01308e9c0d7cd7bdb7773c534e1feea27def909448ce96f3ac30e5966c424bf4",
+      "bytes": 11607
+    },
+    "outputs/hardware-train-seed42/config/camera.json": {
+      "sha256": "749d506bf1fea633bc35a957020c20aa1b79aa4c5f5e07a29b00b27c86e518dd",
+      "bytes": 168
+    },
+    "outputs/hardware-train-seed42/config/vehicle.toml": {
+      "sha256": "91d17874e7a8611267c3d55bab9903a0936c4f2e377cc669bf5695f06c16e74b",
+      "bytes": 1623
+    },
+    "outputs/hardware-train-seed42/config/controller.toml": {
+      "sha256": "b1775337d2215f6df3b7a9aca1c39bb5c0d7bcf0c62c7f2a7f934ded159b27a7",
+      "bytes": 1051
+    },
+    "config/dynamics/params.toml": {
+      "sha256": "b4c63fdf333c12e1501d022ab89c4f3a3a956acb04f77b0fe6492f301feeb789",
+      "bytes": 75
+    },
+    "config/dynamics/first_principles/params.toml": {
+      "sha256": "a0c223122529424c353c5820d64ee68e81156b75f137a9439a39d0c109926c7a",
+      "bytes": 4896
+    },
+    "config/control/mellinger/params.toml": {
+      "sha256": "a28c717458fc0e068215db6aabdc814d298b855c0ec26e810e65d81304ea39ce",
+      "bytes": 5583
+    },
+    "outputs/hardware-train-seed42/policy.npz": {
+      "sha256": "2844682f1a674e5fefd1fd481712a9903a6304fea76f44d383c0c87b6e649540",
+      "bytes": 36221
+    },
+    "outputs/hardware-train-seed42/last.npz": {
+      "sha256": "4c54ed94981d1a926195bd1cfa4be97a28a82dcf088e9bfca47dd1db966977fa",
+      "bytes": 36183
+    },
+    "outputs/hardware-train-seed42/training.jsonl": {
+      "sha256": "7327411e40fca35cba861de8ad5547b09acdabfa9ac1573b7950ae6b8a76ab2c",
+      "bytes": 9301
+    },
+    "outputs/bundle_hardware_example.py": {
+      "sha256": "0d23b413815867ea3fdaafc0988a41055c8d25237b31b628e5fa34b06b6f2eed",
+      "bytes": 28386
+    },
+    "crazyflow/balloon/logs.py": {
+      "sha256": "3441b019cc46dc913ca62c541ba176c55e71c1b092d8dcb6ff1c4cb651b5b101",
+      "bytes": 3132
+    },
+    "outputs/hardware-train-seed42/training.png": {
+      "sha256": "4ffb548ce2b92b290cb881e5884243f5851ff8819fb5a3993f0ab02e11308e12",
+      "bytes": 140671
+    },
+    "outputs/hardware-train-seed42/evaluation/nominal.npz": {
+      "sha256": "61de479630b679612e31849fae28839082f48eb40810e5dd37a767c474d883e8",
+      "bytes": 42741815
+    },
+    "outputs/hardware-train-seed42/evaluation/noisy.npz": {
+      "sha256": "bcb93b68077434ac75fd5cbbe5074fdfce6b6d39ffe829242a92113cad30dd77",
+      "bytes": 42673339
+    },
+    "outputs/hardware-train-seed42/evaluation/perturbed.npz": {
+      "sha256": "a87eb61a3857af2beac3452876bb058a33cdefb19f1aa0191d5c549af0e0615e",
+      "bytes": 42672651
+    },
+    "outputs/hardware-train-seed42/evaluation/metrics.json": {
+      "sha256": "0f060e3d85cbe4a24293dfed73fa330fe46fca34fcf9bb289ad35da36652d9e0",
+      "bytes": 440142
+    },
+    "outputs/hardware-trained-gui.gif": {
+      "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
+      "bytes": 2705045
+    },
+    "outputs/hardware-trained-gui.json": {
+      "sha256": "2b7c286e4c09b765b4a7b4de77e70f6a93c587ea79ca50c6c694ca3faa351c66",
+      "bytes": 1676
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-1024/worker-start.json": {
+      "sha256": "dd3b0b516a28dafc53bc84c6729677f1d67a82098643de984d9eb14cbbdaacae",
+      "bytes": 6171
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-1024/measurement.json": {
+      "sha256": "0bac4d6052fee27ce0a7f98d7f8ebeab199de9c8ed09efd66a2872f0112d6eb2",
+      "bytes": 1927
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-4096/worker-start.json": {
+      "sha256": "ee24da61838e7195db5d47b003a310fb98764872a47d448e54d92382ffc224c7",
+      "bytes": 6171
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-4096/measurement.json": {
+      "sha256": "97ef78d7ee2b2aaf79f1054186045eb48945b9e39800d703df5914547402ccb5",
+      "bytes": 1938
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-8192/worker-start.json": {
+      "sha256": "ddb7ff25d060b946cd372d253c95a7301a993b563832435ed45f38dc9ae82f82",
+      "bytes": 6171
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-8192/measurement.json": {
+      "sha256": "7196b7ba55ca7b569a32597a99df54a38ed465e7ad23f61cd956681140514dd3",
+      "bytes": 1938
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-16384/worker-start.json": {
+      "sha256": "b70f998b39c813ebfdf2f15f825973cb9d8d85a54937f92133bcbb69b3148d45",
+      "bytes": 6172
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-16384/measurement.json": {
+      "sha256": "f7b24dad0daaa4b44f2784ebbb90b60675dcac975a96642fc44430efcc55e564",
+      "bytes": 1949
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/capacity.json": {
+      "sha256": "5be3e19a3b37a5d86d2bdd79efc77d794dec59e540fcdb2585df7c56b8131656",
+      "bytes": 10052
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/source-manifest.json": {
+      "sha256": "f0d385e7692ff544bc4048dd0fcde8ef1d7c30c11bf28563693d7ede327d2207",
+      "bytes": 6999
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/config/training.yaml": {
+      "sha256": "b70e2c4bbbd28c969e293c47f41443abbb231e07e2ccbb863f33113b8c87c6c2",
+      "bytes": 11607
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/config/camera.json": {
+      "sha256": "749d506bf1fea633bc35a957020c20aa1b79aa4c5f5e07a29b00b27c86e518dd",
+      "bytes": 168
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/config/vehicle.toml": {
+      "sha256": "91d17874e7a8611267c3d55bab9903a0936c4f2e377cc669bf5695f06c16e74b",
+      "bytes": 1623
+    },
+    "outputs/hardware-capacity/run-20261125-175440-28231a/config/controller.toml": {
+      "sha256": "b1775337d2215f6df3b7a9aca1c39bb5c0d7bcf0c62c7f2a7f934ded159b27a7",
+      "bytes": 1051
+    }
+  },
   "files": {
     "policy.npz": {
-      "raw_source": "outputs/train-20261125-142931-BnLH54/policy.npz",
-      "sha256": "ccb9aeb74f6b2718dd34e4486dc1b7d69a4876a3c778c421e6d7703b00fd633f",
-      "bytes": 35803,
+      "raw_source": "outputs/hardware-train-seed42/policy.npz",
+      "sha256": "2844682f1a674e5fefd1fd481712a9903a6304fea76f44d383c0c87b6e649540",
+      "bytes": 36221,
       "copy": "byte-identical"
     },
     "training.jsonl": {
-      "raw_source": "outputs/train-20261125-142931-BnLH54/training.jsonl",
-      "sha256": "89eae5452bd5647073ee4772feefa47c201b65f17c9f7c4c80ef92d987301ece",
-      "bytes": 9298,
+      "raw_source": "outputs/hardware-train-seed42/training.jsonl",
+      "sha256": "7327411e40fca35cba861de8ad5547b09acdabfa9ac1573b7950ae6b8a76ab2c",
+      "bytes": 9301,
+      "copy": "byte-identical"
+    },
+    "gui.gif": {
+      "raw_source": "outputs/hardware-trained-gui.gif",
+      "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
+      "bytes": 2705045,
+      "copy": "byte-identical"
+    },
+    "gpu-capacity.json": {
+      "raw_source": "outputs/hardware-capacity/run-20261125-175440-28231a/capacity.json",
+      "sha256": "5be3e19a3b37a5d86d2bdd79efc77d794dec59e540fcdb2585df7c56b8131656",
+      "bytes": 10052,
       "copy": "byte-identical"
     }
   },
   "derived_files": {
-    "evaluation-summary.json": {
-      "raw_source": "outputs/train-20261125-142931-BnLH54/evaluation-20261125-144409-3790872/metrics.json",
-      "raw_source_sha256": "1d4428edfd26d96bb82e3cae609db3aaac26ecc95763e0b7e1ccb67fb8a8c839",
-      "raw_source_bytes": 438393,
-      "sha256": "d78e09800cd899a6ee97b7b2c3f787d9c8db83d1cf027102f72d066c9c3a2024",
-      "derivation": "保留三场景聚合统计、随机种子、相机、冻结配置与执行/物理模型角色；删除逐episode记录、轨迹和视频路径。"
-    },
     "training.png": {
-      "source": "training.jsonl and policy.npz initial_validation_loss/iterations",
-      "generator": "crazyflow.balloon.logs.write_training_plot",
-      "sha256": "98a79cc2156f920ebafe8ad936d18019352564ff1e4814d2906c36bc1f8ac210"
+      "sha256": "4ffb548ce2b92b290cb881e5884243f5851ff8819fb5a3993f0ab02e11308e12",
+      "bytes": 140671,
+      "generator": "crazyflow.balloon.logs.write_training_plot; original JSONL and checkpoint initial/best metadata"
     },
-    "gpu-capacity.json": {
-      "raw_source": "outputs/gpu-capacity-20261125/capacity.json",
-      "raw_source_sha256": "4aa32411b7692c5efe3a8a0bcef9d93969a83564cd96351c3f353bcea70682e1",
-      "sha256": "f78ace0fef1cb8f28bab71dc1f0aaecb8cd78ae05cd5209e3b2ad09a57083431",
-      "derivation": "Capacity smoke measurements on separate fresh training processes; independent of the example policy training."
+    "evaluation-summary.json": {
+      "sha256": "02673a1946bab27cbcee7d9efe71fc0586405cae40408a6e168f259b7054b5cc",
+      "bytes": 14989,
+      "source": "outputs/hardware-train-seed42/evaluation/metrics.json"
     },
-    "gui.png": {
-      "raw_source": "outputs/example-policy-20261125-151103-VfMvYv/gui-headless-20261125-151103-3838737.png",
-      "command": "./dani play --example --headless",
-      "plant": "mujoco",
-      "sha256": "1de2e8b2039122539cacb12e7ee98dfd9da21b16b3b2d8b63c6c3bbcc3aca4c7",
-      "note": "10-frame native GUI interaction self-test; screenshot after changing seed and returning to nominal."
+    "gui.json": {
+      "sha256": "a02fb0acd2b5a4fc4c1e48a46a5a81ba43aadd41dbc56867b3433f2eea378687",
+      "bytes": 2088,
+      "source": "outputs/hardware-trained-gui.json",
+      "annotation": "SHA来自相同评测metrics及原checkpoint文件校验；原sidecar和权重均未改写。"
+    },
+    "README.md": {
+      "sha256": "5ac9690dff244f011246c9e7082585dec0cba8ad9b717781bc37e7bc747165da",
+      "bytes": 3123
     }
   },
   "checkpoint_selection": {
     "completed_iterations": 1500,
-    "policy_iteration": 1150,
-    "policy_validation_loss": 1.3118246793746948,
-    "minimum_logged_validation_iteration": 1150,
-    "minimum_logged_validation_loss": 1.3118246793746948,
-    "initial_validation_loss": 12.435049057006836,
-    "last_iteration_validation_loss": 1.392567753791809,
-    "last_checkpoint_raw_source": "outputs/train-20261125-142931-BnLH54/last.npz",
-    "last_checkpoint_sha256": "ec3f4c76a7bcd7cd8939e96408d49def5e2d6486d6e368c42390dbdbeec2cf80",
-    "last_checkpoint_included": false,
-    "policy_metadata_matches_evaluated_checkpoint": true,
-    "evaluation_checkpoint_sha256_matches_copy": true,
-    "log_complete_through_iteration": 1500,
+    "policy_iteration": 1425,
+    "policy_validation_loss": 1.2334939241409302,
+    "last_validation_loss": 1.277369737625122,
     "log_records": 61,
-    "elapsed_seconds_scope": "training.jsonl 的最后 seconds 从初始验证结束后计时，包含首次 update 编译，不含启动及初始验证。"
+    "checkpoint_bytes_unchanged": true,
+    "evaluated_checkpoint_sha256_matches_copy": true
   },
+  "official_parameter_check": {
+    "dtype": "float32",
+    "physical_fields": 12,
+    "controller_fields": 17,
+    "differences": [],
+    "physical_table_sources": [
+      "config/dynamics/params.toml",
+      "config/dynamics/first_principles/params.toml"
+    ],
+    "controller_table_source": "config/control/mellinger/params.toml"
+  },
+  "hardware": {
+    "pipeline": "causal_mailboxes_v1",
+    "pipeline_derived_from_frozen_config": true,
+    "descriptive_checkpoint_pipeline_field_present": false,
+    "camera_capture_rate_hz": 50.0,
+    "imu_and_control_rate_hz": 500.0,
+    "camera_delay_ms": [
+      0.0,
+      40.0
+    ],
+    "attitude_command_delay_ms": [
+      0.0,
+      20.0
+    ],
+    "thrust_command_delay_ms": [
+      0.0,
+      20.0
+    ],
+    "unmeasured_new_amplitudes": {
+      "camera_packet_loss_prob": 0.0,
+      "bbox_bias_std": 0.0,
+      "gyro_packet_loss_prob": 0.0,
+      "attitude_packet_loss_prob": 0.0,
+      "gyro_drift_std": 0.0,
+      "gyro_scale_std": 0.0,
+      "attitude_bias_std": 0.0,
+      "command_jitter_std_ms": 0.0,
+      "inertia_fraction": 0.0,
+      "drag_fraction": 0.0,
+      "motor_thrust_fraction": 0.0,
+      "motor_response_fraction": 0.0,
+      "gust_std": 0.0
+    },
+    "parameter_status": "沿用项目已有延迟边界；新增未知扰动幅度为0，尚需实测。"
+  },
+  "gui_validation": {
+    "file": "gui.gif",
+    "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
+    "suite": "noisy",
+    "episode": 0,
+    "seed": 20261125,
+    "first_event": "hit",
+    "first_event_time_s": 1.9291279750763106,
+    "reached_first_event": true,
+    "truncated": false,
+    "rendered_frames": 59,
+    "encoded_frames": 40,
+    "total_duration_ms": 2950,
+    "last_frame_hold_ms": 1000,
+    "delay_values_ms": [
+      50,
+      1000
+    ],
+    "loop": 0
+  },
+  "removed_legacy_artifact": "gui.png",
   "not_included": [
     "last.npz",
     "逐episode轨迹NPZ",
-    "评测视频"
+    "评测MP4"
+  ],
+  "limitations": [
+    "训练、评测和容量记录均来自仿真，不是实机飞行或硬件测量。",
+    "MuJoCo独立积分刚体，但与训练共享官方控制器、旋翼响应、力/力矩模型及冻结标称参数。",
+    "bbox由理想球体投影生成后加入配置内噪声与延迟，未验证真实视觉检测器。",
+    "新增未知扰动幅度保持0；不能据此声称已验证这些非零扰动或实机鲁棒性。",
+    "容量短测每档仅3次完整BPTT更新，不能当作收敛性能比较或其它显卡的容量上限。"
   ]
 }

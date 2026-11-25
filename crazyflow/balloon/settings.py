@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 from crazyflow.balloon.config import Config
+from crazyflow.balloon.noise_config import HARDWARE_FIELDS, HardwareNoise
 from crazyflow.paths import resource_path
 
 if TYPE_CHECKING:
@@ -49,6 +50,7 @@ NOISE_FIELDS = frozenset(
         "thrust_fraction",
         "response_fraction",
         "wind_std",
+        "hardware",
     }
 )
 OBJECTIVE_FIELDS = frozenset(
@@ -84,7 +86,11 @@ SECTION_FIELDS = {
 INTEGER_FIELDS = frozenset(
     {"substeps", "steps", "history", "hidden", "max_delay_steps", "action_delay_steps"}
 )
-NONNEGATIVE_FIELDS = NOISE_FIELDS | {"min_altitude", "max_unseen_seconds", "ground_margin"}
+NONNEGATIVE_FIELDS = (NOISE_FIELDS - {"hardware"}) | {
+    "min_altitude",
+    "max_unseen_seconds",
+    "ground_margin",
+}
 
 
 class _UniqueSafeLoader(yaml.SafeLoader):
@@ -133,6 +139,9 @@ def _read(path: Path, complete: bool = False) -> dict:
         if section == "objective" and "loss_weights" in values:
             weights = _mapping(values["loss_weights"], "objective.loss_weights")
             _keys(weights, LOSS_FIELDS, "objective.loss_weights", complete)
+        if section == "noise" and "hardware" in values:
+            hardware = _mapping(values["hardware"], "noise.hardware")
+            _keys(hardware, HARDWARE_FIELDS, "noise.hardware", complete)
     return document
 
 
@@ -183,6 +192,8 @@ def _validate(document: dict) -> tuple[dict, dict]:
                     weight: _number(amount, f"{name}.{weight}", nonnegative=True)
                     for weight, amount in value.items()
                 }
+            elif key == "hardware":
+                overrides[key] = HardwareNoise(**value)
             elif key == "collision_offset":
                 if not isinstance(value, (list, tuple)) or len(value) != 3:
                     raise ValueError(f"{name} must contain three finite metre offsets")
@@ -200,7 +211,8 @@ def load_settings(path: Path | None = None) -> tuple[dict, dict]:
 
     Returns ``(training, Config keyword arguments)``. Missing custom fields
     inherit ``config/training.yaml``. Device batch sizes and individual loss
-    weights merge by key; camera, physical and controller settings are rejected.
+    weights and hardware settings merge by key; camera, physical and controller
+    settings are rejected.
     """
     defaults = _read(DEFAULT_SETTINGS_PATH, complete=True)
     validated_defaults = _validate(defaults)
@@ -210,7 +222,7 @@ def load_settings(path: Path | None = None) -> tuple[dict, dict]:
     merged = {section: dict(values) for section, values in defaults.items()}
     for section, values in custom.items():
         for key, value in values.items():
-            if key in {"batch_size", "loss_weights"}:
+            if key in {"batch_size", "loss_weights", "hardware"}:
                 merged[section][key] = defaults[section][key] | value
             else:
                 merged[section][key] = value

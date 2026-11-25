@@ -187,6 +187,72 @@ class LauncherTests(unittest.TestCase):
         self.assertIn("--init", call)
         self.assertEqual(call[call.index("--evaluation") + 1], "/outputs/eval")
 
+    def test_headless_record_keeps_full_trajectory_and_forwards_selection(self) -> None:
+        """Record through Xvfb without implicitly truncating or exercising controls."""
+        self.run_dani(
+            "play",
+            "--example",
+            "--headless",
+            "--device",
+            "cpu",
+            "--record",
+            "outputs/gui.GIF",
+            "--fps",
+            "30",
+            "--suite",
+            "noisy",
+            "--episode",
+            "1",
+        )
+        call = next(c for c in self.calls() if "crazyflow.balloon.play" in c)
+        self.assertIn("xvfb-run", call)
+        for flag, value in (
+            ("--record", "/outputs/gui.GIF"),
+            ("--fps", "30"),
+            ("--suite", "noisy"),
+            ("--episode", "1"),
+        ):
+            self.assertEqual(call[call.index(flag) + 1], value)
+        for flag in ("--frames", "--self-test", "--screenshot"):
+            self.assertNotIn(flag, call)
+
+    def test_record_equal_arguments_and_defaults(self) -> None:
+        """Accept explicit equals syntax and preserve the recorder's default frame budget."""
+        self.run_dani(
+            "play",
+            "--example",
+            "--headless",
+            "--device=cpu",
+            "--record=/outputs/gui.gif",
+            "--fps=20",
+            "--suite=perturbed",
+            "--episode=0",
+        )
+        call = next(c for c in self.calls() if "crazyflow.balloon.play" in c)
+        self.assertEqual(call[call.index("--record") + 1], "/outputs/gui.gif")
+        self.assertEqual(call[call.index("--suite") + 1], "perturbed")
+        self.assertNotIn("--frames", call)
+
+    def test_invalid_record_options_are_rejected_before_docker(self) -> None:
+        """Reject invalid recording routes and values without staging an example."""
+        invalid = (
+            ("--record", "/tmp/outside.gif"),
+            ("--record", "outputs/image.png"),
+            ("--record=",),
+            ("--fps", "4"),
+            ("--fps", "61"),
+            ("--fps", "1.5"),
+            ("--episode", "-1"),
+            ("--episode", "1.5"),
+            ("--suite", "unknown"),
+            ("--record", "outputs/gui.gif", "--self-test", "--frames", "10"),
+        )
+        for arguments in invalid:
+            with self.subTest(arguments=arguments):
+                self.run_dani("play", "--example", "--headless", *arguments, ok=False)
+        self.assertFalse(self.log.exists())
+        self.assertFalse((self.root / "outputs").exists())
+
     def test_example_evaluation_works_without_training_and_mounts_only_outputs(self) -> None:
         """Stage the bundled checkpoint without inventing a latest trained policy."""
         self.run_dani("evaluate", "--example", "--device", "cpu", "--episodes", "2", "--no-video")

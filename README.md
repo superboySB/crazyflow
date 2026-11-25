@@ -75,6 +75,8 @@
 
 调整训练时，先编辑 `training.yaml` 对应部分：`training` 管优化器，`task` 管任务与控制界限，`objective` 管可微目标，`noise` 管扰动。不确定时保留默认；质量和推力曲线等真实机体数值在 `vehicle.toml` 中设置。
 
+新增链路等待、丢包、gyro 乘性噪声与相关扰动在 `noise.hardware` 配置；未知幅度默认 0，测量后再开启，含义见[配置说明](config/README.md#硬件链路与额外扰动)。已有兼容策略保留其冻结的旧时序，修改 YAML 后需重新训练才会使用新设置。
+
 使用已测量验证的物理辨识结果：
 
 ```bash
@@ -89,9 +91,9 @@
 
 训练标量保存在 `training.jsonl`，结束后自动生成 `training.png`（损失、验证损失、梯度和耗时），无需 TensorBoard 服务。已有一份验证有效的[示例权重与曲线](examples/balloon/README.md)，与辨识示例并列保存在 `examples/balloon/`。
 
-显存参考：RTX 4070 Ti SUPER 16GB，默认 150×10 步展开、关闭预分配，每档 3 次完整 BPTT 更新，**1024 / 4096 / 8192 / 16384** 个环境的进程采样峰值约 **0.8 / 2.0 / 3.5 / 7.1 GiB**；另留桌面等进程的余量。修改 YAML 的 `batch_size.gpu` 调整并行数，[实测记录](examples/balloon/gpu-capacity.json)不代表其它显卡的容量上限。
+显存参考：RTX 4070 Ti SUPER 16GB，新默认时序、150×10 步展开、关闭预分配，每档 3 次完整 BPTT 更新，**1024 / 4096 / 8192 / 16384** 个环境的进程采样峰值约 **1.0 / 3.0 / 5.5 / 10.8 GiB**；另留桌面等进程的余量。修改 YAML 的 `batch_size.gpu` 调整并行数，[实测记录](examples/balloon/gpu-capacity.json)不代表其它显卡的容量上限。
 
-默认保留 **1024** 环境：本机同种子、同 1500 次更新的单次对照中，8192 环境耗时多约 28%，MuJoCo 三组接触数从 256/256/249 变为 256/255/245（每组 256 次），未见效果提升。
+默认保留 **1024** 环境：此前同种子、同 1500 次更新的单次对照中，8192 环境耗时多约 28%，三组接触数未增加，因此没有提高默认并行数。
 
 ## 4. 一键 MuJoCo 评测与 GUI
 
@@ -101,7 +103,7 @@
 ./dani play --example
 ```
 
-也可先用 `./dani evaluate --example` 重新评测示例。示例在 MuJoCo 三组各 256 次的实际接触数为 **256、255、244**，详细设置见[示例说明](examples/balloon/README.md)。
+也可先用 `./dani evaluate --example` 重新评测示例。新时序配置训练的示例在 MuJoCo 三组各 256 次的实际接触数为 **256、256、242**，详细设置见[示例说明](examples/balloon/README.md)。
 
 ```bash
 ./dani evaluate
@@ -121,9 +123,9 @@ MuJoCo 刚体积分运行在 CPU，策略、官方控制器和旋翼力模型使
 
 Linux/X11 窗口中，绿色实线是理想 bbox，琥珀虚线是策略实际收到的框；Telemetry 显示指令、姿态、gyro、RPM、延迟和接触信息。`Space` 暂停，左右键逐帧，`R` 重置，`N` 新种子，`1/2/3` 切换场景，`T` 显示相机标定。
 
-![示例策略的 MuJoCo GUI](examples/balloon/gui.png)
+![预训练策略的 MuJoCo GUI 动图](examples/balloon/gui.gif)
 
-示例策略的 MuJoCo GUI；机体与动力学使用官方 `cf21B_500` 默认参数，实机改装后按第 2 步重新辨识。
+新预训练策略的 MuJoCo GUI 实录，展示训练噪声场景直到首次接触；机体与动力学使用官方 `cf21B_500` 默认参数，实机改装后按第 2 步重新辨识。
 
 没有显示设备时，检查 GUI 并保存截图：
 
@@ -140,3 +142,4 @@ Linux/X11 窗口中，绿色实线是理想 bbox，琥珀虚线是策略实际�
 | `train` | `--batch-size`、`--iterations`、`--lr`（读取 YAML）；`--smoke` | `./dani train --batch-size 4096 --iterations 1500` |
 | `evaluate` | `--example` 或 `--checkpoint`；`--episodes`（256）、`--no-video`、`--plant`（mujoco） | `./dani evaluate --example --episodes 32 --no-video` |
 | `play` | `--example`、`--checkpoint` 或 `--evaluation`；`--seed`、`--headless` | `./dani play --example --seed 7` |
+| `play` 录制 | `--record`、`--fps`（20）、`--suite`（nominal）、`--episode`（0） | `./dani play --headless --record outputs/gui.gif` |

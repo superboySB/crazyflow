@@ -1,96 +1,285 @@
 {
   "schema": "bptt-gpu-capacity-v1",
   "gpu": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "gpu_uuid": "GPU-1803972d-e774-ee96-e6f6-1ee1ce47bb25",
+  "driver_version": "580.126.09",
   "total_memory_mib": 16376,
-  "image": "sha256:7fe333365b3e5891e99172d48768ba084574bd597370131d436ffc2c33134cf0",
-  "jax_version": "0.12.0.1",
+  "image": "sha256:d828c0669f430a2b2e8c2fe36773bc86575de950daa8aa278ce382c8127221bc",
+  "image_tag": "crazyflow:dani",
   "policy_steps": 150,
   "physics_substeps_per_policy_step": 10,
   "iterations_per_batch": 3,
+  "hardware_enabled": true,
   "xla_python_client_preallocate": false,
-  "measurement": "nvidia-smi compute-process memory sampled every approximately 0.25 s; each fresh process runs initial validation, three complete BPTT updates, validation and checkpoint saves. Process memory excludes desktop/other processes; total GPU memory includes them. These are sampled peaks, not maximum supported capacities.",
-  "source": "outputs/gpu-capacity-20261125/capacity.json",
-  "source_sha256": "4aa32411b7692c5efe3a8a0bcef9d93969a83564cd96351c3f353bcea70682e1",
+  "measurement": "nvidia-smi compute-process memory sampled every approximately 0.25 s; host PIDs are matched to the unique container's Python process. Each fresh process runs initial validation, three complete 150x10 BPTT updates, validation and checkpoint/plot saves. Process memory excludes desktop/other processes; total GPU memory includes them. These are sampled peaks, not maximum supported capacities. Source/config overlays are read-only; preallocation is off.",
+  "source": "outputs/hardware-capacity/run-20261125-175440-28231a/capacity.json",
+  "source_code_and_config_sha256": "965dbf56c299188d51e77ee0844a226340453bb76af078b87390884a1af0b041",
   "samples": [
     {
       "batch_size": 1024,
       "exit_code": 0,
-      "baseline_total_used_mib": 1201,
-      "peak_process_used_mib": 794,
-      "peak_total_used_mib": 1882,
-      "elapsed_seconds": 19.780826604983304,
+      "baseline_total_used_mib": 833,
+      "peak_process_used_mib": 1060,
+      "peak_total_used_mib": 1868,
+      "elapsed_seconds": 25.146624631015584,
+      "container_python_host_pids": [
+        4056859
+      ],
+      "output_directory": "outputs/hardware-capacity/run-20261125-175440-28231a/batch-1024",
+      "telemetry_errors": [],
       "jax_device_memory_stats_bytes": {
-        "num_allocs": 2372,
+        "num_allocs": 2452,
         "bytes_in_use": 0,
-        "peak_bytes_in_use": 268767488,
-        "largest_alloc_size": 268435456,
+        "peak_bytes_in_use": 387790848,
+        "largest_alloc_size": 387340800,
         "bytes_limit": 12522094592,
         "bytes_reserved": 0,
         "peak_bytes_reserved": 0,
-        "largest_free_block_bytes": 268435456,
-        "pool_bytes": 538968064,
-        "peak_pool_bytes": 538968064
+        "largest_free_block_bytes": 536870912,
+        "pool_bytes": 807403520,
+        "peak_pool_bytes": 807403520
+      },
+      "effective_config_sha256": "1063612d3d30c2a7cc21750434672388534c38d4582c0e89388bad8135ded529",
+      "versions": {
+        "jax": "0.12.0.1",
+        "jaxlib": "0.12.0.1",
+        "flax": "0.12.12",
+        "optax": "0.2.9",
+        "numpy": "2.5.5",
+        "mujoco": "4.0.0",
+        "PyYAML": "6.0.4"
+      },
+      "device": "cuda:0",
+      "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+      "training_summary": {
+        "training_settings": {
+          "iterations": 3,
+          "batch_size": 1024,
+          "seed": 42,
+          "lr": 0.001,
+          "device": "gpu"
+        },
+        "policy_steps": 150,
+        "physics_substeps": 10,
+        "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+        "initial_validation_loss": 12.445660591125488,
+        "best_validation_loss": 10.05753231048584,
+        "best_iteration": 3,
+        "last_validation_loss": 10.05753231048584,
+        "training_seconds": 16.236877505027223,
+        "device_memory_stats_bytes": {
+          "num_allocs": 2452,
+          "bytes_in_use": 323584,
+          "peak_bytes_in_use": 387790848,
+          "largest_alloc_size": 387340800,
+          "bytes_limit": 12522094592,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 536870912,
+          "pool_bytes": 807403520,
+          "peak_pool_bytes": 807403520
+        }
       }
     },
     {
       "batch_size": 4096,
       "exit_code": 0,
-      "baseline_total_used_mib": 1074,
-      "peak_process_used_mib": 2076,
-      "peak_total_used_mib": 3189,
-      "elapsed_seconds": 22.068060602992773,
+      "baseline_total_used_mib": 800,
+      "peak_process_used_mib": 3108,
+      "peak_total_used_mib": 3920,
+      "elapsed_seconds": 24.225019930978306,
+      "container_python_host_pids": [
+        4059045
+      ],
+      "output_directory": "outputs/hardware-capacity/run-20261125-175440-28231a/batch-4096",
+      "telemetry_errors": [],
       "jax_device_memory_stats_bytes": {
-        "num_allocs": 2499,
+        "num_allocs": 2561,
         "bytes_in_use": 0,
-        "peak_bytes_in_use": 1074395136,
-        "largest_alloc_size": 1073741824,
+        "peak_bytes_in_use": 1547620352,
+        "largest_alloc_size": 1546549248,
         "bytes_limit": 12522094592,
         "bytes_reserved": 0,
         "peak_bytes_reserved": 0,
-        "largest_free_block_bytes": 1073741824,
-        "pool_bytes": 1881145344,
-        "peak_pool_bytes": 1881145344
+        "largest_free_block_bytes": 2147483648,
+        "pool_bytes": 2954887168,
+        "peak_pool_bytes": 2954887168
+      },
+      "effective_config_sha256": "1063612d3d30c2a7cc21750434672388534c38d4582c0e89388bad8135ded529",
+      "versions": {
+        "jax": "0.12.0.1",
+        "jaxlib": "0.12.0.1",
+        "flax": "0.12.12",
+        "optax": "0.2.9",
+        "numpy": "2.5.5",
+        "mujoco": "4.0.0",
+        "PyYAML": "6.0.4"
+      },
+      "device": "cuda:0",
+      "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+      "training_summary": {
+        "training_settings": {
+          "iterations": 3,
+          "batch_size": 4096,
+          "seed": 42,
+          "lr": 0.001,
+          "device": "gpu"
+        },
+        "policy_steps": 150,
+        "physics_substeps": 10,
+        "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+        "initial_validation_loss": 12.57897663116455,
+        "best_validation_loss": 10.222360610961914,
+        "best_iteration": 3,
+        "last_validation_loss": 10.222360610961914,
+        "training_seconds": 16.435282338992693,
+        "device_memory_stats_bytes": {
+          "num_allocs": 2561,
+          "bytes_in_use": 905728,
+          "peak_bytes_in_use": 1547620352,
+          "largest_alloc_size": 1546549248,
+          "bytes_limit": 12522094592,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 2147483648,
+          "pool_bytes": 2954887168,
+          "peak_pool_bytes": 2954887168
+        }
       }
     },
     {
       "batch_size": 8192,
       "exit_code": 0,
-      "baseline_total_used_mib": 1098,
-      "peak_process_used_mib": 3612,
-      "peak_total_used_mib": 4730,
-      "elapsed_seconds": 24.32045245001791,
+      "baseline_total_used_mib": 813,
+      "peak_process_used_mib": 5676,
+      "peak_total_used_mib": 6482,
+      "elapsed_seconds": 26.35698936798144,
+      "container_python_host_pids": [
+        4060133
+      ],
+      "output_directory": "outputs/hardware-capacity/run-20261125-175440-28231a/batch-8192",
+      "telemetry_errors": [],
       "jax_device_memory_stats_bytes": {
-        "num_allocs": 2529,
+        "num_allocs": 2583,
         "bytes_in_use": 0,
-        "peak_bytes_in_use": 1961220864,
-        "largest_alloc_size": 1960148736,
+        "peak_bytes_in_use": 3127359488,
+        "largest_alloc_size": 3125496576,
         "bytes_limit": 12522094592,
         "bytes_reserved": 0,
         "peak_bytes_reserved": 0,
-        "largest_free_block_bytes": 2147483648,
-        "pool_bytes": 3491758080,
-        "peak_pool_bytes": 3491758080
+        "largest_free_block_bytes": 4294967296,
+        "pool_bytes": 5643436032,
+        "peak_pool_bytes": 5643436032
+      },
+      "effective_config_sha256": "1063612d3d30c2a7cc21750434672388534c38d4582c0e89388bad8135ded529",
+      "versions": {
+        "jax": "0.12.0.1",
+        "jaxlib": "0.12.0.1",
+        "flax": "0.12.12",
+        "optax": "0.2.9",
+        "numpy": "2.5.5",
+        "mujoco": "4.0.0",
+        "PyYAML": "6.0.4"
+      },
+      "device": "cuda:0",
+      "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+      "training_summary": {
+        "training_settings": {
+          "iterations": 3,
+          "batch_size": 8192,
+          "seed": 42,
+          "lr": 0.001,
+          "device": "gpu"
+        },
+        "policy_steps": 150,
+        "physics_substeps": 10,
+        "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+        "initial_validation_loss": 12.587753295898438,
+        "best_validation_loss": 10.217904090881348,
+        "best_iteration": 3,
+        "last_validation_loss": 10.217904090881348,
+        "training_seconds": 18.32032756198896,
+        "device_memory_stats_bytes": {
+          "num_allocs": 2583,
+          "bytes_in_use": 1682432,
+          "peak_bytes_in_use": 3127359488,
+          "largest_alloc_size": 3125496576,
+          "bytes_limit": 12522094592,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 4294967296,
+          "pool_bytes": 5643436032,
+          "peak_pool_bytes": 5643436032
+        }
       }
     },
     {
       "batch_size": 16384,
       "exit_code": 0,
-      "baseline_total_used_mib": 1105,
-      "peak_process_used_mib": 7306,
-      "peak_total_used_mib": 8302,
-      "elapsed_seconds": 28.466316724952776,
+      "baseline_total_used_mib": 798,
+      "peak_process_used_mib": 11050,
+      "peak_total_used_mib": 11856,
+      "elapsed_seconds": 30.762416952988133,
+      "container_python_host_pids": [
+        4061321
+      ],
+      "output_directory": "outputs/hardware-capacity/run-20261125-175440-28231a/batch-16384",
+      "telemetry_errors": [],
       "jax_device_memory_stats_bytes": {
-        "num_allocs": 2522,
+        "num_allocs": 2577,
         "bytes_in_use": 0,
-        "peak_bytes_in_use": 3931955712,
-        "largest_alloc_size": 3929999616,
+        "peak_bytes_in_use": 6268135168,
+        "largest_alloc_size": 6264541184,
         "bytes_limit": 12522094592,
         "bytes_reserved": 0,
         "peak_bytes_reserved": 0,
-        "largest_free_block_bytes": 4294967296,
-        "pool_bytes": 6985613312,
-        "peak_pool_bytes": 6985613312
+        "largest_free_block_bytes": 8589934592,
+        "pool_bytes": 11280580608,
+        "peak_pool_bytes": 11280580608
+      },
+      "effective_config_sha256": "1063612d3d30c2a7cc21750434672388534c38d4582c0e89388bad8135ded529",
+      "versions": {
+        "jax": "0.12.0.1",
+        "jaxlib": "0.12.0.1",
+        "flax": "0.12.12",
+        "optax": "0.2.9",
+        "numpy": "2.5.5",
+        "mujoco": "4.0.0",
+        "PyYAML": "6.0.4"
+      },
+      "device": "cuda:0",
+      "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+      "training_summary": {
+        "training_settings": {
+          "iterations": 3,
+          "batch_size": 16384,
+          "seed": 42,
+          "lr": 0.001,
+          "device": "gpu"
+        },
+        "policy_steps": 150,
+        "physics_substeps": 10,
+        "device_kind": "NVIDIA GeForce RTX 4070 Ti SUPER",
+        "initial_validation_loss": 12.603926658630371,
+        "best_validation_loss": 10.234509468078613,
+        "best_iteration": 3,
+        "last_validation_loss": 10.234509468078613,
+        "training_seconds": 22.516586687008385,
+        "device_memory_stats_bytes": {
+          "num_allocs": 2577,
+          "bytes_in_use": 3331584,
+          "peak_bytes_in_use": 6268135168,
+          "largest_alloc_size": 6264541184,
+          "bytes_limit": 12522094592,
+          "bytes_reserved": 0,
+          "peak_bytes_reserved": 0,
+          "largest_free_block_bytes": 8589934592,
+          "pool_bytes": 11280580608,
+          "peak_pool_bytes": 11280580608
+        }
       }
     }
-  ]
+  ],
+  "jax_version": "0.12.0.1",
+  "source_unchanged_during_measurement": true
 }

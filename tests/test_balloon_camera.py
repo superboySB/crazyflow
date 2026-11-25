@@ -80,6 +80,29 @@ def test_offset_and_nonzero_mount_match_actual_mujoco_camera_pose():
 
 
 @pytest.mark.render
+def test_near_contact_camera_keeps_balloon_front_surface_solid():
+    cfg = Config()
+    target = np.array([3.0, 0.0, 1.4])
+    model = make_replay_model(cfg, target, 0.15)
+    data = mujoco.MjData(model)
+    # The world extent stays large while the aircraft approaches within centimetres.
+    data.mocap_pos[0] = target - np.array([0.24, 0, 0])
+    data.mocap_quat[0] = [1, 0, 0, 0]
+    mujoco.mj_forward(model, data)
+    assert model.vis.map.znear * model.stat.extent < 0.005
+    renderer = mujoco.Renderer(model, height=cfg.image_height, width=cfg.image_width)
+    try:
+        renderer.update_scene(data, camera="fpv")
+        image = renderer.render()
+        center = image[235:245, 315:325].astype(float)
+        # The old scene-scale near plane cut away the front cap, revealing sky/ground.
+        assert np.all(center[..., 0] > 2 * center[..., 1])
+        assert np.all(center[..., 0] > 2 * center[..., 2])
+    finally:
+        renderer.close()
+
+
+@pytest.mark.render
 @pytest.mark.parametrize("calibrated", [False, True])
 def test_rendered_balloon_matches_analytic_bbox_with_calibration(calibrated: bool):
     cfg = replace(

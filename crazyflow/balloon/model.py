@@ -111,8 +111,9 @@ def initialize(batch: Batch, cfg: Config, physical: PhysicalParams | None = None
 
     The flight begins with nominal hover RPM, zero controller integral and
     previous-rate memory, and the sampled airborne reset state. Randomization
-    affects physical mass, force/torque curves and rotor response; the onboard
-    controller keeps its original nominal gains and allocation parameters.
+    affects physical mass, force/torque curves and rotor response. The optional
+    hardware configuration also varies inertia, drag and per-motor curves and
+    response. The onboard controller keeps its nominal gains and allocation.
     """
     if physical is None:
         physical = nominal_params(cfg)
@@ -137,6 +138,17 @@ def initialize(batch: Batch, cfg: Config, physical: PhysicalParams | None = None
         rpm2torque=params.rpm2torque * domain["thrust_scale"][:, None, None, None],
         rotor_dyn_coef=params.rotor_dyn_coef * domain["response_scale"][:, None, None, None],
     )
+    if cfg.hardware.enabled:
+        inertia = params.J * domain["inertia_scale"][:, None, None, None]
+        motor_thrust = domain["motor_thrust_scale"][:, None, :, None]
+        params = params.replace(
+            J=inertia,
+            J_inv=jnp.linalg.inv(inertia),
+            drag_matrix=params.drag_matrix * domain["drag_scale"][:, None, None, None],
+            rpm2thrust=params.rpm2thrust * motor_thrust,
+            rpm2torque=params.rpm2torque * motor_thrust,
+            rotor_dyn_coef=params.rotor_dyn_coef * domain["motor_response_scale"][:, None],
+        )
     states = SimState.create(n, 1, device=None)
     hover_force = jnp.broadcast_to(physical["mass"] * -physical["gravity_vec"][2] / 4, (n, 1, 4))
     hover_rpm = motor_force2rotor_vel(hover_force, physical["rpm2thrust"])
@@ -212,4 +224,19 @@ def sample_batch(key: jax.Array, cfg: Config, n: int, scenario: str = "noisy") -
         "wind": scale * cfg.wind_std * jax.random.normal(keys[10], (n, 3)),
         "gyro_bias": scale * cfg.gyro_bias_std * jax.random.normal(keys[11], (n, 3)),
     }
+    if cfg.hardware.enabled:
+        # Separate namespace: the original twelve reset/domain draws stay unchanged.
+        hardware_keys = jax.random.split(jax.random.fold_in(key, 0x48574452), 4)
+
+        def multiplier(index: int, shape: tuple[int, ...], fraction: float) -> jax.Array:
+            return 1 + scale * uniform(hardware_keys[index], shape, -fraction, fraction)
+
+        hardware = cfg.hardware
+        response = multiplier(3, (n, 4, 2), hardware.motor_response_fraction)
+        domain.update(
+            inertia_scale=multiplier(0, (n,), hardware.inertia_fraction),
+            drag_scale=multiplier(1, (n,), hardware.drag_fraction),
+            motor_thrust_scale=multiplier(2, (n, 4), hardware.motor_thrust_fraction),
+            motor_response_scale=jnp.repeat(response, 2, axis=-1),
+        )
     return {"state": state, "target": target, "radius": radius, "domain": domain}

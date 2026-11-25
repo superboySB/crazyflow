@@ -66,6 +66,9 @@ def save_checkpoint(
         "feature_dim": feature_dim(cfg),
         "plant": "crazyflow.first_principles.cf21B_500",
         "integrator": "official Euler;500Hz plant/attitude/motor control",
+        "hardware_pipeline": (
+            "causal_mailboxes_v1" if cfg.hardware.enabled else "legacy_control_tick_fifo"
+        ),
         "controller_params": controller,
         "camera": camera_parameters(frozen_config),
         "physical_params": physical,

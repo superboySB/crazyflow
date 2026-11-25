@@ -39,6 +39,10 @@ REPLAY_ARRAYS = (
     "executed_commands",
     "sensor_delay_steps",
     "action_delay_steps",
+    "camera_age_ms",
+    "gyro_age_ms",
+    "attitude_age_ms",
+    "command_delay_ms",
     "initial_target",
     "initial_radius",
     "domain_mass_scale",
@@ -197,6 +201,10 @@ class FrozenReplay:
             "executed_command": episode_sample("executed_commands", command_tick),
             "sensor_delay_steps": episode_sample("sensor_delay_steps"),
             "action_delay_steps": episode_sample("action_delay_steps"),
+            "camera_age_ms": episode_sample("camera_age_ms", command_tick),
+            "gyro_age_ms": episode_sample("gyro_age_ms", command_tick),
+            "attitude_age_ms": episode_sample("attitude_age_ms", command_tick),
+            "command_delay_ms": episode_sample("command_delay_ms", command_tick),
             "truth_time_s": truth_tick * self.cfg.dt,
             "truth_rpy_rad": states[truth_tick, self.episode, 3:6].tolist(),
             "truth_body_gyro_rad_s": episode_sample("body_gyro", truth_tick),
@@ -258,7 +266,7 @@ def _add_camera_geometry(scene: Any, state: np.ndarray, cfg: Config) -> None:
     import mujoco
 
     center, _ = camera_pose(state[:3], state[3:6], cfg)
-    corners = frustum_corners(state[:3], state[3:6], cfg, depth=0.8)
+    corners = frustum_corners(state[:3], state[3:6], cfg, depth=0.25)
     color = np.array([0.15, 0.9, 1, 1], dtype=np.float32)
     geom = scene.geoms[scene.ngeom]
     mujoco.mjv_initGeom(
@@ -321,24 +329,30 @@ def debug_panel(replay: FrozenReplay, telemetry: dict, *, ideal_visible: bool) -
 
     seen = "VALID" if telemetry["received_valid"] else "LOST"
     fov = "visible" if ideal_visible else "empty"
+    if telemetry.get("command_delay_ms") is not None:
+        timing = (
+            f"age camera/gyro/attitude [ms] {telemetry['camera_age_ms']:.0f} / "
+            f"{telemetry['gyro_age_ms']:.0f} / {telemetry['attitude_age_ms']:.0f}\n"
+            f"Scheduled RPY/T delay [ms]: {vector(telemetry['command_delay_ms'], digits=0)}"
+        )
+    else:
+        timing = f"sensor {delay('sensor_delay_steps')} / action {delay('action_delay_steps')}"
+    executed_label = "Executed@tick start" if replay.cfg.hardware.enabled else "Executed"
     return (
         f"CONTROL tick {telemetry['control_tick']} @ {telemetry['control_time_s']:.3f}s | "
-        f"sensor {delay('sensor_delay_steps')} / action {delay('action_delay_steps')}\n"
+        f"{timing}\n"
         f"Policy box {seen} | unseen {telemetry['unseen_seconds']:.3f}/"
         f"{telemetry['tracking_timeout_s']:.3f}s | ideal FOV {fov}\n"
-        f"Issued action [-1,1]: {vector(telemetry['issued_action'])}\n"
         f"{command_line('Issued', telemetry['issued_command'])}\n"
-        f"{command_line('Executed', telemetry['executed_command'])}\n"
-        f"SIM TRUTH @ {telemetry['truth_time_s']:.3f}s (NOT actor inputs)\n"
-        f"Actual RPY[deg]: {vector(telemetry['truth_rpy_rad'], scale=180 / np.pi, digits=1)}\n"
+        f"{command_line(executed_label, telemetry['executed_command'])}\n"
+        "SIM TRUTH (NOT actor inputs) RPY[deg]: "
+        f"{vector(telemetry['truth_rpy_rad'], scale=180 / np.pi, digits=1)}\n"
         f"Actual body gyro[rad/s]: {vector(telemetry['truth_body_gyro_rad_s'])}\n"
         f"Actual rotor RPM: {vector(telemetry['truth_rotor_rpm'], digits=0)}\n"
         f"Recorded first event: {telemetry['first_event_outcome']} "
         f"@ {telemetry['first_event_time_s']:.3f}s\n"
         f"{replay.plant} | {replay.name} | seed {replay.seed} | "
-        f"t {replay.elapsed:.3f}s | {replay.speed:g}x\n"
-        "T: calibration / telemetry | Space/R/E/N: pause/reset/flight/seed\n"
-        "1/2/3 suite | Left/Right scrub | +/- speed"
+        f"t {replay.elapsed:.3f}s | {replay.speed:g}x"
     )
 
 
@@ -348,6 +362,8 @@ def launch(
     frames: int = 0,
     screenshot: Path | None = None,
     self_test: bool = False,
+    record: Path | None = None,
+    fps: int = 20,
 ) -> None:
     """Open a native two-viewport player, optionally exiting after N frames for validation."""
     import glfw
@@ -409,6 +425,8 @@ def launch(
         )
 
     def action(name: str) -> None:
+        if record is not None and name != "Debug view":
+            return
         if name == "Pause":
             replay.paused = not replay.paused
         elif name == "Reset":
@@ -424,6 +442,8 @@ def launch(
 
     def key_callback(_window: Any, key: int, _scan: int, pressed: int, _mods: int) -> None:
         if pressed not in (glfw.PRESS, glfw.REPEAT):
+            return
+        if record is not None and key not in (glfw.KEY_ESCAPE, glfw.KEY_T, glfw.KEY_F):
             return
         if key == glfw.KEY_ESCAPE:
             glfw.set_window_should_close(window, True)
@@ -458,6 +478,8 @@ def launch(
         return x * fw / max(w, 1), fh - y * fh / max(h, 1)
 
     def mouse_callback(_window: Any, button: int, pressed: int, _mods: int) -> None:
+        if record is not None:
+            return
         if button != glfw.MOUSE_BUTTON_LEFT:
             return
         ui["drag"] = False
@@ -560,10 +582,22 @@ def launch(
             control_checks.append("keyboard_scrub")
 
     frame_count, last_time = 0, time.monotonic()
+    recording = None
+    if record is not None:
+        import imageio.v2 as imageio
+
+        record.parent.mkdir(parents=True, exist_ok=True)
+        frames = frames or int(np.ceil(replay.duration * fps / replay.speed)) + fps
+        # GIF has a 10 ms timebase. Distribute rounding so e.g. 30 FPS stays real time.
+        durations = (np.diff(np.rint(np.arange(frames + 1) * 100 / fps)) * 10).astype(int)
+        recording = imageio.get_writer(record, mode="I", duration=durations.tolist(), loop=0)
     try:
         while not glfw.window_should_close(window):
             now = time.monotonic()
-            if not replay.paused:
+            if recording is not None:
+                replay.elapsed = min(replay.duration, frame_count * replay.speed / fps)
+                replay.paused = replay.elapsed >= replay.duration
+            elif not replay.paused:
                 replay.elapsed = min(
                     replay.duration, replay.elapsed + min(now - last_time, 0.1) * replay.speed
                 )
@@ -592,6 +626,22 @@ def launch(
                 model, data, options, None, world_camera, mujoco.mjtCatBit.mjCAT_ALL, world_scene
             )
             _add_camera_geometry(world_scene, state, replay.cfg)
+            # A truth-only trail makes the miniature aircraft's motion visible at world scale.
+            end = int(replay.elapsed * replay.cfg.substeps / replay.cfg.dt)
+            stride = max(10, int(np.ceil(end / 500)))
+            path = replay.current["substep_states"][: end + 1 : stride, replay.episode, :3]
+            for start, finish in zip(path[:-1], path[1:]):
+                geom = world_scene.geoms[world_scene.ngeom]
+                mujoco.mjv_initGeom(
+                    geom,
+                    mujoco.mjtGeom.mjGEOM_LINE,
+                    np.zeros(3),
+                    np.zeros(3),
+                    np.eye(3).ravel(),
+                    np.array([1.0, 0.8, 0.2, 1.0], dtype=np.float32),
+                )
+                mujoco.mjv_connector(geom, mujoco.mjtGeom.mjGEOM_LINE, 2, start, finish)
+                world_scene.ngeom += 1
             mujoco.mjr_render(world_rect, world_scene, context)
             mujoco.mjv_updateScene(
                 model, data, options, None, fpv_camera, mujoco.mjtCatBit.mjCAT_ALL, fpv_scene
@@ -605,7 +655,10 @@ def launch(
             _draw_box(
                 fpv_rect, np.asarray(telemetry["received_bbox"]), (1.0, 0.65, 0.05), dashed=True
             )
-            text(world_rect, f"WORLD | {replay.plant} truth replay | cyan: camera + frustum")
+            text(
+                world_rect,
+                f"WORLD | {replay.plant} truth replay | cyan: camera | yellow: actual flight",
+            )
             text(
                 fpv_rect,
                 "Green solid: current ideal projection (SIM TRUTH)\n"
@@ -677,6 +730,10 @@ def launch(
             if self_test:
                 exercise_controls(frame_count)
             frame_count += 1
+            if recording is not None:
+                rgb = np.empty((h, w, 3), dtype=np.uint8)
+                mujoco.mjr_readPixels(rgb, None, mujoco.MjrRect(0, 0, w, h), context)
+                recording.append_data(np.flipud(rgb))
             if screenshot is not None and frames and frame_count >= frames:
                 import imageio.v2 as imageio
 
@@ -731,6 +788,29 @@ def launch(
                 else:
                     replay.next_episode()
     finally:
+        if recording is not None:
+            recording.close()
+            record.with_suffix(".json").write_text(
+                json.dumps(
+                    {
+                        "fps": fps,
+                        "frames": frame_count,
+                        "last_sim_time_s": replay.elapsed,
+                        "reached_first_event": replay.elapsed >= replay.duration - 1e-9,
+                        "truncated": replay.elapsed < replay.duration - 1e-9,
+                        "suite": replay.name,
+                        "episode": replay.episode,
+                        "seed": replay.seed,
+                        "flight_plant": replay.plant,
+                        "first_event": replay.record,
+                        "checkpoint": str(replay.checkpoint),
+                        "hardware": replay.cfg.to_dict()["hardware"],
+                        "role": "native GUI framebuffer recording of the saved trajectory",
+                    },
+                    indent=2,
+                )
+                + "\n"
+            )
         context.free()
         glfw.destroy_window(window)
         glfw.terminate()
@@ -758,6 +838,10 @@ def main() -> None:
         "--frames", type=int, default=0, help="auto-close after N frames; 0 runs until closed"
     )
     parser.add_argument("--screenshot", type=Path, help="save the last frame when --frames is set")
+    parser.add_argument("--record", type=Path, help="record the native GUI to a looping GIF")
+    parser.add_argument("--fps", type=int, default=20, help="GIF frames per simulated second")
+    parser.add_argument("--suite", choices=SUITES, default="nominal")
+    parser.add_argument("--episode", type=int, default=0, help="saved flight index, starting at 0")
     parser.add_argument(
         "--self-test", action="store_true", help="exercise native controls in 10 frames"
     )
@@ -766,6 +850,10 @@ def main() -> None:
         parser.error("--frames must be nonnegative; --screenshot requires positive --frames")
     if args.self_test and args.frames < 10:
         parser.error("--self-test requires --frames 10 or greater")
+    if not 5 <= args.fps <= 60 or args.episode < 0:
+        parser.error("--fps must be 5..60 and --episode must be nonnegative")
+    if args.record and (args.record.suffix.lower() != ".gif" or args.self_test):
+        parser.error("--record requires a .gif path and cannot be used with --self-test")
     # crazyflow imports MuJoCo before this module. Re-exec once to select the native
     # GL backend before those imports, including inside the headless-default image.
     if os.environ.get("MUJOCO_GL") != "glfw":
@@ -778,7 +866,18 @@ def main() -> None:
         if args.evaluation
         else generate(args.checkpoint, args.seed, args.device, args.plant)
     )
-    launch(replay, frames=args.frames, screenshot=args.screenshot, self_test=args.self_test)
+    replay.select_suite(SUITES.index(args.suite))
+    if args.episode >= replay.current["initial_radius"].shape[0]:
+        parser.error("--episode exceeds the number of saved flights")
+    replay.episode = args.episode
+    launch(
+        replay,
+        frames=args.frames,
+        screenshot=args.screenshot,
+        self_test=args.self_test,
+        record=args.record,
+        fps=args.fps,
+    )
 
 
 if __name__ == "__main__":

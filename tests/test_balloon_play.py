@@ -8,6 +8,7 @@ import pytest
 
 from crazyflow.balloon.config import Config
 from crazyflow.balloon.evaluate import control_telemetry
+from crazyflow.balloon.noise_config import HardwareNoise
 from crazyflow.balloon.play import SUITES, FrozenReplay, debug_panel
 
 
@@ -97,3 +98,26 @@ def test_derived_command_fifo_covers_zero_one_and_two_tick_delays():
     np.testing.assert_array_equal(nominal["executed_commands"], nominal["issued_commands"])
     np.testing.assert_array_equal(nominal["sensor_delay_steps"], 0)
     np.testing.assert_array_equal(nominal["action_delay_steps"], 0)
+
+
+def test_hardware_telemetry_uses_recorded_delivery_and_current_tick():
+    replay = _replay()
+    replay.cfg = replace(replay.cfg, hardware=HardwareNoise(enabled=True))
+    current = replay.current
+    current.update(
+        camera_age_ms=np.array([[np.inf], [20.0], [40.0]]),
+        gyro_age_ms=np.array([[0.0], [2.0], [4.0]]),
+        attitude_age_ms=np.array([[0.0], [4.0], [6.0]]),
+        command_delay_ms=np.broadcast_to([2.0, 4.0, 6.0, 8.0], (3, 1, 4)).copy(),
+    )
+    recorded = control_telemetry(current, replay.cfg, jax.random.key(99), noise=True)
+    assert "action_delay_steps" not in recorded
+    for key, value in recorded.items():
+        np.testing.assert_array_equal(value, current[key])
+    replay.elapsed = 0.02
+    info = replay.telemetry()
+    assert (info["camera_age_ms"], info["gyro_age_ms"], info["attitude_age_ms"]) == (20, 2, 4)
+    assert info["command_delay_ms"] == [2, 4, 6, 8]
+    panel = debug_panel(replay, info, ideal_visible=True)
+    assert "age camera/gyro/attitude [ms] 20 / 2 / 4" in panel
+    assert "Scheduled RPY/T delay" in panel

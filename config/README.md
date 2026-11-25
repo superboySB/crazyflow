@@ -26,11 +26,35 @@
 | `task.max_tilt`、`max_yaw` | 动作对应的目标姿态上限，rad |
 | `objective.loss_weights` | 距离、接触、速度、过快撞击、FOV、地面、倾角、角速度、动作幅度和平滑性权重 |
 | `objective` 中的温度与软阈值 | 可微最小距离/接触/撞击加权温度、地面余量 m、倾角软限 rad；改变优化目标，不改变触球成功定义 |
-| `noise.bbox_noise_std`、`dropout_prob`、`max_delay_steps` | 归一化 bbox 坐标噪声、丢帧概率、最大相机延迟拍数；一拍为 `task.dt` |
+| `noise.bbox_noise_std`、`dropout_prob` | 归一化 bbox 坐标白噪声、视觉漏检概率；漏检产生无效框 |
 | `noise.attitude_noise_std`、`noise.gyro_noise_std`、`noise.gyro_bias_std` | 姿态旋转向量噪声 rad、机体系 gyro 噪声/偏置 rad/s |
-| `noise.action_delay_steps`、`mass_fraction`、`thrust_fraction`、`response_fraction`、`wind_std` | 动作延迟拍数、质量/推力/旋翼响应相对变化、世界系外扰加速度幅度 m/s² |
+| `noise.mass_fraction`、`thrust_fraction`、`response_fraction`、`wind_std` | 质量/推力/旋翼响应相对变化、每回合固定世界系外扰加速度幅度 m/s² |
+| `noise.hardware` | 逐包视觉等待、独立 IMU/指令等待与丢包、相关偏置/阵风和额外物理不确定性，见下表 |
+| `noise.max_delay_steps`、`action_delay_steps` | 旧整数 FIFO 的视觉/动作最大延迟拍数；仅 `hardware.enabled: false` 时使用，一拍为 `task.dt` |
 
 命令行 `--iterations`、`--batch-size`、`--steps`、`--seed`、`--lr` 优先于 YAML。位置、线速度和目标真值只用于仿真、损失与评测；增加噪声不会把这些量送入策略。
+
+### 硬件链路与额外扰动
+
+新训练默认使用 `noise.hardware.enabled: true`。视觉等待 `[0,40]` ms、RPY/推力指令等待 `[0,20]` ms 沿用本项目原有等待范围的开发假设，时序改为下面的包处理；不会再串联旧整数 FIFO。新增未知的噪声、丢包、漂移、阵风和物理随机化幅度都为 **0**，测量后再逐项开启；正的时间常数或超时值本身不会产生非零扰动。
+
+| `noise.hardware` 字段 | 实际含义 |
+| --- | --- |
+| `camera_delay_ms` | 每个 50 Hz 视觉包在 `[min,max]` ms 连续均匀采等待，50 Hz 轮询后采用最新到达的捕获值；不插值、不按当前姿态重投影 |
+| `camera_packet_loss_prob`、`camera_stale_ms` | 传输丢包时保持上一收到的包；从捕获时刻算的年龄超过 stale 后输出无效框，stale 至少覆盖最大等待；这与 `dropout_prob` 的视觉漏检不同 |
+| `bbox_bias_std` | 每回合固定的四维框偏置标准差，使用与 bbox 白噪声相同的归一化单位 |
+| `gyro_delay_ms`、`attitude_delay_ms`、两个 `*_packet_loss_prob` | gyro 与姿态分别在回合开始采固定等待，按最近 2 ms 取整；500 Hz 采样，丢包各自保持上一测量 |
+| `gyro_scale_std` | 每个 gyro 样本、每轴乘 `1+std*ε`，`ε~N(0,1)`；无量纲，机制参考 CrazyRL，幅度没有按本机标定，默认 0 |
+| `gyro_drift_std`、`attitude_bias_std`、`bias_tau_s` | 相关 gyro 漂移 rad/s、SO(3) 姿态偏置 rad 的稳态标准差及相关时间 s；与原有白噪声、回合 gyro 固定零偏叠加 |
+| `attitude_command_delay_ms`、`thrust_command_delay_ms` | 每回合、各 RPY 轴与总推力分别采有效链路等待，500 Hz 入队并按最近 2 ms 取整；实际姿态与推力仍由官方控制器和电机状态推进 |
+| `command_jitter_std_ms`、`command_jitter_tau_s` | 每次 50 Hz 发动作时更新相关等待抖动；标准差 ms、相关时间 s，叠加基线后裁剪在相应等待范围内，旧包不会覆盖已接收的新包 |
+| `inertia_fraction`、`drag_fraction` | 回合内整块 J、整块阻力矩阵的正倍率均匀半宽；同步重算 `J_inv`，保留原阻尼符号，不改变控制器参数 |
+| `motor_thrust_fraction`、`motor_response_fraction` | 各电机独立的推力/反扭矩曲线倍率、升降速响应倍率半宽；同一电机两条力/矩曲线共倍率，升速和降速分别采倍率 |
+| `gust_std`、`gust_tau_s` | 相关世界系外扰加速度的稳态标准差 m/s²、相关时间 s；叠加原回合固定外扰，以实际质量换算外力，不是风速 |
+
+相关偏置、指令抖动和阵风使用 OU 更新：`ρ=exp(-Δt/τ)`，`x_next=ρ*x+std*sqrt(1-ρ²)*ε`。std 是稳态标准差，不是每秒扩散系数；指令抖动的 std 指裁剪前值。新增物理 fraction 使用 `U[1-f,1+f]`，在 perturbed 套件中半宽放大 1.5 倍；其余硬件噪声不会统一乘 1.5。
+
+队列和保持的测量值保留 BPTT 梯度；整数延迟、随机丢包、到达选择等离散事件本身不求导，时间戳和调试掩码不进入 actor。旧的兼容 BPTT checkpoint 若没有 `hardware`，会继续使用旧整数 FIFO；改 YAML 不会改造旧策略，要使用新时序需重新训练。`--nominal` 关闭随机化和额外链路等待，官方电机与刚体动态仍然存在。统计与测量方法见[辨识手册](../docs/identification.md#21-测量噪声与链路时序)。
 
 ## 2. 机体与机载控制器
 
@@ -72,7 +96,7 @@
 | 简化闭环阻力与姿态响应 | 离线三维位置、姿态、姿态/总推力指令、实测质量 | `drag` 拟合两项机体系阻力、总推力比例/滞后及二阶姿态系数 | 单独闭环 TOML，**不能覆盖第一性原理 vehicle/controller** |
 | 控制器增益及 N→实机驱动映射 | 固件配置、响应/饱和测量、独立完整飞行 | 导出官方模板；没有自动调增益或标定驱动 | `controller.toml` 及独立实机执行接口 |
 | K、镜头畸变、相机安装 | 实际镜头/分辨率标定、质心到光心测量 | 读取针孔内外参，不自动标定镜头 | `camera.json` |
-| 噪声、丢帧、通信延迟 | 静态/动态重复日志、采集与执行端时间戳 | 手工统计后填写；默认不是实测置信区间 | YAML 的 `noise` |
+| 噪声、丢帧、通信延迟 | 静态/动态重复日志、采集与执行端时间戳 | 手工统计后填写；默认不是实测置信区间，新未知幅度为 0 | YAML 的 `noise` / `noise.hardware` |
 | 目标采样、碰撞几何、损失权重 | 任务需求、实物尺寸、训练/评测结果 | 用户设置，不属于机体辨识 | YAML 的 `task/objective` |
 
 `./dani identify check` 与 `drag-check` 使用明确标记的合成样例；合成验证不能证明实物已辨识。[统一辨识手册](../docs/identification.md)和[示例数据说明](../examples/identification/README.md)解释所需观测与范围。

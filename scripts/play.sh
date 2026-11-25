@@ -16,10 +16,14 @@ usage() {
   --plant mujoco|crazyflow  --checkpoint 的飞行后端（默认 mujoco）
   --seed N            --checkpoint 的随机种子（默认 20261125）
   --device auto|cpu|gpu  自动选 GPU 或 CPU（默认 auto）
-  --headless          用 Xvfb 运行 10 帧交互自测并保存截图，无需桌面
+  --headless          用 Xvfb 运行；无 --record 时默认 10 帧自测并截图
+  --record PATH       保存 outputs 内的 GIF；默认完整轨迹加末尾 1 秒
+  --fps N             GIF 帧率，5..60（默认 20）
+  --suite NAME        nominal/noisy/perturbed（默认 nominal）
+  --episode N         选择第 N 条轨迹，从 0 开始（默认 0）
   --frames N          自动关闭帧数；headless 自测至少需要 10 帧
   --screenshot PATH   outputs 内的截图路径（headless 默认生成唯一路径）
-  --self-test         运行交互自测，需要至少 10 帧；headless 自动启用
+  --self-test         运行至少 10 帧交互自测；不能与 --record 同用
   -h, --help          显示帮助，不启动 Docker
 
 GUI 使用 Linux/X11 的 DISPLAY 与现有 Xauthority，不修改 xhost 权限。
@@ -34,6 +38,10 @@ checkpoint=
 checkpoint_given=false
 example=false
 screenshot=
+record=
+fps=20
+suite=nominal
+episode=0
 frames=
 headless=false
 self_test=false
@@ -62,6 +70,14 @@ while [[ $# -gt 0 ]]; do
     --frames=*) frames=${1#*=}; shift ;;
     --screenshot) need_value "$@"; screenshot=$2; shift 2 ;;
     --screenshot=*) screenshot=${1#*=}; shift ;;
+    --record) need_value "$@"; record=$2; shift 2 ;;
+    --record=*) record=${1#*=}; [[ -n "$record" ]] || cf_die '--record 需要 GIF 路径。'; shift ;;
+    --fps) need_value "$@"; fps=$2; shift 2 ;;
+    --fps=*) fps=${1#*=}; shift ;;
+    --suite) need_value "$@"; suite=$2; shift 2 ;;
+    --suite=*) suite=${1#*=}; shift ;;
+    --episode) need_value "$@"; episode=$2; shift 2 ;;
+    --episode=*) episode=${1#*=}; shift ;;
     --headless) headless=true; shift ;;
     --self-test) self_test=true; shift ;;
     *) cf_die "不支持参数 $1；请使用完整参数名，参见 ./dani play --help。" ;;
@@ -76,10 +92,20 @@ fi
 [[ "$seed" =~ ^-?[0-9]+$ ]] || cf_die '--seed 必须是整数。'
 [[ "$plant" == mujoco || "$plant" == crazyflow ]] || \
   cf_die '--plant 只能是 mujoco 或 crazyflow。'
+[[ "$fps" =~ ^[0-9]{1,2}$ ]] && (( 10#$fps >= 5 && 10#$fps <= 60 )) || \
+  cf_die '--fps 必须是 5..60 的整数。'
+[[ "$episode" =~ ^[0-9]+$ ]] || cf_die '--episode 必须是非负整数。'
+case "$suite" in nominal|noisy|perturbed) ;; *) cf_die '--suite 只能是 nominal、noisy 或 perturbed。';; esac
+container_record=
+if [[ -n "$record" ]]; then
+  [[ ${record,,} == *.gif ]] || cf_die '--record 必须使用 .gif 后缀。'
+  [[ "$self_test" != true ]] || cf_die '--record 不能与 --self-test 同时使用。'
+  container_record=$(cf_to_container "$record")
+fi
 if [[ -n "$frames" ]]; then
   [[ "$frames" =~ ^[0-9]+$ ]] || cf_die '--frames 必须是非负整数。'
 fi
-if [[ "$headless" == true ]]; then
+if [[ "$headless" == true && -z "$record" ]]; then
   frames=${frames:-10}
   self_test=true
 fi
@@ -88,7 +114,10 @@ if [[ "$self_test" == true ]]; then
     cf_die '交互自测的 --frames 必须是至少 10 的整数。'
 fi
 
-args=()
+args=(--fps "$fps" --suite "$suite" --episode "$episode")
+if [[ -n "$container_record" ]]; then
+  args+=(--record "$container_record")
+fi
 if [[ "$example" == true ]]; then
   checkpoint=$(cf_stage_example_policy)
 fi
@@ -110,7 +139,7 @@ else
   args+=(--evaluation "$container_evaluation")
   screenshot_parent=$host_evaluation
 fi
-if [[ "$headless" == true && -z "$screenshot" ]]; then
+if [[ "$headless" == true && -z "$record" && -z "$screenshot" ]]; then
   screenshot="$screenshot_parent/gui-headless-$(date +%Y%m%d-%H%M%S)-$$.png"
 fi
 if [[ -n "$screenshot" ]]; then
@@ -126,7 +155,11 @@ fi
 cf_runtime
 args+=(--device "$CF_DEVICE")
 if [[ "$headless" == true ]]; then
-  printf '运行无桌面 GUI 自测，截图：%s\n' "$screenshot"
+  if [[ -n "$record" ]]; then
+    printf '录制无桌面 GUI：%s\n' "$record"
+  else
+    printf '运行无桌面 GUI 自测，截图：%s\n' "$screenshot"
+  fi
   cf_container env MUJOCO_GL=glfw xvfb-run -a -s '-screen 0 1600x1100x24' \
     python -m crazyflow.balloon.play "${args[@]}"
 else

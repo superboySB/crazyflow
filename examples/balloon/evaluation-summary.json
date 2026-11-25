@@ -2,10 +2,10 @@
   "schema": "balloon-example-evaluation-summary-v1",
   "checkpoint": {
     "file": "policy.npz",
-    "sha256": "ccb9aeb74f6b2718dd34e4486dc1b7d69a4876a3c778c421e6d7703b00fd633f",
+    "sha256": "2844682f1a674e5fefd1fd481712a9903a6304fea76f44d383c0c87b6e649540",
     "schema": "cf21b_first_principles_visible_bbox_bptt_v3",
     "feature_dim": 65,
-    "selected_iteration": 1150
+    "selected_iteration": 1425
   },
   "training": {
     "algorithm": "BPTT",
@@ -13,15 +13,21 @@
     "integrator": "official Euler;500Hz plant/attitude/motor control",
     "seed": 42,
     "scenario": "noisy",
+    "settings": {
+      "iterations": 1500,
+      "batch_size": 1024,
+      "seed": 42,
+      "lr": 0.001,
+      "device": "gpu"
+    },
     "completed_iterations": 1500,
-    "selected_iteration": 1150,
-    "initial_validation_loss": 12.435049057006836,
-    "best_validation_loss": 1.3118246793746948,
-    "last_iteration_validation_loss": 1.392567753791809,
-    "last_record_seconds": 758.7963021550095,
+    "selected_iteration": 1425,
+    "initial_validation_loss": 12.445660591125488,
+    "best_validation_loss": 1.2334939241409302,
+    "last_iteration_validation_loss": 1.277369737625122,
+    "last_record_seconds": 831.0244295269949,
     "log_records": 61,
-    "selection": "最低已记录固定验证集损失的 checkpoint；policy.npz 不是最后一次更新的参数。",
-    "loss_note": "损失是仿真优化目标，不是接触成功率；日志损失每25次采样记录（另含第1次）。"
+    "selection": "policy.npz是已记录固定验证集损失最低的参数；完整训练到1500次。"
   },
   "evaluation": {
     "protocol": "balloon-heldout-v1",
@@ -61,7 +67,15 @@
       "tracking_timeout_s": 0.5,
       "engine_role": "MuJoCo mj_step integrates position/quaternion/linear and angular velocity; shared official controller and motor/propeller model generate external wrench. A separate integrator, not independently identified aircraft/actuator dynamics."
     },
-    "total_episodes": 768,
+    "telemetry_contract": {
+      "bbox": "received policy box at tick k, with capture noise and causal delivery",
+      "actions": "normalized issued policy action at start of tick k",
+      "issued_commands": "issued [roll,pitch,yaw radians,total thrust N] at tick k",
+      "executed_commands": "actual command at first 500Hz substep of tick k; channels may change later in tick",
+      "states_body_gyro_rotor_rpm": "simulation truth at boundaries j*dt, initial sample j=0",
+      "sensor_delay_steps_action_delay_steps": "simulation debug only; never actor inputs",
+      "hardware_timing": "camera/gyro/attitude capture age at policy tick; scheduled RPY/T delay in ms; debug only, never actor inputs"
+    },
     "camera": {
       "model": "undistorted pinhole; rectified tracker pixels",
       "resolution": [
@@ -115,6 +129,7 @@
         ]
       ]
     },
+    "total_episodes": 768,
     "scenarios": {
       "nominal": {
         "episodes": 256,
@@ -137,7 +152,10 @@
           "nonfinite": 0,
           "timeout": 0
         },
-        "mean_event_time_s": 1.613410881325232,
+        "mean_event_time_s": 1.5655816102724982,
+        "mean_minimum_distance_m": 0.2415201928131282,
+        "mean_minimum_surface_clearance_m": 3.469446951953614e-17,
+        "distance_metric_episodes": 256,
         "native_contact_diagnostic": {
           "episodes_contacting_by_first_event": 256,
           "note": "native collision cache at 500Hz poses; primary metric uses swept geometry"
@@ -145,55 +163,61 @@
       },
       "noisy": {
         "episodes": 256,
-        "successes": 255,
-        "success_rate": 0.99609375,
+        "successes": 256,
+        "success_rate": 1.0,
         "success_rate_wilson95": [
-          0.9782090246194175,
-          0.9993101178330381
+          0.9852161435741286,
+          0.9999999999999999
         ],
-        "geometric_contact_rate": 0.99609375,
-        "safe_contacts": 255,
-        "safe_contact_rate": 0.99609375,
+        "geometric_contact_rate": 1.0,
+        "safe_contacts": 256,
+        "safe_contact_rate": 1.0,
         "high_speed_contact_rate": 0.0,
         "outcomes": {
-          "hit": 255,
+          "hit": 256,
           "too_fast_contact": 0,
           "floor": 0,
           "out_of_bounds": 0,
           "tracking_lost": 0,
           "nonfinite": 0,
-          "timeout": 1
+          "timeout": 0
         },
-        "mean_event_time_s": 1.7308367281203718,
+        "mean_event_time_s": 1.7267933498963948,
+        "mean_minimum_distance_m": 0.2415201928131282,
+        "mean_minimum_surface_clearance_m": 4.109126233720062e-17,
+        "distance_metric_episodes": 256,
         "native_contact_diagnostic": {
-          "episodes_contacting_by_first_event": 255,
+          "episodes_contacting_by_first_event": 256,
           "note": "native collision cache at 500Hz poses; primary metric uses swept geometry"
         }
       },
       "perturbed": {
         "episodes": 256,
-        "successes": 244,
-        "success_rate": 0.953125,
+        "successes": 242,
+        "success_rate": 0.9453125,
         "success_rate_wilson95": [
-          0.9198669811156821,
-          0.9729851489983719
+          0.9103104192747177,
+          0.9671477085959906
         ],
-        "geometric_contact_rate": 0.953125,
-        "safe_contacts": 244,
-        "safe_contact_rate": 0.953125,
+        "geometric_contact_rate": 0.9453125,
+        "safe_contacts": 242,
+        "safe_contact_rate": 0.9453125,
         "high_speed_contact_rate": 0.0,
         "outcomes": {
-          "hit": 244,
+          "hit": 242,
           "too_fast_contact": 0,
           "floor": 0,
           "out_of_bounds": 0,
-          "tracking_lost": 3,
+          "tracking_lost": 14,
           "nonfinite": 0,
-          "timeout": 9
+          "timeout": 0
         },
-        "mean_event_time_s": 1.8352552357312328,
+        "mean_event_time_s": 1.7948664179442884,
+        "mean_minimum_distance_m": 0.25004865202651955,
+        "mean_minimum_surface_clearance_m": 0.008528459213391425,
+        "distance_metric_episodes": 256,
         "native_contact_diagnostic": {
-          "episodes_contacting_by_first_event": 244,
+          "episodes_contacting_by_first_event": 242,
           "note": "native collision cache at 500Hz poses; primary metric uses swept geometry"
         }
       }
@@ -251,6 +275,63 @@
     "response_fraction": 0.1,
     "wind_std": 0.12,
     "action_delay_steps": 1,
+    "hardware": {
+      "enabled": true,
+      "camera_delay_ms": [
+        0.0,
+        40.0
+      ],
+      "camera_packet_loss_prob": 0.0,
+      "camera_stale_ms": 100.0,
+      "bbox_bias_std": 0.0,
+      "gyro_delay_ms": [
+        0.0,
+        0.0
+      ],
+      "attitude_delay_ms": [
+        0.0,
+        0.0
+      ],
+      "gyro_packet_loss_prob": 0.0,
+      "attitude_packet_loss_prob": 0.0,
+      "gyro_drift_std": 0.0,
+      "gyro_scale_std": 0.0,
+      "attitude_bias_std": 0.0,
+      "bias_tau_s": 30.0,
+      "attitude_command_delay_ms": [
+        0.0,
+        20.0
+      ],
+      "thrust_command_delay_ms": [
+        0.0,
+        20.0
+      ],
+      "command_jitter_std_ms": 0.0,
+      "command_jitter_tau_s": 0.1,
+      "inertia_fraction": 0.0,
+      "drag_fraction": 0.0,
+      "motor_thrust_fraction": 0.0,
+      "motor_response_fraction": 0.0,
+      "gust_std": 0.0,
+      "gust_tau_s": 0.5
+    },
+    "loss_weights": {
+      "distance": 1.0,
+      "contact": 5.0,
+      "speed": 0.04,
+      "impact": 0.15,
+      "fov": 0.8,
+      "ground": 12.0,
+      "tilt": 3.0,
+      "angular_rate": 0.015,
+      "action": 0.025,
+      "smoothness": 0.08
+    },
+    "softmin_temperature": 0.08,
+    "impact_temperature": 0.15,
+    "contact_temperature": 0.12,
+    "ground_margin": 0.15,
+    "tilt_soft_limit": 0.85,
     "model_params": {
       "gravity_vec": [
         0.0,
@@ -423,10 +504,66 @@
       }
     }
   },
+  "hardware": {
+    "pipeline": "causal_mailboxes_v1",
+    "pipeline_derived_from_frozen_config": true,
+    "descriptive_checkpoint_pipeline_field_present": false,
+    "camera_capture_rate_hz": 50.0,
+    "imu_and_control_rate_hz": 500.0,
+    "camera_delay_ms": [
+      0.0,
+      40.0
+    ],
+    "attitude_command_delay_ms": [
+      0.0,
+      20.0
+    ],
+    "thrust_command_delay_ms": [
+      0.0,
+      20.0
+    ],
+    "unmeasured_new_amplitudes": {
+      "camera_packet_loss_prob": 0.0,
+      "bbox_bias_std": 0.0,
+      "gyro_packet_loss_prob": 0.0,
+      "attitude_packet_loss_prob": 0.0,
+      "gyro_drift_std": 0.0,
+      "gyro_scale_std": 0.0,
+      "attitude_bias_std": 0.0,
+      "command_jitter_std_ms": 0.0,
+      "inertia_fraction": 0.0,
+      "drag_fraction": 0.0,
+      "motor_thrust_fraction": 0.0,
+      "motor_response_fraction": 0.0,
+      "gust_std": 0.0
+    },
+    "parameter_status": "沿用项目已有延迟边界；新增未知扰动幅度为0，尚需实测。"
+  },
+  "gui_recording": {
+    "file": "gui.gif",
+    "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
+    "suite": "noisy",
+    "episode": 0,
+    "seed": 20261125,
+    "first_event": "hit",
+    "first_event_time_s": 1.9291279750763106,
+    "reached_first_event": true,
+    "truncated": false,
+    "rendered_frames": 59,
+    "encoded_frames": 40,
+    "total_duration_ms": 2950,
+    "last_frame_hold_ms": 1000,
+    "delay_values_ms": [
+      50,
+      1000
+    ],
+    "loop": 0
+  },
   "limitations": [
-    "训练和评测都是仿真，不是实机飞行或硬件测量。",
-    "MuJoCo mj_step 独立积分刚体；两后端共享官方控制器、旋翼响应和力/力矩模型及冻结参数，不能视为独立辨识的飞机动力学验证。",
-    "bounding box 来自已校准针孔相机下的理想球体投影，再施加指定传感噪声、丢帧与延迟；未验证真实视觉检测器。",
-    "接触采用所有积分子步的扫掠球体首次相交；超过2.5m/s只作速度诊断，仍算实际接触。"
+    "训练、评测和容量记录均来自仿真，不是实机飞行或硬件测量。",
+    "MuJoCo独立积分刚体，但与训练共享官方控制器、旋翼响应、力/力矩模型及冻结标称参数。",
+    "bbox由理想球体投影生成后加入配置内噪声与延迟，未验证真实视觉检测器。",
+    "新增未知扰动幅度保持0；不能据此声称已验证这些非零扰动或实机鲁棒性。",
+    "容量短测每档仅3次完整BPTT更新，不能当作收敛性能比较或其它显卡的容量上限。"
   ]
 }

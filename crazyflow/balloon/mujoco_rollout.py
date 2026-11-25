@@ -19,8 +19,10 @@ import numpy as np
 from jax.scipy.spatial.transform import Rotation
 from scipy.spatial.transform import Rotation as NumpyRotation
 
+from crazyflow.balloon import hardware as H
 from crazyflow.balloon.camera import mujoco_camera_attributes
 from crazyflow.balloon.model import Batch, command, initialize, nominal_params
+from crazyflow.balloon.observations import actor_features
 from crazyflow.balloon.policy import PolicyParams, apply_policy
 from crazyflow.control import Control
 from crazyflow.control.transform import motor_force2rotor_vel
@@ -40,7 +42,11 @@ def _values(value: Any) -> str:
 
 
 def make_flight_model(
-    cfg: Config, mass_scale: float = 1.0, target: np.ndarray | None = None, radius: float = 0.15
+    cfg: Config,
+    mass_scale: float = 1.0,
+    target: np.ndarray | None = None,
+    radius: float = 0.15,
+    inertia_scale: float = 1.0,
 ) -> mujoco.MjModel:
     """Build a free aircraft with checkpoint mass/full inertia, never visual XML inertia.
 
@@ -51,13 +57,19 @@ def make_flight_model(
     """
     physical = jax.device_get(nominal_params(cfg))
     mass = float(physical["mass"]) * float(mass_scale)
-    inertia = np.asarray(physical["J"], dtype=float)
+    inertia = np.asarray(physical["J"], dtype=float) * float(inertia_scale)
     if mass <= 0 or not np.isfinite(mass):
         raise ValueError("MuJoCo flight mass must be finite and positive")
-    if not np.allclose(inertia, inertia.T) or np.linalg.eigvalsh(inertia).min() <= 0:
+    if (
+        not np.isfinite(inertia).all()
+        or not np.allclose(inertia, inertia.T)
+        or np.linalg.eigvalsh(inertia).min() <= 0
+    ):
         raise ValueError("MuJoCo flight inertia must be symmetric positive definite")
     root = ET.Element("mujoco", model="cf21B_500_native_flight")
     ET.SubElement(root, "compiler", angle="radian", inertiafromgeom="false")
+    visual = ET.SubElement(root, "visual")
+    ET.SubElement(visual, "map", znear=".0001")
     ET.SubElement(
         root,
         "option",
@@ -138,10 +150,17 @@ class NativePlant:
         self.physical = nominal_params(cfg)
         self.data = initialize(batch, cfg, self.physical)
         host = jax.device_get(batch)
+        inertia_scales = (
+            host["domain"]["inertia_scale"] if cfg.hardware.enabled else np.ones(len(host["state"]))
+        )
         self.models = [
-            make_flight_model(cfg, scale, target, radius)
-            for scale, target, radius in zip(
-                host["domain"]["mass_scale"], host["target"], host["radius"], strict=True
+            make_flight_model(cfg, scale, target, radius, inertia_scale=inertia_scale)
+            for scale, target, radius, inertia_scale in zip(
+                host["domain"]["mass_scale"],
+                host["target"],
+                host["radius"],
+                inertia_scales,
+                strict=True,
             )
         ]
         self.worlds = [mujoco.MjData(model) for model in self.models]
@@ -238,36 +257,145 @@ class NativePlant:
         self.data = F.attitude_control(self.data, cmd[:, None])
         trajectory, contacts = [], []
         for _ in range(self.cfg.substeps):
-            self.data, force, torque = self._actuators(self.data)
-            force, torque = jax.device_get((force, torque))
-            for episode, (model, world, body, f, t) in enumerate(
-                zip(self.models, self.worlds, self.body_ids, force, torque, strict=True)
-            ):
-                if self.failed[episode]:
-                    continue
-                warning_ids = (
-                    mujoco.mjtWarning.mjWARN_BADQPOS,
-                    mujoco.mjtWarning.mjWARN_BADQVEL,
-                    mujoco.mjtWarning.mjWARN_BADQACC,
-                )
-                before = [world.warning[warning].number for warning in warning_ids]
-                if not np.isfinite(np.r_[f, t]).all():
-                    self.failed[episode] = True
-                    continue
-                world.xfrc_applied[body, :3] = f
-                world.xfrc_applied[body, 3:] = t
-                mujoco.mj_step(model, world)
-                if not np.isfinite(np.r_[world.qpos, world.qvel]).all() or any(
-                    world.warning[warning].number > count
-                    for warning, count in zip(warning_ids, before, strict=True)
-                ):
-                    self.failed[episode] = True
-                    continue
-                # mj_step updates qpos but its collision cache is pre-integration.
-                mujoco.mj_forward(model, world)
-            trajectory.append(self._synchronize())
-            contacts.append(self.contacts())
+            states, touching = self._substep()
+            trajectory.append(states)
+            contacts.append(touching)
         return np.stack(trajectory), np.stack(contacts)
+
+    def _substep(self) -> tuple[np.ndarray, np.ndarray]:
+        """Integrate one native step after the caller sets command/external force."""
+        self.data, force, torque = self._actuators(self.data)
+        force, torque = jax.device_get((force, torque))
+        for episode, (model, world, body, f, t) in enumerate(
+            zip(self.models, self.worlds, self.body_ids, force, torque, strict=True)
+        ):
+            if self.failed[episode]:
+                continue
+            warning_ids = (
+                mujoco.mjtWarning.mjWARN_BADQPOS,
+                mujoco.mjtWarning.mjWARN_BADQVEL,
+                mujoco.mjtWarning.mjWARN_BADQACC,
+            )
+            before = [world.warning[warning].number for warning in warning_ids]
+            if not np.isfinite(np.r_[f, t]).all():
+                self.failed[episode] = True
+                continue
+            world.xfrc_applied[body, :3] = f
+            world.xfrc_applied[body, 3:] = t
+            mujoco.mj_step(model, world)
+            if not np.isfinite(np.r_[world.qpos, world.qvel]).all() or any(
+                world.warning[warning].number > count
+                for warning, count in zip(warning_ids, before, strict=True)
+            ):
+                self.failed[episode] = True
+                continue
+            # mj_step updates qpos but its collision cache is pre-integration.
+            mujoco.mj_forward(model, world)
+        return self._synchronize(), self.contacts()
+
+
+def _hardware_rollout(
+    params: PolicyParams, batch: Batch, cfg: Config, key: jax.Array, noise: bool, plant: NativePlant
+) -> dict[str, Any]:
+    """Use the identical JAX mailboxes around each actual native rigid-body step."""
+    from crazyflow.balloon.rollout import trajectory_loss
+
+    keys = jax.random.split(key, 3)
+    hardware = H.initialize_hardware(
+        plant.data, batch, cfg, jax.random.fold_in(keys[0], 0x4857504C), noise
+    )
+    n = batch["state"].shape[0]
+    boxes, acts = jnp.zeros((n, cfg.history, 5)), jnp.zeros((n, cfg.history, 4))
+
+    @jax.jit
+    def policy_tick(
+        data: SimData, hardware: H.HardwareState, boxes: jax.Array, acts: jax.Array, rng: jax.Array
+    ) -> tuple:
+        tick_keys = jax.random.split(rng, 4)
+        hardware, received, rotation, gyro, telemetry = H.measure(
+            hardware, data, batch, cfg, tick_keys[0], noise
+        )
+        boxes = jnp.concatenate((boxes[:, 1:], received[:, None]), axis=1)
+        issued = apply_policy(params, actor_features(boxes, rotation, gyro, acts, cfg))
+        acts = jnp.concatenate((acts[:, 1:], issued[:, None]), axis=1)
+        hardware = H.issue(hardware, issued, cfg, tick_keys[1], noise)
+        telemetry["command_delay_ms"] = H.command_delay_ms(hardware, cfg)
+        return (
+            hardware,
+            boxes,
+            acts,
+            received,
+            issued,
+            command(issued, cfg, plant.physical),
+            telemetry,
+        )
+
+    @jax.jit
+    def before_physics(
+        data: SimData, hardware: H.HardwareState, rng: jax.Array
+    ) -> tuple[SimData, H.HardwareState, jax.Array]:
+        hardware, executed, gust = H.actuate(hardware, cfg, rng, noise)
+        cmd = command(executed, cfg, plant.physical)
+        # Replace the total external acceleration every step; never accumulate it.
+        force = data.params.mass * (batch["domain"]["wind"] + gust)[:, None]
+        data = data.replace(states=data.states.replace(force=force))
+        return F.attitude_control(data, cmd[:, None]), hardware, cmd
+
+    @jax.jit
+    def after_physics(hardware: H.HardwareState, data: SimData, rng: jax.Array) -> H.HardwareState:
+        return H.sample_imu(hardware, data, cfg, rng, noise)
+
+    initial = jax.device_get(plant.data.states)
+    states = [np.asarray(batch["state"])]
+    substeps, contacts = [states[0]], [plant.contacts()]
+    quaternion, gyro, rotor = (
+        [initial.quat[:, 0]],
+        [initial.ang_vel[:, 0]],
+        [initial.rotor_vel[:, 0]],
+    )
+    received_boxes, actions, issued_commands, executed_commands = [], [], [], []
+    telemetry = {
+        name: [] for name in ("camera_age_ms", "gyro_age_ms", "attitude_age_ms", "command_delay_ms")
+    }
+    for rng in jax.random.split(keys[2], cfg.steps):
+        hardware, boxes, acts, received, issued, issued_cmd, debug = policy_tick(
+            plant.data, hardware, boxes, acts, rng
+        )
+        inner_base = jax.random.split(rng, 4)[2]
+        for index, subkey in enumerate(jax.random.split(inner_base, cfg.substeps)):
+            actuate_key, imu_key = jax.random.split(subkey, 2)
+            plant.data, hardware, executed_cmd = before_physics(plant.data, hardware, actuate_key)
+            sub, touching = plant._substep()
+            hardware = after_physics(hardware, plant.data, imu_key)
+            substeps.append(sub)
+            contacts.append(touching)
+            if index == 0:
+                executed_commands.append(np.asarray(executed_cmd))
+        states.append(sub)
+        current = jax.device_get(plant.data.states)
+        quaternion.append(current.quat[:, 0])
+        gyro.append(current.ang_vel[:, 0])
+        rotor.append(current.rotor_vel[:, 0])
+        received_boxes.append(np.asarray(received))
+        actions.append(np.asarray(issued))
+        issued_commands.append(np.asarray(issued_cmd))
+        for name in telemetry:
+            telemetry[name].append(np.asarray(debug[name]))
+    states, substeps, actions = np.stack(states), np.stack(substeps), np.stack(actions)
+    return {
+        "states": states,
+        "substep_states": substeps,
+        "bbox": np.stack(received_boxes),
+        "actions": actions,
+        "loss": np.asarray(trajectory_loss(states, substeps, actions, batch, cfg)),
+        "quaternion_xyzw": np.stack(quaternion),
+        "body_gyro": np.stack(gyro),
+        "rotor_rpm": np.stack(rotor),
+        "native_contacts": np.stack(contacts),
+        "issued_commands": np.stack(issued_commands),
+        "executed_commands": np.stack(executed_commands),
+        **{name: np.stack(values) for name, values in telemetry.items()},
+    }
 
 
 def rollout(
@@ -277,6 +405,8 @@ def rollout(
     from crazyflow.balloon.rollout import observe, trajectory_loss
 
     plant = NativePlant(batch, cfg)
+    if cfg.hardware.enabled:
+        return _hardware_rollout(params, batch, cfg, key, noise, plant)
     n = batch["state"].shape[0]
     keys = jax.random.split(key, 3)
     delay = (

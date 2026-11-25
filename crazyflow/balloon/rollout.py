@@ -5,6 +5,14 @@ import jax.numpy as jnp
 from jax.scipy.spatial.transform import Rotation
 
 from crazyflow.balloon.config import Config
+from crazyflow.balloon.hardware import (
+    actuate,
+    command_delay_ms,
+    initialize_hardware,
+    issue,
+    measure,
+    sample_imu,
+)
 from crazyflow.balloon.model import (
     Batch,
     advance,
@@ -16,7 +24,20 @@ from crazyflow.balloon.model import (
 )
 from crazyflow.balloon.observations import actor_features, clip_bbox, ideal_bbox, soft_fov_cost
 from crazyflow.balloon.policy import PolicyParams, apply_policy
+from crazyflow.control import Control
+from crazyflow.control.transform import motor_force2rotor_vel
+from crazyflow.dynamics import Dynamics
+from crazyflow.sim import functional as F
 from crazyflow.sim.data import SimData
+from crazyflow.sim.integration import Integrator
+from crazyflow.sim.sim import (
+    build_control_fns,
+    clip_floor_pos,
+    clip_rotor_vel_cmd,
+    increment_steps,
+    select_dynamics_fn,
+    select_integrate_fn,
+)
 
 
 def trajectory_loss(
@@ -113,6 +134,8 @@ def rollout(
     params: PolicyParams, batch: Batch, cfg: Config, key: jax.Array, noise: bool = True
 ) -> dict[str, jax.Array]:
     """One uninterrupted rollout; random samples remain fixed during differentiation."""
+    if cfg.hardware.enabled:
+        return _hardware_rollout(params, batch, cfg, key, noise)
     physical = nominal_params(cfg)
     n = batch["state"].shape[0]
     keys = jax.random.split(key, 3)
@@ -170,4 +193,94 @@ def rollout(
         "quaternion_xyzw": jnp.concatenate((initial_data.states.quat[:, 0][None], quaternions)),
         "body_gyro": jnp.concatenate((initial_data.states.ang_vel[:, 0][None], gyro)),
         "rotor_rpm": jnp.concatenate((initial_data.states.rotor_vel[:, 0][None], rotor_vel)),
+    }
+
+
+def _hardware_rollout(
+    params: PolicyParams, batch: Batch, cfg: Config, key: jax.Array, noise: bool
+) -> dict[str, jax.Array]:
+    """Run causal sensor mailboxes and per-channel commands on the official plant."""
+    physical = nominal_params(cfg)
+    n = batch["state"].shape[0]
+    keys = jax.random.split(key, 3)
+    initial_data = initialize(batch, cfg, physical)
+    hardware = initialize_hardware(
+        initial_data, batch, cfg, jax.random.fold_in(keys[0], 0x4857504C), noise
+    )
+    boxes = jnp.zeros((n, cfg.history, 5))
+    acts = jnp.zeros((n, cfg.history, 4))
+    stages = build_control_fns(Control.attitude, Dynamics.default)
+    integrate = select_integrate_fn(Integrator.default, select_dynamics_fn(Dynamics.default))
+    upper = motor_force2rotor_vel(physical["thrust_max"], physical["rpm2thrust"])
+
+    def step(carry: tuple, rng: jax.Array) -> tuple[tuple, tuple]:
+        data, boxes, acts, hardware = carry
+        tick_keys = jax.random.split(rng, 4)
+        hardware, received, rotation, measured_gyro, timing = measure(
+            hardware, data, batch, cfg, tick_keys[0], noise
+        )
+        boxes = jnp.concatenate((boxes[:, 1:], received[:, None]), 1)
+        issued = apply_policy(params, actor_features(boxes, rotation, measured_gyro, acts, cfg))
+        acts = jnp.concatenate((acts[:, 1:], issued[:, None]), 1)
+        hardware = issue(hardware, issued, cfg, tick_keys[1], noise)
+        delays = command_delay_ms(hardware, cfg)
+
+        def physics(current: tuple, subkey: jax.Array) -> tuple[tuple, tuple]:
+            data, hardware = current
+            command_key, imu_key = jax.random.split(subkey, 2)
+            hardware, executed, gust = actuate(hardware, cfg, command_key, noise)
+            data = data.replace(
+                states=data.states.replace(
+                    force=data.params.mass * (batch["domain"]["wind"] + gust)[:, None]
+                )
+            )
+            data = F.attitude_control(data, command(executed, cfg, physical)[:, None])
+            for _, stage in stages:
+                data = stage(data)
+            data = clip_rotor_vel_cmd(data, lower=0.0, upper=upper, dynamics=Dynamics.default)
+            data = increment_steps(clip_floor_pos(integrate(data)))
+            hardware = sample_imu(hardware, data, cfg, imu_key, noise)
+            return (data, hardware), (state_vector(data), executed)
+
+        (data, hardware), (sub, executed) = jax.lax.scan(
+            physics, (data, hardware), jax.random.split(tick_keys[2], cfg.substeps)
+        )
+        data = data.replace(core=data.core.replace(mjx_synced=False))
+        return (data, boxes, acts, hardware), (
+            state_vector(data),
+            sub,
+            received,
+            issued,
+            data.states.quat[:, 0],
+            data.states.ang_vel[:, 0],
+            data.states.rotor_vel[:, 0],
+            command(executed[0], cfg, physical),
+            timing["camera_age_ms"],
+            timing["gyro_age_ms"],
+            timing["attitude_age_ms"],
+            delays,
+        )
+
+    _, output = jax.lax.scan(
+        jax.checkpoint(step),
+        (initial_data, boxes, acts, hardware),
+        jax.random.split(keys[2], cfg.steps),
+    )
+    states, sub, bbox, actions, quaternions, gyro, rotor_vel, executed, *timing = output
+    states = jnp.concatenate((batch["state"][None], states), 0)
+    sub = jnp.concatenate((batch["state"][None], sub.reshape(-1, n, 12)), 0)
+    return {
+        "states": states,
+        "substep_states": sub,
+        "bbox": bbox,
+        "actions": actions,
+        "loss": trajectory_loss(states, sub, actions, batch, cfg),
+        "quaternion_xyzw": jnp.concatenate((initial_data.states.quat[:, 0][None], quaternions)),
+        "body_gyro": jnp.concatenate((initial_data.states.ang_vel[:, 0][None], gyro)),
+        "rotor_rpm": jnp.concatenate((initial_data.states.rotor_vel[:, 0][None], rotor_vel)),
+        "issued_commands": command(actions, cfg, physical),
+        "executed_commands": executed,
+        **dict(
+            zip(("camera_age_ms", "gyro_age_ms", "attitude_age_ms", "command_delay_ms"), timing)
+        ),
     }

@@ -62,7 +62,7 @@ version = { attr = "crazyflow.__version__" }
 "share/crazyflow/docs" = ["docs/*.md", "docs/*.pdf"]
 "share/crazyflow/docs/crazyflow_experiments_sysid" = ["docs/crazyflow_experiments_sysid/README.md", "docs/crazyflow_experiments_sysid/LICENSE", "docs/crazyflow_experiments_sysid/provenance.json"]
 "share/crazyflow/examples/identification" = ["examples/identification/*.md", "examples/identification/*.csv", "examples/identification/*.json"]
-"share/crazyflow/examples/balloon" = ["examples/balloon/*.md", "examples/balloon/*.npz", "examples/balloon/*.json", "examples/balloon/*.jsonl", "examples/balloon/*.png"]
+"share/crazyflow/examples/balloon" = ["examples/balloon/*.md", "examples/balloon/*.npz", "examples/balloon/*.json", "examples/balloon/*.jsonl", "examples/balloon/*.png", "examples/balloon/*.gif"]
 
 [tool.pytest.ini_options]
 markers = ["unit", "integration", "render"]

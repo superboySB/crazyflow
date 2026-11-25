@@ -469,7 +469,8 @@ def make_replay_model(cfg: Any, target: np.ndarray, radius: float) -> Any:
     collision_offset = " ".join(map(str, cfg.collision_offset))
     xml = f"""<mujoco model="balloon_replay">
       <visual><global offwidth="{render_width}" offheight="{render_height}"/>
-        <headlight ambient=".45 .45 .45" diffuse=".7 .7 .7"/></visual>
+        <headlight ambient=".45 .45 .45" diffuse=".7 .7 .7"/>
+        <map znear=".0001"/></visual>
       <asset><texture type="skybox" builtin="gradient" width="512" height="3072"
         rgb1=".3 .4 .55" rgb2=".08 .12 .2"/>
         <texture name="grid" type="2d" builtin="checker" width="256" height="256"
@@ -507,7 +508,7 @@ def make_replay_model(cfg: Any, target: np.ndarray, radius: float) -> Any:
 def control_telemetry(
     trajectory: dict, cfg: Any, rollout_key: Any, *, noise: bool
 ) -> dict[str, np.ndarray]:
-    """Recover the exact episode-fixed FIFOs and command units without changing rollout.
+    """Read recorded hardware timing, or recover the legacy fixed FIFOs.
 
     Sampling matches ``rollout``'s first key split. Actions and received boxes at
     index k belong to the beginning of control tick k; state/gyro/RPM index k is
@@ -518,6 +519,18 @@ def control_telemetry(
 
     from crazyflow.balloon.model import command, nominal_params
 
+    if cfg.hardware.enabled:
+        return {
+            name: np.asarray(trajectory[name])
+            for name in (
+                "issued_commands",
+                "executed_commands",
+                "camera_age_ms",
+                "gyro_age_ms",
+                "attitude_age_ms",
+                "command_delay_ms",
+            )
+        }
     issued = np.asarray(trajectory["actions"])
     if issued.ndim != 3 or issued.shape[-1] != 4:
         raise ValueError("actions must have shape (control steps, episodes, 4)")
@@ -614,12 +627,22 @@ def main() -> None:
         ),
         "camera": camera_parameters(cfg),
         "telemetry_contract": {
-            "bbox": "received policy box at start of tick k, with FIFO/noise/dropout",
+            "bbox": "received policy box at tick k, with capture noise and causal delivery",
             "actions": "normalized issued policy action at start of tick k",
             "issued_commands": "issued [roll,pitch,yaw radians,total thrust N] at tick k",
-            "executed_commands": "command after episode-fixed action FIFO at tick k",
+            "executed_commands": (
+                "actual command at first 500Hz substep of tick k; channels may change later in tick"
+                if cfg.hardware.enabled
+                else "command after episode-fixed action FIFO at tick k"
+            ),
             "states_body_gyro_rotor_rpm": "simulation truth at boundaries j*dt, initial sample j=0",
             "sensor_delay_steps_action_delay_steps": "simulation debug only; never actor inputs",
+            "hardware_timing": (
+                "camera/gyro/attitude capture age at policy tick; scheduled RPY/T delay in ms; "
+                "debug only, never actor inputs"
+                if cfg.hardware.enabled
+                else "legacy fixed policy-tick FIFOs"
+            ),
         },
         "policy_inputs": "bounding box history, attitude, angular rates and previous command",
         "metric_protocol": {

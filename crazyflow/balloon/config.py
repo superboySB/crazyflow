@@ -4,6 +4,8 @@ from dataclasses import asdict, dataclass, field
 
 import numpy as np
 
+from crazyflow.balloon.noise_config import HardwareNoise
+
 
 @dataclass(frozen=True)
 class Config:
@@ -43,6 +45,7 @@ class Config:
     response_fraction: float = 0.1
     wind_std: float = 0.12
     action_delay_steps: int = 1
+    hardware: HardwareNoise = field(default_factory=HardwareNoise)
     loss_weights: dict = field(
         default_factory=lambda: {
             "distance": 1.0,
@@ -67,6 +70,10 @@ class Config:
 
     def __post_init__(self):
         """Reject contracts that cannot represent the documented task."""
+        if isinstance(self.hardware, dict):
+            object.__setattr__(self, "hardware", HardwareNoise(**self.hardware))
+        elif not isinstance(self.hardware, HardwareNoise):
+            raise ValueError("hardware must be a HardwareNoise instance or mapping")
         expected_weights = {
             "distance",
             "contact",
