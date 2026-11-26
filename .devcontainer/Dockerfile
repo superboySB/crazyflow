@@ -24,6 +24,13 @@ COPY requirements-cpu.lock requirements-gpu.lock ./
 RUN --mount=type=cache,target=/root/.cache/pip \
     python -m pip install --requirement requirements-gpu.lock
 
+# The toolkit supplies the matching NVIDIA driver library at runtime. Register
+# its EGL vendor so headless rendering can discover it without host file binds.
+# GLVND skips this vendor on CPU-only hosts, where OSMesa remains the default.
+RUN mkdir -p /usr/share/glvnd/egl_vendor.d \
+    && printf '%s\n' '{"file_format_version":"1.0.0","ICD":{"library_path":"libEGL_nvidia.so.0"}}' \
+        > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
 COPY pyproject.toml README.md LICENSE ./
 COPY docs ./docs
 COPY config ./config

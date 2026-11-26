@@ -93,6 +93,7 @@ def summarize_trajectories(
     target_radii: np.ndarray,
     *,
     dt: float,
+    target_velocities: np.ndarray | None = None,
     drone_radius: float = 0.086,
     collision_offset: tuple = (0.0, 0.0, 0.02),
     min_altitude: float = 0.12,
@@ -107,7 +108,9 @@ def summarize_trajectories(
 
     ``states`` contains every integration substep and the initial state, with shape
     ``(time, episodes, 12)`` and state order position, RPY, velocity, RPY rates.
-    The collision envelope matches the official cf21B_500 sphere, including its
+    Targets move linearly from ``targets`` with constant world-frame
+    ``target_velocities`` in m/s; omission preserves the static task. The
+    collision envelope matches the official cf21B_500 sphere, including its
     body-frame offset. Tracking loss means
     ``tracking_timeout`` consecutive seconds without a valid box. Flight range is
     measured from each episode's initial position. Every physical contact is a
@@ -121,6 +124,15 @@ def summarize_trajectories(
     count = states.shape[1]
     if count < 1 or targets.shape != (count, 3) or target_radii.shape != (count,):
         raise ValueError("targets/radii must match a nonempty episode dimension")
+    target_velocities = (
+        np.zeros((count, 3), dtype=float)
+        if target_velocities is None
+        else np.asarray(target_velocities, dtype=float)
+    )
+    if target_velocities.shape != (count, 3) or not np.isfinite(target_velocities).all():
+        raise ValueError(
+            "target_velocities must be finite world velocities with shape (episodes,3)"
+        )
     if dt <= 0 or drone_radius <= 0 or np.any(target_radii <= 0):
         raise ValueError("time step and collision radii must be positive")
     if not np.all(np.isfinite(targets)) or not np.all(np.isfinite(target_radii)):
@@ -138,6 +150,10 @@ def summarize_trajectories(
     rotations = _rotation_matrix(states[..., 3:6])
     collision_displacement = np.einsum("...ij,j->...i", rotations, np.asarray(collision_offset))
     collision_centers = states[..., :3] + collision_displacement
+    sample_times = np.arange(states.shape[0], dtype=float) * dt
+    relative_centers = (
+        collision_centers - targets[None] - sample_times[:, None, None] * target_velocities[None]
+    )
     roll, pitch = states[..., 3], states[..., 4]
     roll_dot, pitch_dot, yaw_dot = np.moveaxis(states[..., 9:12], -1, 0)
     body_rates = np.stack(
@@ -153,7 +169,6 @@ def summarize_trajectories(
     records = []
     for episode in range(count):
         trajectory = states[:, episode]
-        target = targets[episode]
         collision_radius = float(target_radii[episode] + drone_radius)
         finite = np.all(np.isfinite(trajectory), axis=1)
         invalid = np.flatnonzero(~finite)
@@ -172,6 +187,7 @@ def summarize_trajectories(
         elif tracking_time <= event_time:
             outcome = "tracking_lost"
         impact_speed = None
+        drone_impact_speed = None
         contact_time = None
         origin = trajectory[0, :3]
         for step in range(states.shape[0] - 1):
@@ -186,8 +202,8 @@ def summarize_trajectories(
                 floor_fraction = float((start[2] - min_altitude) / (start[2] - end[2]))
             bound_fraction = _sphere_exit(start - origin, end - origin, max_range)
             hit_fraction = _sphere_entry(
-                collision_centers[step, episode] - target,
-                collision_centers[step + 1, episode] - target,
+                relative_centers[step, episode],
+                relative_centers[step + 1, episode],
                 collision_radius,
             )
             for fraction, candidate in (
@@ -203,41 +219,40 @@ def summarize_trajectories(
                 ):
                     event_time, outcome = candidate_time, candidate
                     impact_speed = None
+                    drone_impact_speed = None
                     contact_time = None
                     if candidate == "hit":
                         velocity = (
                             collision_velocities[step, episode] * (1.0 - fraction)
                             + collision_velocities[step + 1, episode] * fraction
                         )
-                        impact_speed = float(np.linalg.norm(velocity))
+                        drone_impact_speed = float(np.linalg.norm(velocity))
+                        impact_speed = float(np.linalg.norm(velocity - target_velocities[episode]))
                         contact_time = float(candidate_time)
                         if impact_speed > max_impact_speed:
                             outcome = "too_fast_contact"
         minimum_distance = (
-            float(np.linalg.norm(collision_centers[0, episode] - target))
-            if finite[0]
-            else float("inf")
+            float(np.linalg.norm(relative_centers[0, episode])) if finite[0] else float("inf")
         )
-        terminal_position = collision_centers[0, episode]
+        terminal_position = relative_centers[0, episode]
         for step in range(states.shape[0] - 1):
             if step * dt > event_time or not (finite[step] and finite[step + 1]):
                 break
             fraction = float(np.clip((event_time - step * dt) / dt, 0.0, 1.0))
-            start = collision_centers[step, episode]
-            end = start + fraction * (collision_centers[step + 1, episode] - start)
+            start = relative_centers[step, episode]
+            end = start + fraction * (relative_centers[step + 1, episode] - start)
             direction = end - start
             length_squared = float(np.dot(direction, direction))
             closest_fraction = (
-                float(np.clip(np.dot(target - start, direction) / length_squared, 0.0, 1.0))
+                float(np.clip(np.dot(-start, direction) / length_squared, 0.0, 1.0))
                 if length_squared > 1e-20
                 else 0.0
             )
             minimum_distance = min(
-                minimum_distance,
-                float(np.linalg.norm(start + closest_fraction * direction - target)),
+                minimum_distance, float(np.linalg.norm(start + closest_fraction * direction))
             )
             terminal_position = end
-        terminal_distance = float(np.linalg.norm(terminal_position - target))
+        terminal_distance = float(np.linalg.norm(terminal_position))
         observed_steps = (
             max(1, int(np.ceil(event_time / float(visibility_dt)))) if visible is not None else 0
         )
@@ -249,6 +264,8 @@ def summarize_trajectories(
                 "event_time_s": float(event_time),
                 "contact_time_s": contact_time,
                 "impact_speed_m_s": impact_speed,
+                "drone_collision_speed_m_s": drone_impact_speed,
+                "target_speed_m_s": float(np.linalg.norm(target_velocities[episode])),
                 "minimum_distance_m": minimum_distance if np.isfinite(minimum_distance) else None,
                 "minimum_surface_clearance_m": (
                     max(0.0, minimum_distance - collision_radius)
@@ -314,6 +331,55 @@ def summarize_trajectories(
         "objective": float(objective) if objective is not None and np.isfinite(objective) else None,
         "per_episode": records,
     }
+    contact = np.asarray([record["success"] for record in records], dtype=bool)
+    tracking_lost = np.asarray([record["outcome"] == "tracking_lost" for record in records])
+
+    def subset(mask: np.ndarray) -> dict:
+        episodes = int(mask.sum())
+        contacts = int(np.count_nonzero(contact & mask))
+        lost = int(np.count_nonzero(tracking_lost & mask))
+        return {
+            "episodes": episodes,
+            "contacts": contacts,
+            "contact_rate": contacts / episodes if episodes else None,
+            "tracking_lost": lost,
+            "tracking_lost_rate": lost / episodes if episodes else None,
+        }
+
+    def bins(
+        values: np.ndarray, edges: tuple[float, ...], eligible: np.ndarray | None = None
+    ) -> dict:
+        eligible = np.ones(count, dtype=bool) if eligible is None else eligible
+        included = np.zeros(count, dtype=bool)
+        buckets = {}
+        for index, (low, high) in enumerate(zip(edges[:-1], edges[1:])):
+            last = index == len(edges) - 2
+            mask = (
+                eligible
+                & (values >= low - (1e-7 if index == 0 else 0.0))
+                & (values <= high + 1e-7 if last else values < high)
+            )
+            label = f"[{low:g},{high:g}{']' if last else ')'}"
+            buckets[label] = subset(mask)
+            included |= mask
+        buckets["outside_bins"] = subset(eligible & ~included)
+        return buckets
+
+    speeds = np.linalg.norm(target_velocities, axis=-1)
+    result["stratified"] = {
+        "motion": {"static": subset(speeds == 0), "moving": subset(speeds > 0)},
+        "target_speed_m_s": bins(speeds, (0.0, 0.5, 1.0, 1.5)),
+        "moving_target_speed_m_s": bins(speeds, (0.0, 0.5, 1.0, 1.5), speeds > 0),
+        "target_diameter_m": bins(2 * target_radii, (0.03, 0.1, 0.3, 0.6)),
+        "diameter_by_motion": {
+            name: bins(2 * target_radii, (0.03, 0.1, 0.3, 0.6), mask)
+            for name, mask in (("static", speeds == 0), ("moving", speeds > 0))
+        },
+        "denominator": (
+            "all sampled episodes; moving groups exclude exactly stationary targets; "
+            "outside_bins retains nonstandard task settings; empty rates are null"
+        ),
+    }
     assert sum(outcomes.values()) == count
     return result
 
@@ -356,6 +422,7 @@ def render_replay(
     fps: int = 25,
     stop_time: float | None = None,
     plant: str = "crazyflow",
+    target_velocity: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Render a frozen episode and its ideal FPV box in a MuJoCo scene.
 
@@ -363,17 +430,26 @@ def render_replay(
     used. The official cf21B_500 visual mesh and the task collision sphere are
     placed at the frozen state; they do not affect the flight dynamics.
     """
-    os.environ.setdefault("MUJOCO_GL", "egl")
+    # The launcher selects EGL/OSMesa before MuJoCo is imported. Changing the
+    # environment here would not change its already-loaded OpenGL backend.
     import imageio.v2 as imageio
+    import jax
     import jax.numpy as jnp
     import mujoco
 
     from crazyflow.balloon.camera import parameters
     from crazyflow.balloon.observations import ideal_bbox
 
+    target = np.asarray(target, dtype=float)
+    target_velocity = (
+        np.zeros(3) if target_velocity is None else np.asarray(target_velocity, dtype=float)
+    )
+    if target_velocity.shape != (3,) or not np.isfinite(target_velocity).all():
+        raise ValueError("target_velocity must be a finite world velocity with shape (3,)")
     model = make_replay_model(cfg, target, radius)
     render_width, render_height = int(cfg.image_width), int(cfg.image_height)
     data = mujoco.MjData(model)
+    balloon_body = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "balloon")
     camera = mujoco.MjvCamera()
     camera.type = mujoco.mjtCamera.mjCAMERA_FREE
     camera.lookat[:] = (states[0, :3] + target) / 2
@@ -381,6 +457,17 @@ def render_replay(
     camera.azimuth = 135
     camera.elevation = -25
     renderer = mujoco.Renderer(model, height=render_height, width=render_width)
+    from OpenGL import GL
+
+    graphics = {
+        "backend": os.environ.get("MUJOCO_GL", "glfw"),
+        "vendor": GL.glGetString(GL.GL_VENDOR).decode(),
+        "renderer": GL.glGetString(GL.GL_RENDERER).decode(),
+        "version": GL.glGetString(GL.GL_VERSION).decode(),
+    }
+    project = jax.jit(
+        lambda state, center: ideal_bbox(state[:3], state[3:6], center, jnp.asarray(radius), cfg)
+    )
     step_dt = float(cfg.dt) / int(cfg.substeps)
     duration = (len(states) - 1) * step_dt
     if stop_time is not None:
@@ -402,6 +489,8 @@ def render_replay(
                     break
                 data.mocap_pos[0] = state[:3]
                 data.mocap_quat[0] = _quaternion(state[3:6])
+                current_target = target + target_velocity * frame_time
+                model.body_pos[balloon_body] = current_target
                 mujoco.mj_forward(model, data)
                 balloon_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "balloon_surface")
                 drone_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "drone_collision")
@@ -415,13 +504,7 @@ def render_replay(
                 world = renderer.render().copy()
                 renderer.update_scene(data, camera="fpv")
                 fpv = renderer.render().copy()
-                box, present = ideal_bbox(
-                    jnp.asarray(state[:3]),
-                    jnp.asarray(state[3:6]),
-                    jnp.asarray(target),
-                    jnp.asarray(radius),
-                    cfg,
-                )
+                box, present = project(jnp.asarray(state), jnp.asarray(current_target))
                 box = np.asarray(box)
                 boxes.append(np.r_[frame_time, box.ravel()])
                 if bool(present):
@@ -452,7 +535,10 @@ def render_replay(
         "sampled_mujoco_contact_frames": contact_frames,
         "role": f"MuJoCo kinematic scene rendering; recorded {plant} flight integration",
         "visual_model": "official assets/drones/cf21B_500.xml visual meshes",
+        "opengl": graphics,
         "camera": parameters(cfg),
+        "target_initial_center_m": target.tolist(),
+        "target_velocity_m_s": target_velocity.tolist(),
         "contact_note": "Render contacts are diagnostics; success uses swept substep contact.",
     }
 
@@ -589,6 +675,7 @@ def main() -> None:
 
     from crazyflow.balloon.camera import parameters as camera_parameters
     from crazyflow.balloon.model import sample_batch
+    from crazyflow.balloon.observations import ideal_bbox
     from crazyflow.balloon.policy import load_checkpoint
     from crazyflow.balloon.rollout import rollout
 
@@ -636,6 +723,10 @@ def main() -> None:
                 else "command after episode-fixed action FIFO at tick k"
             ),
             "states_body_gyro_rotor_rpm": "simulation truth at boundaries j*dt, initial sample j=0",
+            "target_velocity": (
+                "constant world m/s; target(t)=initial_target+target_velocity*t; "
+                "simulation truth only"
+            ),
             "sensor_delay_steps_action_delay_steps": "simulation debug only; never actor inputs",
             "hardware_timing": (
                 "camera/gyro/attitude capture age at policy tick; scheduled RPY/T delay in ms; "
@@ -647,12 +738,16 @@ def main() -> None:
         "policy_inputs": "bounding box history, attitude, angular rates and previous command",
         "metric_protocol": {
             "denominator": "all sampled episodes, including every failure; no resets",
-            "collision": "first swept sphere entry at every integration substep",
+            "collision": "first relative swept sphere entry at every integration substep",
             "drone_collision_radius_m": cfg.drone_radius,
             "drone_collision_offset_body_m": cfg.collision_offset,
             "min_center_altitude_m": cfg.min_altitude,
             "max_distance_from_start_m": cfg.max_range,
             "impact_speed_diagnostic_threshold_m_s": cfg.max_impact_speed,
+            "impact_speed_m_s": "collision sphere-center velocity relative to moving target",
+            "drone_collision_speed_m_s": (
+                "absolute world speed of the drone collision sphere center"
+            ),
             "success": "any first physical sphere contact; speed is only a diagnostic",
             "tracking_timeout_s": cfg.max_unseen_seconds,
             "engine_role": (
@@ -676,6 +771,7 @@ def main() -> None:
             batch["target"],
             batch["radius"],
             dt=cfg.dt / cfg.substeps,
+            target_velocities=batch.get("target_velocity"),
             drone_radius=cfg.drone_radius,
             collision_offset=cfg.collision_offset,
             min_altitude=cfg.min_altitude,
@@ -686,6 +782,19 @@ def main() -> None:
             tracking_timeout=cfg.max_unseen_seconds,
             objective=float(trajectory["loss"]),
         )
+        initial_boxes, _ = ideal_bbox(
+            batch["state"][:, :3], batch["state"][:, 3:6], batch["target"], batch["radius"], cfg
+        )
+        initial_boxes = np.asarray(initial_boxes)
+        for episode, record in enumerate(metrics["per_episode"]):
+            record["target_diameter_m"] = float(2 * batch["radius"][episode])
+            record["initial_ideal_bbox_width_px"] = float(
+                initial_boxes[episode, 2] * cfg.image_width / 2
+            )
+            record["initial_ideal_bbox_height_px"] = float(
+                initial_boxes[episode, 3] * cfg.image_height / 2
+            )
+            record["initial_ideal_bbox_valid"] = bool(initial_boxes[episode, 4] > 0.5)
         if "native_contacts" in trajectory:
             native_contacts = np.asarray(trajectory["native_contacts"], dtype=bool)
             for episode, record in enumerate(metrics["per_episode"]):
@@ -707,6 +816,9 @@ def main() -> None:
         arrays.update(
             {f"initial_{name}": np.asarray(batch[name]) for name in ("state", "target", "radius")}
         )
+        arrays["target_velocity"] = np.asarray(
+            batch.get("target_velocity", np.zeros_like(batch["target"]))
+        )
         arrays.update(
             {f"domain_{name}": np.asarray(value) for name, value in batch["domain"].items()}
         )
@@ -722,6 +834,7 @@ def main() -> None:
                 args.output / f"{scenario}.mp4",
                 stop_time=metrics["per_episode"][0]["event_time_s"],
                 plant=args.plant,
+                target_velocity=arrays["target_velocity"][0],
             )
             metrics["video"]["episode"] = 0
             metrics["video"]["outcome"] = metrics["per_episode"][0]["outcome"]

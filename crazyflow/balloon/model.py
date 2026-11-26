@@ -6,7 +6,7 @@ is unnecessary for these pure JAX stages. The 12-value vectors emitted for plots
 are views of the full quaternion/RPM/controller state, never the training plant.
 """
 
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 import jax
 import jax.numpy as jnp
@@ -43,8 +43,21 @@ class Batch(TypedDict):
 
     state: jax.Array
     target: jax.Array
+    target_velocity: NotRequired[jax.Array]
     radius: jax.Array
     domain: Domain
+
+
+def target_at_time(batch: Batch, time_s: jax.Array | float) -> jax.Array:
+    """World target center at absolute time from reset; never expose it to the actor.
+
+    ``target`` is the reset center, and missing velocity preserves old static
+    batches. A scalar time returns ``(N,3)``; a time array returns ``(...,N,3)``.
+    """
+    initial = batch["target"]
+    velocity = batch.get("target_velocity", jnp.zeros_like(initial))
+    time = jnp.asarray(time_s)
+    return initial + time[..., None, None] * velocity
 
 
 def nominal_params(cfg: Config | None = None) -> PhysicalParams:
@@ -193,7 +206,7 @@ def advance(data: SimData, cmd: jax.Array, cfg: Config) -> tuple[SimData, jax.Ar
 
 
 def sample_batch(key: jax.Array, cfg: Config, n: int, scenario: str = "noisy") -> Batch:
-    """Static indoor balloons; truth is available to plant/loss/evaluation only."""
+    """Sample linear 3D target motion; privileged task truth never enters the actor."""
     if scenario not in ("nominal", "noisy", "perturbed"):
         raise ValueError(f"Unknown scenario {scenario}")
     keys = jax.random.split(key, 12)
@@ -210,11 +223,30 @@ def sample_batch(key: jax.Array, cfg: Config, n: int, scenario: str = "noisy") -
     target = jnp.stack(
         (d, uniform(keys[4], (n,), -spread, spread), 1.4 + uniform(keys[5], (n,), -0.3, 0.3)), -1
     )
-    radius = uniform(keys[6], (n,), cfg.radius_min, cfg.radius_max)
+    if cfg.target_diameter_m is None:
+        # Old checkpoints keep their original uniform-radius reset distribution.
+        radius = uniform(keys[6], (n,), cfg.radius_min, cfg.radius_max)
+    else:
+        radius = jnp.exp(uniform(keys[6], (n,), jnp.log(cfg.radius_min), jnp.log(cfg.radius_max)))
+    target_velocity = jnp.zeros((n, 3))
+    if cfg.target_speed_max > 0:
+        motion_keys = jax.random.split(jax.random.fold_in(key, 0x4D4F5645), 3)
+        direction = jax.random.normal(motion_keys[0], (n, 3))
+        direction /= jnp.maximum(jnp.linalg.norm(direction, axis=-1, keepdims=True), 1e-8)
+        speed = uniform(motion_keys[1], (n,), cfg.target_speed_min, cfg.target_speed_max)
+        stationary = jax.random.uniform(motion_keys[2], (n,)) < cfg.target_stationary_prob
+        target_velocity = direction * jnp.where(stationary, 0.0, speed)[:, None]
     scale = 0.0 if scenario == "nominal" else (1.5 if scenario == "perturbed" else 1.0)
     if scenario == "perturbed":
         state = state.at[:, 6:9].multiply(3)
         state = state.at[:, 3:6].multiply(2)
+    if cfg.target_speed_max > 0 or cfg.target_diameter_m is not None:
+        lowest_center = target[:, 2] + jnp.minimum(
+            target_velocity[:, 2] * (cfg.dt * cfg.steps), 0.0
+        )
+        lift = jnp.maximum(0.0, cfg.min_altitude + radius + cfg.target_spawn_margin - lowest_center)
+        state = state.at[:, 2].add(lift)
+        target = target.at[:, 2].add(lift)
     domain = {
         "mass_scale": 1 + scale * uniform(keys[7], (n,), -cfg.mass_fraction, cfg.mass_fraction),
         "thrust_scale": 1
@@ -239,4 +271,10 @@ def sample_batch(key: jax.Array, cfg: Config, n: int, scenario: str = "noisy") -
             motor_thrust_scale=multiplier(2, (n, 4), hardware.motor_thrust_fraction),
             motor_response_scale=jnp.repeat(response, 2, axis=-1),
         )
-    return {"state": state, "target": target, "radius": radius, "domain": domain}
+    return {
+        "state": state,
+        "target": target,
+        "target_velocity": target_velocity,
+        "radius": radius,
+        "domain": domain,
+    }

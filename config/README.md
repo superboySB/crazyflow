@@ -20,7 +20,9 @@
 | `training.iterations`、`batch_size.gpu/cpu`、`seed`、`lr` | 优化次数、并行环境数、种子、学习率；启动时按实际设备选并行数 |
 | `task.dt`、`substeps`、`steps` | 策略周期 s、每周期物理子步、展开长度；默认 50 Hz 策略、500 Hz 物理/控制器、3 s 飞行 |
 | `task.history`、`hidden` | 观测/动作历史长度与网络隐藏宽度 |
-| `task.radius_min/max`、`distance_min/max` | 气球半径与初始目标距离，m |
+| `task.target_diameter_m`、`target_scale_range` | 标称直径 m 与无量纲倍率；默认 0.3 m × log-uniform[0.1,2]，实际直径 3–60 cm |
+| `task.target_speed_min/max`、`target_stationary_prob` | 非静止子集的速度模长范围 m/s、静止比例；默认 20% 静止，其余 U[0,1.5] m/s，方向在三维球面均匀采样 |
+| `task.target_spawn_margin`、`distance_min/max` | 球面离最低高度的出生裕量 m、初始向前距离 m；前距不是完整三维距离 |
 | `task.drone_radius`、`collision_offset` | 接触球半径、机体系球心偏置，m；与官方碰撞球对齐 |
 | `task.max_impact_speed`、`min_altitude`、`max_range`、`max_unseen_seconds` | 撞击速度训练偏好 m/s、最低高度 m、活动范围 m、连续失视缓冲 s；首次实际触球就是成功，速度仅作诊断 |
 | `task.max_tilt`、`max_yaw` | 动作对应的目标姿态上限，rad |
@@ -34,9 +36,31 @@
 
 命令行 `--iterations`、`--batch-size`、`--steps`、`--seed`、`--lr` 优先于 YAML。位置、线速度和目标真值只用于仿真、损失与评测；增加噪声不会把这些量送入策略。
 
+目标在整段飞行中使用同一个 `p(t)=p0+v*t`，没有碰壁反弹或逐拍改方向。为避免向下运动的球在展开末端进入地下，出生时按整段最低球面向上平移飞机和气球，保持初始相对几何；因此需要与设定速度/时长相适应的飞行空间。静态 checkpoint 未提供速度字段时继续按零速度解释。旧自定义文件仍可用米制 `radius_min/max`；新文件优先使用直径与倍率这组配置，避免把倍率误当半径。
+
+### 自主飞行时提供哪些输入
+
+默认 `history: 5` 时 actor 共 65 维，历史按从旧到新排列：
+
+| 索引（从 0 开始） | 内容 | 实机来源 |
+| --- | --- | --- |
+| 0–8 | 机体到起飞局部参考系的旋转矩阵，逐行展开 | 机载估计姿态；输入姿态与输出 yaw 共用该局部参考，不要求动捕或真北航向 |
+| 9–11 | 机体系 gyro / 5 rad/s | IMU；训练叠加乘性误差、白噪声和回合零偏 |
+| 12–36 | 5 拍 `[cx, cy, width, height, valid]` | RGB tracker 收到的裁剪 bbox，含保持、延迟和丢帧 |
+| 37–56 | 前 5 拍归一化四维已发动作 | 控制端历史，不是真实执行动作或电机反馈 |
+| 57–59 | 当前 bbox 中心对应的机体系单位视线 | bbox 与相机标定计算 |
+| 60 | bbox 光学对角线的对数 | 框宽高与 K 计算，**不是物体真实尺寸** |
+| 61 | 历史光学尺度的因果拟合斜率 | 至少 3 个有效历史框 |
+| 62–63 | 最近两拍框中心变化率 | 历史框差分 |
+| 64 | 最近两拍对数光学尺度变化率 | 历史框差分 |
+
+特征实现见 [observations.py](../crazyflow/balloon/observations.py)，推理接口见 [policy.py](../crazyflow/balloon/policy.py) 的 `Controller.step`。输出 4 维归一化动作映射为目标 roll、pitch、局部 yaw 和总推力 N；yaw 参与控制。没有输入无人机位置/线速度、目标位置/速度、真实半径、距离或实际电机转速。Flow deck 的速度估计无需送给策略；气球 bbox 仍由前置 RGB 相机与 tracker 提供，Flow deck 本身不提供这个框。
+
+机载姿态是有误差的估计，局部 yaw 也会随时间漂移，不能当成长时间无漂移的绝对航向。部署适配层负责保持姿态和指令的局部参考一致；`Controller.reset()` 只清历史，不会重置固件估计器。当前姿态噪声是估计误差近似，没有实现完整机载状态估计器，也不会自动将 gyro 误差积分成相关 yaw 漂移。未知物体大小与单目距离存在歧义，框变化率也不等于真实相对速度。仿真仍必须知道几何尺寸，才能生成 bbox、计算可微接触目标和评测碰撞；这些真值不进入网络。
+
 ### 硬件链路与额外扰动
 
-新训练默认使用 `noise.hardware.enabled: true`。视觉等待 `[0,40]` ms、RPY/推力指令等待 `[0,20]` ms 沿用本项目原有等待范围的开发假设，时序改为下面的包处理；不会再串联旧整数 FIFO。新增未知的噪声、丢包、漂移、阵风和物理随机化幅度都为 **0**，测量后再逐项开启；正的时间常数或超时值本身不会产生非零扰动。
+新训练默认使用 `noise.hardware.enabled: true`。视觉等待 `[0,40]` ms、RPY/推力指令等待 `[0,20]` ms 沿用本项目原有等待范围的开发假设，时序改为下面的包处理；不会再串联旧整数 FIFO。`gyro_scale_std: 0.1` 按用户选择直接采用 CrazyRL 的乘性噪声作为训练先验，**无需等待辨识即可训练，也不是 cf21B 实测标定**。其余新增未知噪声、丢包、漂移、阵风和物理随机化幅度仍为 **0**，可按训练假设或实测逐项调整；正的时间常数或超时值本身不会产生非零扰动。
 
 | `noise.hardware` 字段 | 实际含义 |
 | --- | --- |
@@ -44,7 +68,7 @@
 | `camera_packet_loss_prob`、`camera_stale_ms` | 传输丢包时保持上一收到的包；从捕获时刻算的年龄超过 stale 后输出无效框，stale 至少覆盖最大等待；这与 `dropout_prob` 的视觉漏检不同 |
 | `bbox_bias_std` | 每回合固定的四维框偏置标准差，使用与 bbox 白噪声相同的归一化单位 |
 | `gyro_delay_ms`、`attitude_delay_ms`、两个 `*_packet_loss_prob` | gyro 与姿态分别在回合开始采固定等待，按最近 2 ms 取整；500 Hz 采样，丢包各自保持上一测量 |
-| `gyro_scale_std` | 每个 gyro 样本、每轴乘 `1+std*ε`，`ε~N(0,1)`；无量纲，机制参考 CrazyRL，幅度没有按本机标定，默认 0 |
+| `gyro_scale_std` | 默认 `0.1`：每个 500 Hz gyro 样本、每轴独立乘 `N(1,0.1²)`；无量纲，0.1是标准差，不是 ±10% 硬截断。来自 CrazyRL 的训练先验，非本机实测；原有加性白噪声和零偏继续叠加 |
 | `gyro_drift_std`、`attitude_bias_std`、`bias_tau_s` | 相关 gyro 漂移 rad/s、SO(3) 姿态偏置 rad 的稳态标准差及相关时间 s；与原有白噪声、回合 gyro 固定零偏叠加 |
 | `attitude_command_delay_ms`、`thrust_command_delay_ms` | 每回合、各 RPY 轴与总推力分别采有效链路等待，500 Hz 入队并按最近 2 ms 取整；实际姿态与推力仍由官方控制器和电机状态推进 |
 | `command_jitter_std_ms`、`command_jitter_tau_s` | 每次 50 Hz 发动作时更新相关等待抖动；标准差 ms、相关时间 s，叠加基线后裁剪在相应等待范围内，旧包不会覆盖已接收的新包 |
@@ -54,7 +78,7 @@
 
 相关偏置、指令抖动和阵风使用 OU 更新：`ρ=exp(-Δt/τ)`，`x_next=ρ*x+std*sqrt(1-ρ²)*ε`。std 是稳态标准差，不是每秒扩散系数；指令抖动的 std 指裁剪前值。新增物理 fraction 使用 `U[1-f,1+f]`，在 perturbed 套件中半宽放大 1.5 倍；其余硬件噪声不会统一乘 1.5。
 
-队列和保持的测量值保留 BPTT 梯度；整数延迟、随机丢包、到达选择等离散事件本身不求导，时间戳和调试掩码不进入 actor。旧的兼容 BPTT checkpoint 若没有 `hardware`，会继续使用旧整数 FIFO；改 YAML 不会改造旧策略，要使用新时序需重新训练。`--nominal` 关闭随机化和额外链路等待，官方电机与刚体动态仍然存在。统计与测量方法见[辨识手册](../docs/identification.md#21-测量噪声与链路时序)。
+队列和保持的测量值保留 BPTT 梯度；整数延迟、随机丢包、到达选择等离散事件本身不求导，时间戳和调试掩码不进入 actor。旧的兼容 BPTT checkpoint 若没有 `hardware`，会继续使用旧整数 FIFO；已有该节的策略也保持冻结的 `gyro_scale_std`。改 YAML 不会改造旧策略，要使用新设置需重新训练；兼容加载用的类默认值仍为 0。`--nominal` 关闭随机化和额外链路等待，官方电机与刚体动态仍然存在。统计与测量方法见[辨识手册](../docs/identification.md#21-测量噪声与链路时序)。
 
 ## 2. 机体与机载控制器
 
@@ -96,7 +120,7 @@
 | 简化闭环阻力与姿态响应 | 离线三维位置、姿态、姿态/总推力指令、实测质量 | `drag` 拟合两项机体系阻力、总推力比例/滞后及二阶姿态系数 | 单独闭环 TOML，**不能覆盖第一性原理 vehicle/controller** |
 | 控制器增益及 N→实机驱动映射 | 固件配置、响应/饱和测量、独立完整飞行 | 导出官方模板；没有自动调增益或标定驱动 | `controller.toml` 及独立实机执行接口 |
 | K、镜头畸变、相机安装 | 实际镜头/分辨率标定、质心到光心测量 | 读取针孔内外参，不自动标定镜头 | `camera.json` |
-| 噪声、丢帧、通信延迟 | 静态/动态重复日志、采集与执行端时间戳 | 手工统计后填写；默认不是实测置信区间，新未知幅度为 0 | YAML 的 `noise` / `noise.hardware` |
+| 噪声、丢帧、通信延迟 | 静态/动态重复日志、采集与执行端时间戳 | 可直接采用训练先验；gyro乘性std为0.1，其余新增未知幅度为0，均不冒充实测置信区间 | YAML 的 `noise` / `noise.hardware` |
 | 目标采样、碰撞几何、损失权重 | 任务需求、实物尺寸、训练/评测结果 | 用户设置，不属于机体辨识 | YAML 的 `task/objective` |
 
 `./dani identify check` 与 `drag-check` 使用明确标记的合成样例；合成验证不能证明实物已辨识。[统一辨识手册](../docs/identification.md)和[示例数据说明](../examples/identification/README.md)解释所需观测与范围。

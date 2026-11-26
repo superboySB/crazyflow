@@ -1,22 +1,22 @@
 {
   "schema": "balloon-example-provenance-v1",
   "origin": "实际纯BPTT仿真训练、冻结策略原生MuJoCo评测及完整GUI录制。",
-  "raw_training_directory": "outputs/hardware-train-seed42",
-  "raw_evaluation_directory": "outputs/hardware-train-seed42/evaluation",
+  "raw_training_directory": "outputs/moving-train-seed42",
+  "raw_evaluation_directory": "outputs/moving-train-seed42/evaluation",
   "raw_sources": {
-    "outputs/hardware-train-seed42/config/training.yaml": {
-      "sha256": "01308e9c0d7cd7bdb7773c534e1feea27def909448ce96f3ac30e5966c424bf4",
-      "bytes": 11607
+    "outputs/moving-train-seed42/config/training.yaml": {
+      "sha256": "3005b0efa0e5a8f4d34c95348a8914ba56cf992942a926c3796ef0884c9ba54c",
+      "bytes": 12267
     },
-    "outputs/hardware-train-seed42/config/camera.json": {
+    "outputs/moving-train-seed42/config/camera.json": {
       "sha256": "749d506bf1fea633bc35a957020c20aa1b79aa4c5f5e07a29b00b27c86e518dd",
       "bytes": 168
     },
-    "outputs/hardware-train-seed42/config/vehicle.toml": {
+    "outputs/moving-train-seed42/config/vehicle.toml": {
       "sha256": "91d17874e7a8611267c3d55bab9903a0936c4f2e377cc669bf5695f06c16e74b",
       "bytes": 1623
     },
-    "outputs/hardware-train-seed42/config/controller.toml": {
+    "outputs/moving-train-seed42/config/controller.toml": {
       "sha256": "b1775337d2215f6df3b7a9aca1c39bb5c0d7bcf0c62c7f2a7f934ded159b27a7",
       "bytes": 1051
     },
@@ -32,164 +32,213 @@
       "sha256": "a28c717458fc0e068215db6aabdc814d298b855c0ec26e810e65d81304ea39ce",
       "bytes": 5583
     },
-    "outputs/hardware-train-seed42/policy.npz": {
-      "sha256": "2844682f1a674e5fefd1fd481712a9903a6304fea76f44d383c0c87b6e649540",
-      "bytes": 36221
+    "outputs/moving-train-seed42/policy.npz": {
+      "sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+      "bytes": 36321
     },
-    "outputs/hardware-train-seed42/last.npz": {
-      "sha256": "4c54ed94981d1a926195bd1cfa4be97a28a82dcf088e9bfca47dd1db966977fa",
-      "bytes": 36183
+    "outputs/moving-train-seed42/last.npz": {
+      "sha256": "225d1c7ba46b2c07a033732b01f60776b81ed871bd08aa6b23eecd7a30cd7290",
+      "bytes": 36324
     },
-    "outputs/hardware-train-seed42/training.jsonl": {
-      "sha256": "7327411e40fca35cba861de8ad5547b09acdabfa9ac1573b7950ae6b8a76ab2c",
-      "bytes": 9301
+    "outputs/moving-train-seed42/training.jsonl": {
+      "sha256": "8f4a941dc9879e47a564d9eaa98c04dc109aafa8c60ec9feb5edface7c26ca04",
+      "bytes": 9283
     },
-    "outputs/bundle_hardware_example.py": {
-      "sha256": "0d23b413815867ea3fdaafc0988a41055c8d25237b31b628e5fa34b06b6f2eed",
-      "bytes": 28386
+    "outputs/bundle_moving_example.py": {
+      "sha256": "f2befb6d7fd8987cd3e3498e11201ef91d8d48af7b04a5f4397a779350307936",
+      "bytes": 37408
     },
     "crazyflow/balloon/logs.py": {
       "sha256": "3441b019cc46dc913ca62c541ba176c55e71c1b092d8dcb6ff1c4cb651b5b101",
       "bytes": 3132
     },
-    "outputs/hardware-train-seed42/training.png": {
-      "sha256": "4ffb548ce2b92b290cb881e5884243f5851ff8819fb5a3993f0ab02e11308e12",
-      "bytes": 140671
+    "crazyflow/balloon/play.py": {
+      "sha256": "b73b86f4863cdc38eae98ca0ac4d87fb2387344f73f3bd5f729e9be24001cc48",
+      "bytes": 61052
     },
-    "outputs/hardware-train-seed42/evaluation/nominal.npz": {
-      "sha256": "61de479630b679612e31849fae28839082f48eb40810e5dd37a767c474d883e8",
-      "bytes": 42741815
+    "crazyflow/balloon/xy_map.py": {
+      "sha256": "c3d5d3fe72aa6278cf132ed9341751ae2d16a8dd38ba96ca9903bf01f8e5a34d",
+      "bytes": 12842
     },
-    "outputs/hardware-train-seed42/evaluation/noisy.npz": {
-      "sha256": "bcb93b68077434ac75fd5cbbe5074fdfce6b6d39ffe829242a92113cad30dd77",
-      "bytes": 42673339
+    "outputs/moving-train-seed42/training.png": {
+      "sha256": "17ddb245c2d7b7d24b5aceab7b406e9461b4821039c6c0916178daf7d51b16eb",
+      "bytes": 127291
     },
-    "outputs/hardware-train-seed42/evaluation/perturbed.npz": {
-      "sha256": "a87eb61a3857af2beac3452876bb058a33cdefb19f1aa0191d5c549af0e0615e",
-      "bytes": 42672651
+    "outputs/moving-train-seed42/evaluation/nominal.npz": {
+      "sha256": "e349842932eb65800ac3913cfa52fee9bf7661eeee219140162a36fa83ca993e",
+      "bytes": 43207806
     },
-    "outputs/hardware-train-seed42/evaluation/metrics.json": {
-      "sha256": "0f060e3d85cbe4a24293dfed73fa330fe46fca34fcf9bb289ad35da36652d9e0",
-      "bytes": 440142
+    "outputs/moving-train-seed42/evaluation/noisy.npz": {
+      "sha256": "73794367dae1560cda70ecd5192e99038c6afe4e424d979a3502a6adcf126ed6",
+      "bytes": 43098370
     },
-    "outputs/hardware-trained-gui.gif": {
-      "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
-      "bytes": 2705045
+    "outputs/moving-train-seed42/evaluation/perturbed.npz": {
+      "sha256": "38a58609635ddbd5d320c62a14088a9f45609b497707729a98cce83bd20a35c2",
+      "bytes": 43096649
     },
-    "outputs/hardware-trained-gui.json": {
-      "sha256": "2b7c286e4c09b765b4a7b4de77e70f6a93c587ea79ca50c6c694ca3faa351c66",
-      "bytes": 1676
+    "outputs/moving-train-seed42/evaluation/metrics.json": {
+      "sha256": "88a038112fb0cbc716d148f64602268c22cf52a21ccceae28a588a7125566718",
+      "bytes": 705219
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-1024/worker-start.json": {
-      "sha256": "dd3b0b516a28dafc53bc84c6729677f1d67a82098643de984d9eb14cbbdaacae",
-      "bytes": 6171
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-1024/worker-start.json": {
+      "sha256": "676663f82f488781df46375e3303555ea4e190e73616a51bd59f22a137da2fa4",
+      "bytes": 6383
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-1024/measurement.json": {
-      "sha256": "0bac4d6052fee27ce0a7f98d7f8ebeab199de9c8ed09efd66a2872f0112d6eb2",
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-1024/measurement.json": {
+      "sha256": "da7f8c8fef5b0a417b741e6365ff6d9d58af344cf96614198f352d9917222b65",
       "bytes": 1927
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-4096/worker-start.json": {
-      "sha256": "ee24da61838e7195db5d47b003a310fb98764872a47d448e54d92382ffc224c7",
-      "bytes": 6171
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-4096/worker-start.json": {
+      "sha256": "67480b549183ab8a40b686c63524d11fe94722e8791e51ed3e1953d50d5415a0",
+      "bytes": 6383
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-4096/measurement.json": {
-      "sha256": "97ef78d7ee2b2aaf79f1054186045eb48945b9e39800d703df5914547402ccb5",
-      "bytes": 1938
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-4096/measurement.json": {
+      "sha256": "c27ea55dafa57fa7b45bf67d1272c560c940499f2bc6f7e57b93fe1b3a196806",
+      "bytes": 1936
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-8192/worker-start.json": {
-      "sha256": "ddb7ff25d060b946cd372d253c95a7301a993b563832435ed45f38dc9ae82f82",
-      "bytes": 6171
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-8192/worker-start.json": {
+      "sha256": "2bd10ab531bac9111c93a5bf80cddd6a377ce7ba0d746de0d126aca8936719ce",
+      "bytes": 6383
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-8192/measurement.json": {
-      "sha256": "7196b7ba55ca7b569a32597a99df54a38ed465e7ad23f61cd956681140514dd3",
-      "bytes": 1938
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-8192/measurement.json": {
+      "sha256": "724d433b135f75347450f71bac6d3f1fd1c5220582522399c2a55321c90101b0",
+      "bytes": 1939
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-16384/worker-start.json": {
-      "sha256": "b70f998b39c813ebfdf2f15f825973cb9d8d85a54937f92133bcbb69b3148d45",
-      "bytes": 6172
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-16384/worker-start.json": {
+      "sha256": "2f6c6d80315204c6ca5e6f0a4bfa79b7bbd97c08bdd8e1d09fa2ce57761db55e",
+      "bytes": 6384
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/batch-16384/measurement.json": {
-      "sha256": "f7b24dad0daaa4b44f2784ebbb90b60675dcac975a96642fc44430efcc55e564",
-      "bytes": 1949
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/batch-16384/measurement.json": {
+      "sha256": "218226ac65c606b5e74fdc56737324a4bae8e76c9aede70249e96784ec783d3a",
+      "bytes": 1947
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/capacity.json": {
-      "sha256": "5be3e19a3b37a5d86d2bdd79efc77d794dec59e540fcdb2585df7c56b8131656",
-      "bytes": 10052
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/capacity.json": {
+      "sha256": "f894c42422c7ed354d43059a114f338f9b214d664a6af55a78b1bb4a0752d560",
+      "bytes": 10049
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/source-manifest.json": {
-      "sha256": "f0d385e7692ff544bc4048dd0fcde8ef1d7c30c11bf28563693d7ede327d2207",
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/source-manifest.json": {
+      "sha256": "bb9baa094cd573f2997ba8a40e45a57c77e02766b1867dde99d17899446aa8aa",
       "bytes": 6999
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/config/training.yaml": {
-      "sha256": "b70e2c4bbbd28c969e293c47f41443abbb231e07e2ccbb863f33113b8c87c6c2",
-      "bytes": 11607
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/config/training.yaml": {
+      "sha256": "3005b0efa0e5a8f4d34c95348a8914ba56cf992942a926c3796ef0884c9ba54c",
+      "bytes": 12267
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/config/camera.json": {
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/config/camera.json": {
       "sha256": "749d506bf1fea633bc35a957020c20aa1b79aa4c5f5e07a29b00b27c86e518dd",
       "bytes": 168
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/config/vehicle.toml": {
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/config/vehicle.toml": {
       "sha256": "91d17874e7a8611267c3d55bab9903a0936c4f2e377cc669bf5695f06c16e74b",
       "bytes": 1623
     },
-    "outputs/hardware-capacity/run-20261125-175440-28231a/config/controller.toml": {
+    "outputs/hardware-capacity/run-20261125-233639-4a1c19/config/controller.toml": {
       "sha256": "b1775337d2215f6df3b7a9aca1c39bb5c0d7bcf0c62c7f2a7f934ded159b27a7",
       "bytes": 1051
+    },
+    "outputs/README-multirun/gui.gif": {
+      "sha256": "2000c3bea42acbae73c7f96d224757e6c47a0d71ad059213bf01901c5327409f",
+      "bytes": 12870019
+    },
+    "outputs/README-multirun/montage.json": {
+      "sha256": "548ff87c582843f7dff3a9880b81b63184fbb5bc462ed0de062204946249accb",
+      "bytes": 35972
+    },
+    "outputs/README-multirun/build_montage.py": {
+      "sha256": "adecfbf4ad712928ea210ecd34874ae1b6137776589f26d00197807e6e95c067",
+      "bytes": 9259
+    },
+    "outputs/update_montage_example.py": {
+      "sha256": "4b14300303cca916bf40d0dac19fd0085113164533172315f310b5bdd966cd1a",
+      "bytes": 4930
+    },
+    "outputs/README-multirun/noisy-ep0.gif": {
+      "sha256": "8d6fa719501a756513018c4caa2b369bcd0cc72e46c11576d61eb0e0660cd073",
+      "bytes": 3633465
+    },
+    "outputs/README-multirun/noisy-ep0.json": {
+      "sha256": "f8305662e8a2e18d36a61e8b6633f9a9d1aaa8818e442ae74cf3e14746e0c9a3",
+      "bytes": 3400
+    },
+    "outputs/README-multirun/noisy-ep1.gif": {
+      "sha256": "55ad62eede0e5e3339626f79ce88d98d73c6f89a7142938fb4dfa6a86ee9cd9e",
+      "bytes": 2593328
+    },
+    "outputs/README-multirun/noisy-ep1.json": {
+      "sha256": "1430773f313f036b0b7a521c7e42ac325da5d9a49827465212b5fb7258ecdc29",
+      "bytes": 3400
+    },
+    "outputs/README-multirun/perturbed-ep0.gif": {
+      "sha256": "db718c6fb330a5f10a2076733b63221a860f7d268e7900d1ee073e8e785494ab",
+      "bytes": 3849782
+    },
+    "outputs/README-multirun/perturbed-ep0.json": {
+      "sha256": "d6137de95819e84b1224e8dfe9f82a00fb13cae88f47abf81fbb4a100e0d794c",
+      "bytes": 3422
+    },
+    "outputs/README-multirun/perturbed-ep1.gif": {
+      "sha256": "6277a314d1ee2a09f40f957a0b5d674652302dd5ff58d2d9c31c2daa174818a1",
+      "bytes": 2658651
+    },
+    "outputs/README-multirun/perturbed-ep1.json": {
+      "sha256": "6ba8b0d9797936cf92509be751af2edff6a40f3a167f18d4d7fef88db52523a0",
+      "bytes": 3427
     }
   },
   "files": {
     "policy.npz": {
-      "raw_source": "outputs/hardware-train-seed42/policy.npz",
-      "sha256": "2844682f1a674e5fefd1fd481712a9903a6304fea76f44d383c0c87b6e649540",
-      "bytes": 36221,
+      "raw_source": "outputs/moving-train-seed42/policy.npz",
+      "sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+      "bytes": 36321,
       "copy": "byte-identical"
     },
     "training.jsonl": {
-      "raw_source": "outputs/hardware-train-seed42/training.jsonl",
-      "sha256": "7327411e40fca35cba861de8ad5547b09acdabfa9ac1573b7950ae6b8a76ab2c",
-      "bytes": 9301,
+      "raw_source": "outputs/moving-train-seed42/training.jsonl",
+      "sha256": "8f4a941dc9879e47a564d9eaa98c04dc109aafa8c60ec9feb5edface7c26ca04",
+      "bytes": 9283,
       "copy": "byte-identical"
     },
     "gui.gif": {
-      "raw_source": "outputs/hardware-trained-gui.gif",
-      "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
-      "bytes": 2705045,
+      "raw_source": "outputs/README-multirun/gui.gif",
+      "sha256": "2000c3bea42acbae73c7f96d224757e6c47a0d71ad059213bf01901c5327409f",
+      "bytes": 12870019,
       "copy": "byte-identical"
     },
     "gpu-capacity.json": {
-      "raw_source": "outputs/hardware-capacity/run-20261125-175440-28231a/capacity.json",
-      "sha256": "5be3e19a3b37a5d86d2bdd79efc77d794dec59e540fcdb2585df7c56b8131656",
-      "bytes": 10052,
+      "raw_source": "outputs/hardware-capacity/run-20261125-233639-4a1c19/capacity.json",
+      "sha256": "f894c42422c7ed354d43059a114f338f9b214d664a6af55a78b1bb4a0752d560",
+      "bytes": 10049,
       "copy": "byte-identical"
     }
   },
   "derived_files": {
     "training.png": {
-      "sha256": "4ffb548ce2b92b290cb881e5884243f5851ff8819fb5a3993f0ab02e11308e12",
-      "bytes": 140671,
+      "sha256": "17ddb245c2d7b7d24b5aceab7b406e9461b4821039c6c0916178daf7d51b16eb",
+      "bytes": 127291,
       "generator": "crazyflow.balloon.logs.write_training_plot; original JSONL and checkpoint initial/best metadata"
     },
     "evaluation-summary.json": {
-      "sha256": "02673a1946bab27cbcee7d9efe71fc0586405cae40408a6e168f259b7054b5cc",
-      "bytes": 14989,
-      "source": "outputs/hardware-train-seed42/evaluation/metrics.json"
+      "sha256": "5f583c9a23d5c3b076c7e8db44abe329cc94e085e5a1887d35990c04629e4e85",
+      "bytes": 65324,
+      "source": "outputs/moving-train-seed42/evaluation/metrics.json",
+      "gui_source": "outputs/README-multirun/montage.json"
     },
     "gui.json": {
-      "sha256": "a02fb0acd2b5a4fc4c1e48a46a5a81ba43aadd41dbc56867b3433f2eea378687",
-      "bytes": 2088,
-      "source": "outputs/hardware-trained-gui.json",
-      "annotation": "SHA来自相同评测metrics及原checkpoint文件校验；原sidecar和权重均未改写。"
+      "sha256": "9bccf71f15c5bcad1848bafd22a50b4413b0f285e6787759b90c5dbce7b8e283",
+      "bytes": 36092,
+      "source": "outputs/README-multirun/montage.json",
+      "annotation": "保留四段原始sidecar和完整首事件；示例权重和动图位置使用目录内相对文件名。"
     },
     "README.md": {
-      "sha256": "5ac9690dff244f011246c9e7082585dec0cba8ad9b717781bc37e7bc747165da",
-      "bytes": 3123
+      "sha256": "68934929364df8e5e5aaa72def54c4f538a6d5560797cd2931ea8927a438cf73",
+      "bytes": 5058
     }
   },
   "checkpoint_selection": {
     "completed_iterations": 1500,
-    "policy_iteration": 1425,
-    "policy_validation_loss": 1.2334939241409302,
-    "last_validation_loss": 1.277369737625122,
+    "policy_iteration": 1325,
+    "policy_validation_loss": 1.7179152965545654,
+    "last_validation_loss": 1.744221806526184,
     "log_records": 61,
     "checkpoint_bytes_unchanged": true,
     "evaluated_checkpoint_sha256_matches_copy": true
@@ -208,7 +257,7 @@
   "hardware": {
     "pipeline": "causal_mailboxes_v1",
     "pipeline_derived_from_frozen_config": true,
-    "descriptive_checkpoint_pipeline_field_present": false,
+    "descriptive_checkpoint_pipeline_field_present": true,
     "camera_capture_rate_hz": 50.0,
     "imu_and_control_rate_hz": 500.0,
     "camera_delay_ms": [
@@ -223,13 +272,19 @@
       0.0,
       20.0
     ],
-    "unmeasured_new_amplitudes": {
+    "gyro_scale_prior": {
+      "std": 0.1,
+      "distribution": "Independent N(1,0.1^2) multiplier per axis per 500Hz gyro sample",
+      "source": "CrazyRL e2e_drone/tasks/baseline/quad_baseline_env.py:155,741",
+      "status": "User-selected training prior; not cf21B hardware calibration",
+      "existing_additive_white_noise_and_episode_bias": "retained"
+    },
+    "unknown_new_amplitudes": {
       "camera_packet_loss_prob": 0.0,
       "bbox_bias_std": 0.0,
       "gyro_packet_loss_prob": 0.0,
       "attitude_packet_loss_prob": 0.0,
       "gyro_drift_std": 0.0,
-      "gyro_scale_std": 0.0,
       "attitude_bias_std": 0.0,
       "command_jitter_std_ms": 0.0,
       "inertia_fraction": 0.0,
@@ -238,27 +293,940 @@
       "motor_response_fraction": 0.0,
       "gust_std": 0.0
     },
-    "parameter_status": "沿用项目已有延迟边界；新增未知扰动幅度为0，尚需实测。"
+    "parameter_status": "按用户选择启用CrazyRL gyro乘性标准差0.1；延迟沿用项目先验，其它新增未知幅度仍为0，均非本机实测标定。"
+  },
+  "task": {
+    "nominal_diameter_m": 0.3,
+    "dimensionless_scale_range": [
+      0.1,
+      2.0
+    ],
+    "diameter_range_m": [
+      0.03,
+      0.6
+    ],
+    "size_distribution": "log-uniform scale, without a minimum pixel-area filter",
+    "moving_speed_range_m_s": [
+      0.0,
+      1.5
+    ],
+    "stationary_probability": 0.2,
+    "motion": "episode-constant speed; isotropic 3D direction; target(t)=target0+velocity*t",
+    "floor_handling": "common vertical reset translation of aircraft and target keeps the whole prescribed target path above floor; no direction rejection or bounce",
+    "actor": "65 values; bbox/estimated local attitude/body gyro/issued actions only; no target physical size, range or velocity and no ego position/linear velocity",
+    "contact_speed": "drone collision-sphere-center velocity minus target velocity"
   },
   "gui_validation": {
-    "file": "gui.gif",
-    "sha256": "63f8c77f70ef628487051a707b635d05bad22031fe410fbf4f951206bdcba9bc",
-    "suite": "noisy",
-    "episode": 0,
-    "seed": 20261125,
-    "first_event": "hit",
-    "first_event_time_s": 1.9291279750763106,
-    "reached_first_event": true,
-    "truncated": false,
-    "rendered_frames": 59,
-    "encoded_frames": 40,
-    "total_duration_ms": 2950,
-    "last_frame_hold_ms": 1000,
-    "delay_values_ms": [
-      50,
-      1000
+    "format": "native_gui_four_flights_v1",
+    "selection": {
+      "order": [
+        {
+          "suite": "noisy",
+          "episode": 0
+        },
+        {
+          "suite": "noisy",
+          "episode": 1
+        },
+        {
+          "suite": "perturbed",
+          "episode": 0
+        },
+        {
+          "suite": "perturbed",
+          "episode": 1
+        }
+      ],
+      "rule": "First two saved episodes of each requested suite, fixed before recording",
+      "success_filter": false,
+      "nominal_excluded": true
+    },
+    "source_evaluation": {
+      "path": "outputs/moving-train-seed42/evaluation",
+      "metrics_sha256": "88a038112fb0cbc716d148f64602268c22cf52a21ccceae28a588a7125566718",
+      "seed": 20261125,
+      "episodes_per_scenario": 256
+    },
+    "checkpoint": {
+      "sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+      "frozen_config_sha256": "b2dda28c5edbfefa3db22512b2006558e061e2a978ed0f37e0eb5d265a1e900e",
+      "raw_source": "outputs/moving-train-seed42/policy.npz",
+      "file": "policy.npz"
+    },
+    "segments": [
+      {
+        "index": 0,
+        "suite": "noisy",
+        "episode": 0,
+        "seed": 20261125,
+        "source_gif": "outputs/README-multirun/noisy-ep0.gif",
+        "source_gif_sha256": "8d6fa719501a756513018c4caa2b369bcd0cc72e46c11576d61eb0e0660cd073",
+        "source_sidecar": "outputs/README-multirun/noisy-ep0.json",
+        "source_sidecar_sha256": "f8305662e8a2e18d36a61e8b6633f9a9d1aaa8818e442ae74cf3e14746e0c9a3",
+        "checkpoint_sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+        "frozen_config_sha256": "b2dda28c5edbfefa3db22512b2006558e061e2a978ed0f37e0eb5d265a1e900e",
+        "first_event": {
+          "episode": 0,
+          "outcome": "hit",
+          "success": true,
+          "event_time_s": 2.4246890053236183,
+          "contact_time_s": 2.4246890053236183,
+          "impact_speed_m_s": 0.7848340665694322,
+          "drone_collision_speed_m_s": 1.4504615531106382,
+          "target_speed_m_s": 0.9372532701563472,
+          "minimum_distance_m": 0.15096725231409056,
+          "minimum_surface_clearance_m": 0.0,
+          "terminal_distance_m": 0.15096725231409056,
+          "visible_fraction": 0.9590163934426229,
+          "target_diameter_m": 0.12993450462818146,
+          "initial_ideal_bbox_width_px": 9.22529411315918,
+          "initial_ideal_bbox_height_px": 9.036649703979492,
+          "initial_ideal_bbox_valid": true,
+          "native_contact_time_s": 2.426,
+          "native_contact_by_first_event": true
+        },
+        "recording": {
+          "fps": 20,
+          "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors",
+          "frames": 69,
+          "last_sim_time_s": 2.4246890053236183,
+          "reached_first_event": true,
+          "truncated": false,
+          "suite": "noisy",
+          "episode": 0,
+          "seed": 20261125,
+          "flight_plant": "mujoco",
+          "devices": [
+            "cuda:0"
+          ],
+          "opengl": {
+            "vendor": "NVIDIA Corporation",
+            "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+            "version": "4.6.0 NVIDIA 580.126.09"
+          },
+          "xy_map": {
+            "bounds_m": [
+              -0.4650160808489723,
+              6.277717091461126,
+              -4.131447208772798,
+              0.4020714523618799
+            ],
+            "coordinate_axes": "+X right; +Y up; world metres, fixed episode bounds and equal scale",
+            "velocity_arrow_seconds": 1.0,
+            "actor_excluded": true,
+            "motion": "moving",
+            "aircraft_position_m": [
+              4.209626600263732,
+              -1.8056585642357166,
+              2.345244108490497
+            ],
+            "aircraft_velocity_m_s": [
+              1.4017893605723786,
+              -0.24211244784156574,
+              0.3451800444350497
+            ],
+            "target_position_m": [
+              4.333436012268066,
+              -1.7488534450531006,
+              2.4177777767181396
+            ],
+            "target_velocity_m_s": [
+              0.6600543856620789,
+              -0.5421286225318909,
+              0.3858347535133362
+            ],
+            "time_s": 2.4246890053236183,
+            "pixels_per_m": 46.983373384127425,
+            "role": "SIM TRUTH, excluded from actor; dashed target future is prescribed, not measured"
+          },
+          "first_event": {
+            "episode": 0,
+            "outcome": "hit",
+            "success": true,
+            "event_time_s": 2.4246890053236183,
+            "contact_time_s": 2.4246890053236183,
+            "impact_speed_m_s": 0.7848340665694322,
+            "drone_collision_speed_m_s": 1.4504615531106382,
+            "target_speed_m_s": 0.9372532701563472,
+            "minimum_distance_m": 0.15096725231409056,
+            "minimum_surface_clearance_m": 0.0,
+            "terminal_distance_m": 0.15096725231409056,
+            "visible_fraction": 0.9590163934426229,
+            "target_diameter_m": 0.12993450462818146,
+            "initial_ideal_bbox_width_px": 9.22529411315918,
+            "initial_ideal_bbox_height_px": 9.036649703979492,
+            "initial_ideal_bbox_valid": true,
+            "native_contact_time_s": 2.426,
+            "native_contact_by_first_event": true
+          },
+          "checkpoint": "/outputs/moving-train-seed42/policy.npz",
+          "hardware": {
+            "enabled": true,
+            "camera_delay_ms": [
+              0.0,
+              40.0
+            ],
+            "camera_packet_loss_prob": 0.0,
+            "camera_stale_ms": 100.0,
+            "bbox_bias_std": 0.0,
+            "gyro_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "attitude_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "gyro_packet_loss_prob": 0.0,
+            "attitude_packet_loss_prob": 0.0,
+            "gyro_drift_std": 0.0,
+            "gyro_scale_std": 0.1,
+            "attitude_bias_std": 0.0,
+            "bias_tau_s": 30.0,
+            "attitude_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "thrust_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "command_jitter_std_ms": 0.0,
+            "command_jitter_tau_s": 0.1,
+            "inertia_fraction": 0.0,
+            "drag_fraction": 0.0,
+            "motor_thrust_fraction": 0.0,
+            "motor_response_fraction": 0.0,
+            "gust_std": 0.0,
+            "gust_tau_s": 0.5
+          },
+          "target_initial_center_m": [
+            2.733009099960327,
+            -0.434360146522522,
+            1.4822485446929932
+          ],
+          "target_velocity_m_s": [
+            0.6600543856620789,
+            -0.5421286225318909,
+            0.3858347535133362
+          ],
+          "target_diameter_m": 0.12993450462818146,
+          "role": "native GUI framebuffer recording of the saved trajectory"
+        },
+        "rendered_frames": 69,
+        "encoded_frames": 50,
+        "duration_ms": 3450,
+        "final_hold_ms": 1000,
+        "montage_start_ms": 0,
+        "montage_end_ms": 3450,
+        "target_initial_center_m": [
+          2.733009099960327,
+          -0.434360146522522,
+          1.4822485446929932
+        ],
+        "target_velocity_m_s": [
+          0.6600543856620789,
+          -0.5421286225318909,
+          0.3858347535133362
+        ],
+        "target_diameter_m": 0.12993450462818146,
+        "opengl": {
+          "vendor": "NVIDIA Corporation",
+          "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+          "version": "4.6.0 NVIDIA 580.126.09"
+        },
+        "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors"
+      },
+      {
+        "index": 1,
+        "suite": "noisy",
+        "episode": 1,
+        "seed": 20261125,
+        "source_gif": "outputs/README-multirun/noisy-ep1.gif",
+        "source_gif_sha256": "55ad62eede0e5e3339626f79ce88d98d73c6f89a7142938fb4dfa6a86ee9cd9e",
+        "source_sidecar": "outputs/README-multirun/noisy-ep1.json",
+        "source_sidecar_sha256": "1430773f313f036b0b7a521c7e42ac325da5d9a49827465212b5fb7258ecdc29",
+        "checkpoint_sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+        "frozen_config_sha256": "b2dda28c5edbfefa3db22512b2006558e061e2a978ed0f37e0eb5d265a1e900e",
+        "first_event": {
+          "episode": 1,
+          "outcome": "hit",
+          "success": true,
+          "event_time_s": 1.8131931047804786,
+          "contact_time_s": 1.8131931047804786,
+          "impact_speed_m_s": 0.3981899930955428,
+          "drone_collision_speed_m_s": 1.1067572299081334,
+          "target_speed_m_s": 0.7742731203065841,
+          "minimum_distance_m": 0.14239943853020667,
+          "minimum_surface_clearance_m": 0.0,
+          "terminal_distance_m": 0.14239943853020667,
+          "visible_fraction": 0.967032967032967,
+          "target_diameter_m": 0.11279887706041336,
+          "initial_ideal_bbox_width_px": 11.467096328735352,
+          "initial_ideal_bbox_height_px": 11.493009567260742,
+          "initial_ideal_bbox_valid": true,
+          "native_contact_time_s": 1.814,
+          "native_contact_by_first_event": true
+        },
+        "recording": {
+          "fps": 20,
+          "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors",
+          "frames": 57,
+          "last_sim_time_s": 1.8131931047804786,
+          "reached_first_event": true,
+          "truncated": false,
+          "suite": "noisy",
+          "episode": 1,
+          "seed": 20261125,
+          "flight_plant": "mujoco",
+          "devices": [
+            "cuda:0"
+          ],
+          "opengl": {
+            "vendor": "NVIDIA Corporation",
+            "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+            "version": "4.6.0 NVIDIA 580.126.09"
+          },
+          "xy_map": {
+            "bounds_m": [
+              -0.33260559814134133,
+              4.490175574908108,
+              -0.6221918834769498,
+              0.9778081165230503
+            ],
+            "coordinate_axes": "+X right; +Y up; world metres, fixed episode bounds and equal scale",
+            "velocity_arrow_seconds": 1.0,
+            "actor_excluded": true,
+            "motion": "moving",
+            "aircraft_position_m": [
+              2.553488672020434,
+              0.11542046036878219,
+              0.9182284215832153
+            ],
+            "aircraft_velocity_m_s": [
+              0.7857346127354425,
+              0.3309114405297229,
+              -0.6833543850995509
+            ],
+            "target_position_m": [
+              2.6808242797851562,
+              0.16927790641784668,
+              0.9427270889282227
+            ],
+            "target_velocity_m_s": [
+              0.45872610807418823,
+              0.15737155079841614,
+              -0.6035755276679993
+            ],
+            "time_s": 1.8131931047804786,
+            "pixels_per_m": 133.125,
+            "role": "SIM TRUTH, excluded from actor; dashed target future is prescribed, not measured"
+          },
+          "first_event": {
+            "episode": 1,
+            "outcome": "hit",
+            "success": true,
+            "event_time_s": 1.8131931047804786,
+            "contact_time_s": 1.8131931047804786,
+            "impact_speed_m_s": 0.3981899930955428,
+            "drone_collision_speed_m_s": 1.1067572299081334,
+            "target_speed_m_s": 0.7742731203065841,
+            "minimum_distance_m": 0.14239943853020667,
+            "minimum_surface_clearance_m": 0.0,
+            "terminal_distance_m": 0.14239943853020667,
+            "visible_fraction": 0.967032967032967,
+            "target_diameter_m": 0.11279887706041336,
+            "initial_ideal_bbox_width_px": 11.467096328735352,
+            "initial_ideal_bbox_height_px": 11.493009567260742,
+            "initial_ideal_bbox_valid": true,
+            "native_contact_time_s": 1.814,
+            "native_contact_by_first_event": true
+          },
+          "checkpoint": "/outputs/moving-train-seed42/policy.npz",
+          "hardware": {
+            "enabled": true,
+            "camera_delay_ms": [
+              0.0,
+              40.0
+            ],
+            "camera_packet_loss_prob": 0.0,
+            "camera_stale_ms": 100.0,
+            "bbox_bias_std": 0.0,
+            "gyro_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "attitude_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "gyro_packet_loss_prob": 0.0,
+            "attitude_packet_loss_prob": 0.0,
+            "gyro_drift_std": 0.0,
+            "gyro_scale_std": 0.1,
+            "attitude_bias_std": 0.0,
+            "bias_tau_s": 30.0,
+            "attitude_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "thrust_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "command_jitter_std_ms": 0.0,
+            "command_jitter_tau_s": 0.1,
+            "inertia_fraction": 0.0,
+            "drag_fraction": 0.0,
+            "motor_thrust_fraction": 0.0,
+            "motor_response_fraction": 0.0,
+            "gust_std": 0.0,
+            "gust_tau_s": 0.5
+          },
+          "target_initial_center_m": [
+            1.8490653038024902,
+            -0.11606711149215698,
+            2.037126064300537
+          ],
+          "target_velocity_m_s": [
+            0.45872610807418823,
+            0.15737155079841614,
+            -0.6035755276679993
+          ],
+          "target_diameter_m": 0.11279887706041336,
+          "role": "native GUI framebuffer recording of the saved trajectory"
+        },
+        "rendered_frames": 57,
+        "encoded_frames": 38,
+        "duration_ms": 2850,
+        "final_hold_ms": 1000,
+        "montage_start_ms": 3450,
+        "montage_end_ms": 6300,
+        "target_initial_center_m": [
+          1.8490653038024902,
+          -0.11606711149215698,
+          2.037126064300537
+        ],
+        "target_velocity_m_s": [
+          0.45872610807418823,
+          0.15737155079841614,
+          -0.6035755276679993
+        ],
+        "target_diameter_m": 0.11279887706041336,
+        "opengl": {
+          "vendor": "NVIDIA Corporation",
+          "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+          "version": "4.6.0 NVIDIA 580.126.09"
+        },
+        "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors"
+      },
+      {
+        "index": 2,
+        "suite": "perturbed",
+        "episode": 0,
+        "seed": 20261125,
+        "source_gif": "outputs/README-multirun/perturbed-ep0.gif",
+        "source_gif_sha256": "db718c6fb330a5f10a2076733b63221a860f7d268e7900d1ee073e8e785494ab",
+        "source_sidecar": "outputs/README-multirun/perturbed-ep0.json",
+        "source_sidecar_sha256": "d6137de95819e84b1224e8dfe9f82a00fb13cae88f47abf81fbb4a100e0d794c",
+        "checkpoint_sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+        "frozen_config_sha256": "b2dda28c5edbfefa3db22512b2006558e061e2a978ed0f37e0eb5d265a1e900e",
+        "first_event": {
+          "episode": 0,
+          "outcome": "hit",
+          "success": true,
+          "event_time_s": 2.5381152453952986,
+          "contact_time_s": 2.5381152453952986,
+          "impact_speed_m_s": 0.8173518963567242,
+          "drone_collision_speed_m_s": 1.516413528919906,
+          "target_speed_m_s": 0.9372532701563472,
+          "minimum_distance_m": 0.1509672523140909,
+          "minimum_surface_clearance_m": 1.6653345369377348e-16,
+          "terminal_distance_m": 0.1509672523140909,
+          "visible_fraction": 0.9606299212598425,
+          "target_diameter_m": 0.12993450462818146,
+          "initial_ideal_bbox_width_px": 10.109248161315918,
+          "initial_ideal_bbox_height_px": 9.402584075927734,
+          "initial_ideal_bbox_valid": true,
+          "native_contact_time_s": 2.54,
+          "native_contact_by_first_event": true
+        },
+        "recording": {
+          "fps": 20,
+          "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors",
+          "frames": 71,
+          "last_sim_time_s": 2.5381152453952986,
+          "reached_first_event": true,
+          "truncated": false,
+          "suite": "perturbed",
+          "episode": 0,
+          "seed": 20261125,
+          "flight_plant": "mujoco",
+          "devices": [
+            "cuda:0"
+          ],
+          "opengl": {
+            "vendor": "NVIDIA Corporation",
+            "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+            "version": "4.6.0 NVIDIA 580.126.09"
+          },
+          "xy_map": {
+            "bounds_m": [
+              -0.4647530513160386,
+              6.274166192766521,
+              -4.004326753889108,
+              0.5743453732211812
+            ],
+            "coordinate_axes": "+X right; +Y up; world metres, fixed episode bounds and equal scale",
+            "velocity_arrow_seconds": 1.0,
+            "actor_excluded": true,
+            "motion": "moving",
+            "aircraft_position_m": [
+              4.270073373335608,
+              -2.1758918018637434,
+              2.401869411943453
+            ],
+            "aircraft_velocity_m_s": [
+              1.4693741894901147,
+              -0.32783008711675266,
+              0.32094384119165437
+            ],
+            "target_position_m": [
+              4.408303260803223,
+              -2.1481807231903076,
+              2.4615416526794434
+            ],
+            "target_velocity_m_s": [
+              0.6600543856620789,
+              -0.5421286225318909,
+              0.3858347535133362
+            ],
+            "time_s": 2.5381152453952986,
+            "pixels_per_m": 46.52003770674653,
+            "role": "SIM TRUTH, excluded from actor; dashed target future is prescribed, not measured"
+          },
+          "first_event": {
+            "episode": 0,
+            "outcome": "hit",
+            "success": true,
+            "event_time_s": 2.5381152453952986,
+            "contact_time_s": 2.5381152453952986,
+            "impact_speed_m_s": 0.8173518963567242,
+            "drone_collision_speed_m_s": 1.516413528919906,
+            "target_speed_m_s": 0.9372532701563472,
+            "minimum_distance_m": 0.1509672523140909,
+            "minimum_surface_clearance_m": 1.6653345369377348e-16,
+            "terminal_distance_m": 0.1509672523140909,
+            "visible_fraction": 0.9606299212598425,
+            "target_diameter_m": 0.12993450462818146,
+            "initial_ideal_bbox_width_px": 10.109248161315918,
+            "initial_ideal_bbox_height_px": 9.402584075927734,
+            "initial_ideal_bbox_valid": true,
+            "native_contact_time_s": 2.54,
+            "native_contact_by_first_event": true
+          },
+          "checkpoint": "/outputs/moving-train-seed42/policy.npz",
+          "hardware": {
+            "enabled": true,
+            "camera_delay_ms": [
+              0.0,
+              40.0
+            ],
+            "camera_packet_loss_prob": 0.0,
+            "camera_stale_ms": 100.0,
+            "bbox_bias_std": 0.0,
+            "gyro_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "attitude_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "gyro_packet_loss_prob": 0.0,
+            "attitude_packet_loss_prob": 0.0,
+            "gyro_drift_std": 0.0,
+            "gyro_scale_std": 0.1,
+            "attitude_bias_std": 0.0,
+            "bias_tau_s": 30.0,
+            "attitude_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "thrust_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "command_jitter_std_ms": 0.0,
+            "command_jitter_tau_s": 0.1,
+            "inertia_fraction": 0.0,
+            "drag_fraction": 0.0,
+            "motor_thrust_fraction": 0.0,
+            "motor_response_fraction": 0.0,
+            "gust_std": 0.0,
+            "gust_tau_s": 0.5
+          },
+          "target_initial_center_m": [
+            2.733009099960327,
+            -0.7721958160400391,
+            1.4822485446929932
+          ],
+          "target_velocity_m_s": [
+            0.6600543856620789,
+            -0.5421286225318909,
+            0.3858347535133362
+          ],
+          "target_diameter_m": 0.12993450462818146,
+          "role": "native GUI framebuffer recording of the saved trajectory"
+        },
+        "rendered_frames": 71,
+        "encoded_frames": 52,
+        "duration_ms": 3550,
+        "final_hold_ms": 1000,
+        "montage_start_ms": 6300,
+        "montage_end_ms": 9850,
+        "target_initial_center_m": [
+          2.733009099960327,
+          -0.7721958160400391,
+          1.4822485446929932
+        ],
+        "target_velocity_m_s": [
+          0.6600543856620789,
+          -0.5421286225318909,
+          0.3858347535133362
+        ],
+        "target_diameter_m": 0.12993450462818146,
+        "opengl": {
+          "vendor": "NVIDIA Corporation",
+          "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+          "version": "4.6.0 NVIDIA 580.126.09"
+        },
+        "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors"
+      },
+      {
+        "index": 3,
+        "suite": "perturbed",
+        "episode": 1,
+        "seed": 20261125,
+        "source_gif": "outputs/README-multirun/perturbed-ep1.gif",
+        "source_gif_sha256": "6277a314d1ee2a09f40f957a0b5d674652302dd5ff58d2d9c31c2daa174818a1",
+        "source_sidecar": "outputs/README-multirun/perturbed-ep1.json",
+        "source_sidecar_sha256": "6ba8b0d9797936cf92509be751af2edff6a40f3a167f18d4d7fef88db52523a0",
+        "checkpoint_sha256": "e4d0b30693d39e0133dfaee39d5ff1cfbce7e14eea8a8e753b904eb336426895",
+        "frozen_config_sha256": "b2dda28c5edbfefa3db22512b2006558e061e2a978ed0f37e0eb5d265a1e900e",
+        "first_event": {
+          "episode": 1,
+          "outcome": "hit",
+          "success": true,
+          "event_time_s": 1.816577910142992,
+          "contact_time_s": 1.816577910142992,
+          "impact_speed_m_s": 0.3924507557024098,
+          "drone_collision_speed_m_s": 1.1320976040559623,
+          "target_speed_m_s": 0.7742731203065841,
+          "minimum_distance_m": 0.14239943853020673,
+          "minimum_surface_clearance_m": 5.551115123125783e-17,
+          "terminal_distance_m": 0.14239943853020673,
+          "visible_fraction": 0.967032967032967,
+          "target_diameter_m": 0.11279887706041336,
+          "initial_ideal_bbox_width_px": 11.457991600036621,
+          "initial_ideal_bbox_height_px": 11.496192932128906,
+          "initial_ideal_bbox_valid": true,
+          "native_contact_time_s": 1.818,
+          "native_contact_by_first_event": true
+        },
+        "recording": {
+          "fps": 20,
+          "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors",
+          "frames": 57,
+          "last_sim_time_s": 1.816577910142992,
+          "reached_first_event": true,
+          "truncated": false,
+          "suite": "perturbed",
+          "episode": 1,
+          "seed": 20261125,
+          "flight_plant": "mujoco",
+          "devices": [
+            "cuda:0"
+          ],
+          "opengl": {
+            "vendor": "NVIDIA Corporation",
+            "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+            "version": "4.6.0 NVIDIA 580.126.09"
+          },
+          "xy_map": {
+            "bounds_m": [
+              -0.3232861231593951,
+              4.364362662651834,
+              -0.6316157995281821,
+              1.0528104981237565
+            ],
+            "coordinate_axes": "+X right; +Y up; world metres, fixed episode bounds and equal scale",
+            "velocity_arrow_seconds": 1.0,
+            "actor_excluded": true,
+            "motion": "moving",
+            "aircraft_position_m": [
+              2.55091622795211,
+              0.03304753207210115,
+              0.9220215283269303
+            ],
+            "aircraft_velocity_m_s": [
+              0.7704953803478548,
+              0.2830606208019497,
+              -0.7520016838413448
+            ],
+            "target_position_m": [
+              2.6823770999908447,
+              0.07953611016273499,
+              0.9406840801239014
+            ],
+            "target_velocity_m_s": [
+              0.45872610807418823,
+              0.15737155079841614,
+              -0.6035755276679993
+            ],
+            "time_s": 1.816577910142992,
+            "pixels_per_m": 126.45254962886672,
+            "role": "SIM TRUTH, excluded from actor; dashed target future is prescribed, not measured"
+          },
+          "first_event": {
+            "episode": 1,
+            "outcome": "hit",
+            "success": true,
+            "event_time_s": 1.816577910142992,
+            "contact_time_s": 1.816577910142992,
+            "impact_speed_m_s": 0.3924507557024098,
+            "drone_collision_speed_m_s": 1.1320976040559623,
+            "target_speed_m_s": 0.7742731203065841,
+            "minimum_distance_m": 0.14239943853020673,
+            "minimum_surface_clearance_m": 5.551115123125783e-17,
+            "terminal_distance_m": 0.14239943853020673,
+            "visible_fraction": 0.967032967032967,
+            "target_diameter_m": 0.11279887706041336,
+            "initial_ideal_bbox_width_px": 11.457991600036621,
+            "initial_ideal_bbox_height_px": 11.496192932128906,
+            "initial_ideal_bbox_valid": true,
+            "native_contact_time_s": 1.818,
+            "native_contact_by_first_event": true
+          },
+          "checkpoint": "/outputs/moving-train-seed42/policy.npz",
+          "hardware": {
+            "enabled": true,
+            "camera_delay_ms": [
+              0.0,
+              40.0
+            ],
+            "camera_packet_loss_prob": 0.0,
+            "camera_stale_ms": 100.0,
+            "bbox_bias_std": 0.0,
+            "gyro_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "attitude_delay_ms": [
+              0.0,
+              0.0
+            ],
+            "gyro_packet_loss_prob": 0.0,
+            "attitude_packet_loss_prob": 0.0,
+            "gyro_drift_std": 0.0,
+            "gyro_scale_std": 0.1,
+            "attitude_bias_std": 0.0,
+            "bias_tau_s": 30.0,
+            "attitude_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "thrust_command_delay_ms": [
+              0.0,
+              20.0
+            ],
+            "command_jitter_std_ms": 0.0,
+            "command_jitter_tau_s": 0.1,
+            "inertia_fraction": 0.0,
+            "drag_fraction": 0.0,
+            "motor_thrust_fraction": 0.0,
+            "motor_response_fraction": 0.0,
+            "gust_std": 0.0,
+            "gust_tau_s": 0.5
+          },
+          "target_initial_center_m": [
+            1.8490653038024902,
+            -0.20634156465530396,
+            2.037126064300537
+          ],
+          "target_velocity_m_s": [
+            0.45872610807418823,
+            0.15737155079841614,
+            -0.6035755276679993
+          ],
+          "target_diameter_m": 0.11279887706041336,
+          "role": "native GUI framebuffer recording of the saved trajectory"
+        },
+        "rendered_frames": 57,
+        "encoded_frames": 38,
+        "duration_ms": 2850,
+        "final_hold_ms": 1000,
+        "montage_start_ms": 9850,
+        "montage_end_ms": 12700,
+        "target_initial_center_m": [
+          1.8490653038024902,
+          -0.20634156465530396,
+          2.037126064300537
+        ],
+        "target_velocity_m_s": [
+          0.45872610807418823,
+          0.15737155079841614,
+          -0.6035755276679993
+        ],
+        "target_diameter_m": 0.11279887706041336,
+        "opengl": {
+          "vendor": "NVIDIA Corporation",
+          "renderer": "NVIDIA GeForce RTX 4070 Ti SUPER/PCIe/SSE2",
+          "version": "4.6.0 NVIDIA 580.126.09"
+        },
+        "gif_palette": "240 adaptive scene colors + 16 fixed semantic colors"
+      }
     ],
-    "loop": 0
+    "montage": {
+      "sha256": "2000c3bea42acbae73c7f96d224757e6c47a0d71ad059213bf01901c5327409f",
+      "encoded_frames": 178,
+      "duration_ms": 12700,
+      "resolution": [
+        1440,
+        960
+      ],
+      "bytes": 12870019,
+      "title_overlay": {
+        "rect_pixels_top_left": [
+          1236,
+          12,
+          1432,
+          54
+        ],
+        "content": "Recorded suite, zero-based episode, flight order"
+      },
+      "palette": "Original P images and per-clip palettes retained, no RGB requantization",
+      "verification": [
+        {
+          "segment_frame": "noisy-ep0-start",
+          "montage_frame": 0,
+          "role_pixels": {
+            "cyan": 64,
+            "orange": 184
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "noisy-ep0-midpoint",
+          "montage_frame": 24,
+          "role_pixels": {
+            "cyan": 478,
+            "orange": 248
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "noisy-ep0-end",
+          "montage_frame": 49,
+          "role_pixels": {
+            "cyan": 568,
+            "orange": 323
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "noisy-ep1-start",
+          "montage_frame": 50,
+          "role_pixels": {
+            "cyan": 66,
+            "orange": 266
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "noisy-ep1-midpoint",
+          "montage_frame": 68,
+          "role_pixels": {
+            "cyan": 866,
+            "orange": 353
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "noisy-ep1-end",
+          "montage_frame": 87,
+          "role_pixels": {
+            "cyan": 946,
+            "orange": 453
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "perturbed-ep0-start",
+          "montage_frame": 88,
+          "role_pixels": {
+            "cyan": 82,
+            "orange": 180
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "perturbed-ep0-midpoint",
+          "montage_frame": 113,
+          "role_pixels": {
+            "cyan": 475,
+            "orange": 248
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "perturbed-ep0-end",
+          "montage_frame": 139,
+          "role_pixels": {
+            "cyan": 566,
+            "orange": 328
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "perturbed-ep1-start",
+          "montage_frame": 140,
+          "role_pixels": {
+            "cyan": 93,
+            "orange": 257
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "perturbed-ep1-midpoint",
+          "montage_frame": 158,
+          "role_pixels": {
+            "cyan": 832,
+            "orange": 348
+          },
+          "all_pixels_exact_to_source_except_title": true
+        },
+        {
+          "segment_frame": "perturbed-ep1-end",
+          "montage_frame": 177,
+          "role_pixels": {
+            "cyan": 819,
+            "orange": 427
+          },
+          "all_pixels_exact_to_source_except_title": true
+        }
+      ],
+      "every_decoded_frame_exact_to_labeled_source": true,
+      "raw_source": "outputs/README-multirun/gui.gif",
+      "file": "gui.gif"
+    },
+    "roles": {
+      "trajectory": "Saved native MuJoCo flight, shared official controller/force model",
+      "xy_map": "SIM TRUTH only; absent from actor inputs",
+      "claim": "Simulation examples, not hardware robustness validation"
+    },
+    "schema": "balloon-gui-montage-v1",
+    "file": "gui.gif"
   },
   "removed_legacy_artifact": "gui.png",
   "not_included": [
@@ -270,7 +1238,9 @@
     "训练、评测和容量记录均来自仿真，不是实机飞行或硬件测量。",
     "MuJoCo独立积分刚体，但与训练共享官方控制器、旋翼响应、力/力矩模型及冻结标称参数。",
     "bbox由理想球体投影生成后加入配置内噪声与延迟，未验证真实视觉检测器。",
-    "新增未知扰动幅度保持0；不能据此声称已验证这些非零扰动或实机鲁棒性。",
+    "最小3cm球在120度640像素相机前方1.5/3m处约3.70/1.85像素宽；现有框噪声可与它同量级，保留这些难例不等于已证明实物能够跟踪。",
+    "向下轨迹可能把整组初态抬高；任意3D运动需实物场地有足够净空，未引入天花板模型。",
+    "gyro乘性标准差0.1来自用户选定的CrazyRL训练先验，并非cf21B实测标定；其它新增未知幅度仍为0，不能声称已验证其非零扰动或实机鲁棒性。",
     "容量短测每档仅3次完整BPTT更新，不能当作收敛性能比较或其它显卡的容量上限。"
   ]
 }

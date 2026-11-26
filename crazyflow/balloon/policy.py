@@ -134,11 +134,26 @@ class Controller:
         self.params, self.cfg, self.metadata = load_checkpoint(checkpoint)
         self.physical = nominal_params(self.cfg)
         self.reset()
-        self._forward = jax.jit(
-            lambda boxes, rot, gyro, actions: apply_policy(
-                self.params, actor_features(boxes, rot, gyro, actions, self.cfg)
+
+        @jax.jit
+        def forward(
+            boxes: jax.Array,
+            bbox: jax.Array,
+            quaternion: jax.Array,
+            gyro: jax.Array,
+            actions: jax.Array,
+        ) -> tuple[jax.Array, jax.Array, jax.Array]:
+            # Keep history, attitude conversion, the actor and command mapping in
+            # one compiled device call rather than dispatching tiny GPU kernels.
+            boxes = jnp.concatenate((boxes[1:], clip_bbox(bbox)[None]), 0)
+            rotation = Rotation.from_quat(quaternion).as_matrix()
+            action = apply_policy(
+                self.params, actor_features(boxes, rotation, gyro, actions, self.cfg)
             )
-        )
+            actions = jnp.concatenate((actions[1:], action[None]), 0)
+            return boxes, actions, command(action, self.cfg, self.physical)
+
+        self._forward = forward
 
     def reset(self) -> None:
         """Clear all episode history; call when starting a new flight."""
@@ -175,8 +190,11 @@ class Controller:
                 bbox[:2] = (lo + hi) / np.array((w, h)) - 1
                 bbox[2:4] = 2 * (hi - lo) / np.array((w, h))
                 bbox[4] = 1
-        self.boxes = jnp.concatenate((self.boxes[1:], clip_bbox(jnp.asarray(bbox))[None]), 0)
-        rot = Rotation.from_quat(jnp.asarray(q / np.linalg.norm(q))).as_matrix()
-        action = self._forward(self.boxes, rot, jnp.asarray(gyro), self.actions)
-        self.actions = jnp.concatenate((self.actions[1:], action[None]), 0)
-        return np.asarray(command(action, self.cfg, self.physical))
+        self.boxes, self.actions, output = self._forward(
+            self.boxes,
+            jnp.asarray(bbox),
+            jnp.asarray(q / np.linalg.norm(q)),
+            jnp.asarray(gyro),
+            self.actions,
+        )
+        return np.asarray(output)

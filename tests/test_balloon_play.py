@@ -1,6 +1,10 @@
 """Frozen replay diagnostics retain actor data and align the two sample timelines."""
 
+from concurrent.futures import Future
 from dataclasses import replace
+from pathlib import Path
+from threading import Event
+from time import monotonic, sleep
 
 import jax
 import numpy as np
@@ -9,7 +13,13 @@ import pytest
 from crazyflow.balloon.config import Config
 from crazyflow.balloon.evaluate import control_telemetry
 from crazyflow.balloon.noise_config import HardwareNoise
-from crazyflow.balloon.play import SUITES, FrozenReplay, debug_panel
+from crazyflow.balloon.play import (
+    SUITES,
+    AsyncFlightGenerator,
+    FrozenReplay,
+    _GifRecorder,
+    debug_panel,
+)
 
 
 def _replay() -> FrozenReplay:
@@ -34,6 +44,32 @@ def _replay() -> FrozenReplay:
         name: {"per_episode": [{"event_time_s": 0.06, "outcome": "timeout"}]} for name in SUITES
     }
     return FrozenReplay(cfg, {name: data.copy() for name in SUITES}, scores, 7)
+
+
+def test_gif_keeps_tiny_role_colors_and_final_hold(tmp_path: Path):
+    """Small orange/red objects must survive a palette dominated by blue-grey scenery."""
+    from PIL import Image
+
+    shades = np.linspace(15, 200, 512 * 256, dtype=np.uint8).reshape(256, 512)
+    rgb = np.stack((shades // 2, shades * 3 // 4, shades), axis=-1)
+    roles = np.array([[38, 224, 255], [255, 92, 31], [255, 0, 0]], dtype=np.uint8)
+    rgb[10, 10:13] = roles
+    path = tmp_path / "roles.gif"
+    recorder = _GifRecorder(path, np.array([50, 50, 1000]))
+    recorder.append_data(rgb)
+    second = rgb.copy()
+    second[20, 20] = [255, 255, 255]
+    recorder.append_data(second)
+    recorder.append_data(second)
+    recorder.close()
+    with Image.open(path) as encoded:
+        durations = []
+        for frame in range(encoded.n_frames):
+            encoded.seek(frame)
+            np.testing.assert_array_equal(np.asarray(encoded.convert("RGB"))[10, 10:13], roles)
+            durations.append(encoded.info["duration"])
+    assert sum(durations) == 1100
+    assert durations[-1] == 1050  # Identical tail frames merge without losing the hold.
 
 
 @pytest.mark.parametrize("when,tick", [(0, 0), (0.01999, 0), (0.02, 1), (0.03999, 1), (0.04, 2)])
@@ -121,3 +157,105 @@ def test_hardware_telemetry_uses_recorded_delivery_and_current_tick():
     panel = debug_panel(replay, info, ideal_visible=True)
     assert "age camera/gyro/attitude [ms] 20 / 2 / 4" in panel
     assert "Scheduled RPY/T delay" in panel
+
+
+def test_random_reset_runs_in_background_without_mutating_the_displayed_flight(tmp_path: Path):
+    replay = _replay()
+    replay.checkpoint = tmp_path / "policy.npz"
+    replay.plant = "mujoco"
+    replay.elapsed = 0.03
+    entered, release = Event(), Event()
+    calls = []
+
+    def delayed_generate(checkpoint: Path, seed: int, *, plant: str) -> FrozenReplay:
+        calls.append((checkpoint, seed, plant))
+        entered.set()
+        assert release.wait(5)
+        fresh = _replay()
+        fresh.seed = seed
+        fresh.arrays[fresh.name]["initial_target"] = np.array([[2.5, 0.1, 1.4]])
+        return fresh
+
+    loader = AsyncFlightGenerator(delayed_generate)
+    target = replay.target.copy()
+    try:
+        assert loader.request(replay)
+        assert entered.wait(5)
+        assert loader.busy and loader.poll() is None
+        assert not loader.request(replay)
+        np.testing.assert_array_equal(replay.target, target)
+        assert replay.elapsed == 0.03 and replay.seed == 7
+        release.set()
+        loader.future.result(timeout=5)
+        fresh = loader.poll()
+        assert fresh.seed == 8 and not np.array_equal(fresh.target, target)
+        assert not loader.busy and loader.error is None
+        assert calls == [(replay.checkpoint, 8, "mujoco")]
+    finally:
+        release.set()
+        loader.close()
+
+
+def test_random_reset_reports_worker_errors_without_replacing_a_good_flight(tmp_path: Path):
+    replay = _replay()
+    replay.checkpoint = tmp_path / "policy.npz"
+
+    def fail_generate(checkpoint: Path, seed: int, *, plant: str) -> FrozenReplay:
+        raise ValueError("invalid checkpoint fixture")
+
+    loader = AsyncFlightGenerator(fail_generate)
+    try:
+        assert loader.request(replay)
+        with pytest.raises(ValueError, match="fixture"):
+            loader.future.result(timeout=5)
+        assert loader.poll() is None
+        assert not loader.busy and "invalid checkpoint fixture" in loader.error
+        assert replay.seed == 7
+    finally:
+        loader.close()
+
+
+def test_random_reset_requires_a_checkpoint_and_close_does_not_wait_for_rollout(tmp_path: Path):
+    replay = _replay()
+    loader = AsyncFlightGenerator()
+    assert not loader.request(replay)
+    assert "policy.npz" in loader.error and not loader.busy
+    # A running rollout cannot be cancelled; close still returns immediately.
+    pending = Future()
+    pending.set_running_or_notify_cancel()
+    loader.future = pending
+    loader.close()
+    replay.checkpoint = tmp_path / "policy.npz"
+    assert not loader.request(replay)
+    assert not pending.done()
+
+
+def test_spawned_reset_reports_load_failure_and_can_retry(tmp_path: Path):
+    replay = _replay()
+    replay.checkpoint = tmp_path / "missing-policy.npz"
+    target = replay.target.copy()
+    loader = AsyncFlightGenerator()
+    try:
+        for _ in range(2):
+            assert loader.request(replay)
+            deadline = monotonic() + 30
+            while loader.busy and monotonic() < deadline:
+                assert loader.poll() is None
+                sleep(0.01)
+            assert not loader.busy
+            assert "FileNotFoundError" in loader.error
+            assert "missing-policy.npz" in loader.error
+            assert replay.seed == 7
+            np.testing.assert_array_equal(replay.target, target)
+    finally:
+        loader.close()
+
+
+def test_replay_rewinds_identical_target_without_resampling():
+    replay = _replay()
+    target, state = replay.target.copy(), replay.state().copy()
+    replay.elapsed, replay.paused = replay.duration, True
+    replay.reset()
+    assert replay.elapsed == 0 and not replay.paused and replay.seed == 7
+    np.testing.assert_array_equal(replay.target, target)
+    np.testing.assert_array_equal(replay.state(), state)

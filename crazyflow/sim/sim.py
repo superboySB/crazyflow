@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
 import jax
 import jax.numpy as jnp
 import mujoco
-import mujoco.mjx as mjx
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 from jax import Array, Device
@@ -399,6 +398,8 @@ class Sim:
 
     def build_mjx_model(self, spec: mujoco.MjSpec) -> tuple[Any, Any, Model, Data]:
         """Build the MuJoCo model and data structures for the simulation."""
+        import mujoco.mjx as mjx
+
         mj_model = spec.compile()
         self._unweld_drones(mj_model)
         mj_data = mujoco.MjData(mj_model)
@@ -817,6 +818,8 @@ def contact_bodies(data: Data, geom2body: Array) -> tuple[Array, Array, Array]:
 @jax.jit
 def sync_sim2mjx(data: SimData, mjx_data: Data, mjx_model: Model) -> tuple[SimData, Data]:
     """Synchronize the simulation data with the MuJoCo mjx_model."""
+    import mujoco.mjx as mjx
+
     pos, quat = data.states.pos, data.states.quat
     quat_mjx = jnp.roll(quat, 1, axis=-1)  # MuJoCo quat is [w, x, y, z], ours is [x, y, z, w]
     ids = data.core.drone_mocap_ids

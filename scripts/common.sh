@@ -66,20 +66,22 @@ cf_runtime() {
 }
 cf_run_args() {
   CF_RUN_ARGS=(--rm --init --user "$(id -u):$(id -g)" --shm-size=2g
-    -v "$CF_OUTPUTS:/outputs" --workdir /opt/crazyflow)
+    -v "$CF_OUTPUTS:/outputs" --workdir /opt/crazyflow
+    -e "JAX_COMPILATION_CACHE_DIR=/outputs/.cache/jax-$(id -u)"
+    -e JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0)
 }
 cf_container() {
   cf_run_args
   if [[ $CF_DEVICE == gpu ]]; then
-    CF_RUN_ARGS+=(--gpus all -e JAX_PLATFORMS=cuda)
+    CF_RUN_ARGS+=(--gpus all -e JAX_PLATFORMS=cuda -e MUJOCO_GL=egl)
   else
-    CF_RUN_ARGS+=(-e JAX_PLATFORMS=cpu)
+    CF_RUN_ARGS+=(-e JAX_PLATFORMS=cpu -e MUJOCO_GL=osmesa)
   fi
   docker run "${CF_RUN_ARGS[@]}" "$CF_IMAGE" "$@"
 }
 cf_container_cpu() {
   cf_run_args
-  docker run "${CF_RUN_ARGS[@]}" -e JAX_PLATFORMS=cpu "$CF_IMAGE" "$@"
+  docker run "${CF_RUN_ARGS[@]}" -e JAX_PLATFORMS=cpu -e MUJOCO_GL=osmesa "$CF_IMAGE" "$@"
 }
 cf_container_gui() {
   [[ -n ${DISPLAY:-} ]] || cf_die '没有 DISPLAY；在 Linux/X11 桌面运行，或使用 ./dani play --headless。'
@@ -87,7 +89,8 @@ cf_container_gui() {
   CF_RUN_ARGS+=(--hostname "$(hostname)" -e "DISPLAY=$DISPLAY" -e MUJOCO_GL=glfw
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro)
   if [[ $CF_DEVICE == gpu ]]; then
-    CF_RUN_ARGS+=(--gpus all -e JAX_PLATFORMS=cuda)
+    CF_RUN_ARGS+=(--gpus all -e JAX_PLATFORMS=cuda
+      -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,display)
   else
     CF_RUN_ARGS+=(-e JAX_PLATFORMS=cpu)
   fi

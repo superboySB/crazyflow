@@ -9,8 +9,10 @@ identification of the real aircraft or an independently fitted actuator model.
 
 from __future__ import annotations
 
+import json
 import xml.etree.ElementTree as ET
-from typing import TYPE_CHECKING, Any
+from functools import lru_cache
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -21,7 +23,7 @@ from scipy.spatial.transform import Rotation as NumpyRotation
 
 from crazyflow.balloon import hardware as H
 from crazyflow.balloon.camera import mujoco_camera_attributes
-from crazyflow.balloon.model import Batch, command, initialize, nominal_params
+from crazyflow.balloon.model import Batch, command, initialize, nominal_params, target_at_time
 from crazyflow.balloon.observations import actor_features
 from crazyflow.balloon.policy import PolicyParams, apply_policy
 from crazyflow.control import Control
@@ -47,6 +49,7 @@ def make_flight_model(
     target: np.ndarray | None = None,
     radius: float = 0.15,
     inertia_scale: float = 1.0,
+    target_velocity: np.ndarray | None = None,
 ) -> mujoco.MjModel:
     """Build a free aircraft with checkpoint mass/full inertia, never visual XML inertia.
 
@@ -114,6 +117,10 @@ def make_flight_model(
     ET.SubElement(drone, "camera", name="fpv", **mujoco_camera_attributes(cfg))
     if target is not None:
         balloon = ET.SubElement(world, "body", name="balloon", pos=_values(target))
+        if target_velocity is not None and np.any(np.asarray(target_velocity) != 0):
+            # Only the prescribed moving target is mocap; the aircraft remains a
+            # free rigid body integrated by mj_step, with its actual mass/inertia.
+            balloon.set("mocap", "true")
         ET.SubElement(balloon, "geom", name="balloon_surface", type="sphere", size=_values(radius))
     return mujoco.MjModel.from_xml_string(ET.tostring(root, encoding="unicode"))
 
@@ -142,6 +149,127 @@ def world_wrench(data: SimData) -> tuple[jax.Array, jax.Array]:
     return force, torque
 
 
+class NativeKernels(NamedTuple):
+    """Stable JIT identities; episode arrays and policy weights are dynamic inputs."""
+
+    actuators: Callable[..., Any]
+    policy_tick: Callable[..., Any]
+    hardware_policy_tick: Callable[..., Any]
+    hardware_substep: Callable[..., Any]
+    after_physics: Callable[..., Any]
+
+
+def _config_signature(cfg: Config) -> str:
+    """Freeze nested dictionaries by value, independent of their insertion order."""
+
+    def array_value(value: Any) -> Any:
+        if isinstance(value, (np.ndarray, np.generic, jax.Array)):
+            return value.tolist()
+        raise TypeError(f"Unsupported configuration value: {type(value).__name__}")
+
+    return json.dumps(
+        cfg.to_dict(), sort_keys=True, separators=(",", ":"), allow_nan=False, default=array_value
+    )
+
+
+def _native_kernels(cfg: Config, noise: bool = False) -> NativeKernels:
+    """Reuse process-local kernels; JAX still specializes each array shape/device."""
+    return _cached_native_kernels(_config_signature(cfg), noise)
+
+
+@lru_cache(maxsize=8)
+def _cached_native_kernels(signature: str, noise: bool) -> NativeKernels:
+    """Capture only immutable configuration, never a policy, batch or native world."""
+    from crazyflow.balloon.config import Config
+    from crazyflow.balloon.rollout import observe
+
+    cfg = Config(**json.loads(signature))
+    physical = nominal_params(cfg)
+    stages = build_control_fns(Control.attitude, Dynamics.default)
+    upper = motor_force2rotor_vel(physical["thrust_max"], physical["rpm2thrust"])
+
+    def actuator_step(current: SimData) -> tuple[SimData, jax.Array, jax.Array]:
+        for _, stage in stages:
+            current = stage(current)
+        current = clip_rotor_vel_cmd(current, lower=0, upper=upper, dynamics=Dynamics.default)
+        derivative, force, torque = _wrench_and_derivative(current)
+        current = current.replace(
+            states=current.states.replace(
+                rotor_vel=current.states.rotor_vel + derivative.rotor_acc * cfg.dt / cfg.substeps
+            )
+        )
+        return increment_steps(current), force, torque
+
+    @jax.jit
+    def policy_tick(
+        params: PolicyParams,
+        batch: Batch,
+        data: SimData,
+        rng: jax.Array,
+        boxes: jax.Array,
+        acts: jax.Array,
+        camera_fifo: jax.Array,
+        action_fifo: jax.Array,
+        delay: jax.Array,
+        action_delay: jax.Array,
+        time_s: jax.Array,
+    ) -> tuple[jax.Array, ...]:
+        n = batch["state"].shape[0]
+        observation_batch = {**batch, "target": target_at_time(batch, time_s)}
+        obs, boxes, camera_fifo, received = observe(
+            data, observation_batch, cfg, rng, boxes, acts, camera_fifo, delay, noise
+        )
+        issued = apply_policy(params, obs)
+        acts = jnp.concatenate((acts[:, 1:], issued[:, None]), 1)
+        action_fifo = jnp.concatenate((action_fifo[1:], issued[None]), 0)
+        executed = action_fifo[cfg.action_delay_steps - action_delay, jnp.arange(n)]
+        cmd = command(executed, cfg, physical)
+        return boxes, acts, camera_fifo, action_fifo, received, issued, cmd
+
+    @jax.jit
+    def hardware_policy_tick(
+        params: PolicyParams,
+        batch: Batch,
+        data: SimData,
+        hardware: H.HardwareState,
+        boxes: jax.Array,
+        acts: jax.Array,
+        rng: jax.Array,
+        time_s: jax.Array,
+    ) -> tuple:
+        tick_keys = jax.random.split(rng, 4)
+        observation_batch = {**batch, "target": target_at_time(batch, time_s)}
+        hardware, received, rotation, gyro, telemetry = H.measure(
+            hardware, data, observation_batch, cfg, tick_keys[0], noise
+        )
+        boxes = jnp.concatenate((boxes[:, 1:], received[:, None]), axis=1)
+        issued = apply_policy(params, actor_features(boxes, rotation, gyro, acts, cfg))
+        acts = jnp.concatenate((acts[:, 1:], issued[:, None]), axis=1)
+        hardware = H.issue(hardware, issued, cfg, tick_keys[1], noise)
+        telemetry["command_delay_ms"] = H.command_delay_ms(hardware, cfg)
+        return hardware, boxes, acts, received, issued, command(issued, cfg, physical), telemetry
+
+    @jax.jit
+    def hardware_substep(
+        data: SimData, hardware: H.HardwareState, wind: jax.Array, rng: jax.Array
+    ) -> tuple[SimData, H.HardwareState, jax.Array, jax.Array, jax.Array]:
+        hardware, executed, gust = H.actuate(hardware, cfg, rng, noise)
+        cmd = command(executed, cfg, physical)
+        force = data.params.mass * (wind + gust)[:, None]
+        data = data.replace(states=data.states.replace(force=force))
+        data = F.attitude_control(data, cmd[:, None])
+        data, force, torque = actuator_step(data)
+        return data, hardware, cmd, force, torque
+
+    @jax.jit
+    def after_physics(hardware: H.HardwareState, data: SimData, rng: jax.Array) -> H.HardwareState:
+        return H.sample_imu(hardware, data, cfg, rng, noise)
+
+    return NativeKernels(
+        jax.jit(actuator_step), policy_tick, hardware_policy_tick, hardware_substep, after_physics
+    )
+
+
 class NativePlant:
     """Persistent native worlds and official controller/RPM states for one batch."""
 
@@ -150,20 +278,37 @@ class NativePlant:
         self.physical = nominal_params(cfg)
         self.data = initialize(batch, cfg, self.physical)
         host = jax.device_get(batch)
+        self.initial_targets = np.asarray(host["target"], dtype=float)
+        self.target_velocities = np.asarray(
+            host.get("target_velocity", np.zeros_like(host["target"])), dtype=float
+        )
+        if (
+            self.target_velocities.shape != self.initial_targets.shape
+            or not np.isfinite(self.target_velocities).all()
+        ):
+            raise ValueError("target_velocity must be finite with shape (episodes,3)")
+        self.steps = 0
         inertia_scales = (
             host["domain"]["inertia_scale"] if cfg.hardware.enabled else np.ones(len(host["state"]))
         )
         self.models = [
-            make_flight_model(cfg, scale, target, radius, inertia_scale=inertia_scale)
-            for scale, target, radius, inertia_scale in zip(
+            make_flight_model(
+                cfg, scale, target, radius, inertia_scale=inertia_scale, target_velocity=velocity
+            )
+            for scale, target, radius, inertia_scale, velocity in zip(
                 host["domain"]["mass_scale"],
                 host["target"],
                 host["radius"],
                 inertia_scales,
+                self.target_velocities,
                 strict=True,
             )
         ]
         self.worlds = [mujoco.MjData(model) for model in self.models]
+        self.target_mocap_ids = [
+            int(model.body_mocapid[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "balloon")])
+            for model in self.models
+        ]
         self.failed = np.zeros(len(self.worlds), dtype=bool)
         initial = jax.device_get(self.data.states)
         for model, world, pos, quat, vel, omega in zip(
@@ -190,26 +335,7 @@ class NativePlant:
             }
             for model in self.models
         ]
-        stages = build_control_fns(Control.attitude, Dynamics.default)
-        upper = motor_force2rotor_vel(self.physical["thrust_max"], self.physical["rpm2thrust"])
-
-        @jax.jit
-        def actuators(current: SimData) -> tuple[SimData, jax.Array, jax.Array]:
-            for _, stage in stages:
-                current = stage(current)
-            current = clip_rotor_vel_cmd(current, lower=0, upper=upper, dynamics=Dynamics.default)
-            derivative, force, torque = _wrench_and_derivative(current)
-            # RPM is an actuator state, not a MuJoCo rigid-body coordinate.
-            current = current.replace(
-                states=current.states.replace(
-                    rotor_vel=(
-                        current.states.rotor_vel + derivative.rotor_acc * cfg.dt / cfg.substeps
-                    )
-                )
-            )
-            return increment_steps(current), force, torque
-
-        self._actuators = actuators
+        self._actuators = _native_kernels(cfg).actuators
 
     def contacts(self) -> np.ndarray:
         """Native balloon contact at the current integrated pose; no image gate."""
@@ -265,7 +391,12 @@ class NativePlant:
     def _substep(self) -> tuple[np.ndarray, np.ndarray]:
         """Integrate one native step after the caller sets command/external force."""
         self.data, force, torque = self._actuators(self.data)
+        return self._integrate(force, torque)
+
+    def _integrate(self, force: jax.Array, torque: jax.Array) -> tuple[np.ndarray, np.ndarray]:
+        """Transfer one wrench and integrate native worlds before sampling their IMU."""
         force, torque = jax.device_get((force, torque))
+        end_time = (self.steps + 1) * self.cfg.dt / self.cfg.substeps
         for episode, (model, world, body, f, t) in enumerate(
             zip(self.models, self.worlds, self.body_ids, force, torque, strict=True)
         ):
@@ -290,7 +421,13 @@ class NativePlant:
                 self.failed[episode] = True
                 continue
             # mj_step updates qpos but its collision cache is pre-integration.
+            mocap = self.target_mocap_ids[episode]
+            if mocap >= 0:
+                world.mocap_pos[mocap] = (
+                    self.initial_targets[episode] + self.target_velocities[episode] * end_time
+                )
             mujoco.mj_forward(model, world)
+        self.steps += 1
         return self._synchronize(), self.contacts()
 
 
@@ -306,44 +443,7 @@ def _hardware_rollout(
     )
     n = batch["state"].shape[0]
     boxes, acts = jnp.zeros((n, cfg.history, 5)), jnp.zeros((n, cfg.history, 4))
-
-    @jax.jit
-    def policy_tick(
-        data: SimData, hardware: H.HardwareState, boxes: jax.Array, acts: jax.Array, rng: jax.Array
-    ) -> tuple:
-        tick_keys = jax.random.split(rng, 4)
-        hardware, received, rotation, gyro, telemetry = H.measure(
-            hardware, data, batch, cfg, tick_keys[0], noise
-        )
-        boxes = jnp.concatenate((boxes[:, 1:], received[:, None]), axis=1)
-        issued = apply_policy(params, actor_features(boxes, rotation, gyro, acts, cfg))
-        acts = jnp.concatenate((acts[:, 1:], issued[:, None]), axis=1)
-        hardware = H.issue(hardware, issued, cfg, tick_keys[1], noise)
-        telemetry["command_delay_ms"] = H.command_delay_ms(hardware, cfg)
-        return (
-            hardware,
-            boxes,
-            acts,
-            received,
-            issued,
-            command(issued, cfg, plant.physical),
-            telemetry,
-        )
-
-    @jax.jit
-    def before_physics(
-        data: SimData, hardware: H.HardwareState, rng: jax.Array
-    ) -> tuple[SimData, H.HardwareState, jax.Array]:
-        hardware, executed, gust = H.actuate(hardware, cfg, rng, noise)
-        cmd = command(executed, cfg, plant.physical)
-        # Replace the total external acceleration every step; never accumulate it.
-        force = data.params.mass * (batch["domain"]["wind"] + gust)[:, None]
-        data = data.replace(states=data.states.replace(force=force))
-        return F.attitude_control(data, cmd[:, None]), hardware, cmd
-
-    @jax.jit
-    def after_physics(hardware: H.HardwareState, data: SimData, rng: jax.Array) -> H.HardwareState:
-        return H.sample_imu(hardware, data, cfg, rng, noise)
+    kernels = _native_kernels(cfg, noise)
 
     initial = jax.device_get(plant.data.states)
     states = [np.asarray(batch["state"])]
@@ -357,16 +457,18 @@ def _hardware_rollout(
     telemetry = {
         name: [] for name in ("camera_age_ms", "gyro_age_ms", "attitude_age_ms", "command_delay_ms")
     }
-    for rng in jax.random.split(keys[2], cfg.steps):
-        hardware, boxes, acts, received, issued, issued_cmd, debug = policy_tick(
-            plant.data, hardware, boxes, acts, rng
+    for step, rng in enumerate(jax.random.split(keys[2], cfg.steps)):
+        hardware, boxes, acts, received, issued, issued_cmd, debug = kernels.hardware_policy_tick(
+            params, batch, plant.data, hardware, boxes, acts, rng, jnp.asarray(step * cfg.dt)
         )
         inner_base = jax.random.split(rng, 4)[2]
         for index, subkey in enumerate(jax.random.split(inner_base, cfg.substeps)):
             actuate_key, imu_key = jax.random.split(subkey, 2)
-            plant.data, hardware, executed_cmd = before_physics(plant.data, hardware, actuate_key)
-            sub, touching = plant._substep()
-            hardware = after_physics(hardware, plant.data, imu_key)
+            plant.data, hardware, executed_cmd, force, torque = kernels.hardware_substep(
+                plant.data, hardware, batch["domain"]["wind"], actuate_key
+            )
+            sub, touching = plant._integrate(force, torque)
+            hardware = kernels.after_physics(hardware, plant.data, imu_key)
             substeps.append(sub)
             contacts.append(touching)
             if index == 0:
@@ -387,6 +489,7 @@ def _hardware_rollout(
         "substep_states": substeps,
         "bbox": np.stack(received_boxes),
         "actions": actions,
+        "target_positions": np.asarray(target_at_time(batch, jnp.arange(cfg.steps + 1) * cfg.dt)),
         "loss": np.asarray(trajectory_loss(states, substeps, actions, batch, cfg)),
         "quaternion_xyzw": np.stack(quaternion),
         "body_gyro": np.stack(gyro),
@@ -402,7 +505,7 @@ def rollout(
     params: PolicyParams, batch: Batch, cfg: Config, key: jax.Array, noise: bool = True
 ) -> dict[str, Any]:
     """Frozen policy, shared sensor pipeline, and native MuJoCo flight integration."""
-    from crazyflow.balloon.rollout import observe, trajectory_loss
+    from crazyflow.balloon.rollout import trajectory_loss
 
     plant = NativePlant(batch, cfg)
     if cfg.hardware.enabled:
@@ -422,25 +525,7 @@ def rollout(
     boxes, acts = jnp.zeros((n, cfg.history, 5)), jnp.zeros((n, cfg.history, 4))
     camera_fifo = jnp.zeros((cfg.max_delay_steps + 1, n, 5))
     action_fifo = jnp.zeros((cfg.action_delay_steps + 1, n, 4))
-
-    @jax.jit
-    def policy_tick(
-        data: SimData,
-        rng: jax.Array,
-        boxes: jax.Array,
-        acts: jax.Array,
-        camera_fifo: jax.Array,
-        action_fifo: jax.Array,
-    ) -> tuple[jax.Array, ...]:
-        obs, boxes, camera_fifo, received = observe(
-            data, batch, cfg, rng, boxes, acts, camera_fifo, delay, noise
-        )
-        issued = apply_policy(params, obs)
-        acts = jnp.concatenate((acts[:, 1:], issued[:, None]), 1)
-        action_fifo = jnp.concatenate((action_fifo[1:], issued[None]), 0)
-        executed = action_fifo[cfg.action_delay_steps - action_delay, jnp.arange(n)]
-        cmd = command(executed, cfg, plant.physical)
-        return boxes, acts, camera_fifo, action_fifo, received, issued, cmd
+    kernels = _native_kernels(cfg, noise)
 
     initial = jax.device_get(plant.data.states)
     states = [np.asarray(batch["state"])]
@@ -449,9 +534,19 @@ def rollout(
     quaternions = [initial.quat[:, 0]]
     gyro, rotor = [initial.ang_vel[:, 0]], [initial.rotor_vel[:, 0]]
     received_boxes, actions = [], []
-    for rng in jax.random.split(keys[2], cfg.steps):
-        boxes, acts, camera_fifo, action_fifo, received, issued, cmd = policy_tick(
-            plant.data, rng, boxes, acts, camera_fifo, action_fifo
+    for step, rng in enumerate(jax.random.split(keys[2], cfg.steps)):
+        boxes, acts, camera_fifo, action_fifo, received, issued, cmd = kernels.policy_tick(
+            params,
+            batch,
+            plant.data,
+            rng,
+            boxes,
+            acts,
+            camera_fifo,
+            action_fifo,
+            delay,
+            action_delay,
+            jnp.asarray(step * cfg.dt),
         )
         sub, contact = plant.advance(cmd)
         states.append(sub[-1])
@@ -469,6 +564,7 @@ def rollout(
         "substep_states": substeps,
         "bbox": np.stack(received_boxes),
         "actions": actions,
+        "target_positions": np.asarray(target_at_time(batch, jnp.arange(cfg.steps + 1) * cfg.dt)),
         "loss": np.asarray(trajectory_loss(states, substeps, actions, batch, cfg)),
         "quaternion_xyzw": np.stack(quaternions),
         "body_gyro": np.stack(gyro),

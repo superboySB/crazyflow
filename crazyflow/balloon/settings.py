@@ -27,6 +27,12 @@ TASK_FIELDS = frozenset(
         "drone_radius",
         "radius_min",
         "radius_max",
+        "target_diameter_m",
+        "target_scale_range",
+        "target_speed_min",
+        "target_speed_max",
+        "target_stationary_prob",
+        "target_spawn_margin",
         "distance_min",
         "distance_max",
         "max_impact_speed",
@@ -90,6 +96,10 @@ NONNEGATIVE_FIELDS = (NOISE_FIELDS - {"hardware"}) | {
     "min_altitude",
     "max_unseen_seconds",
     "ground_margin",
+    "target_speed_min",
+    "target_speed_max",
+    "target_stationary_prob",
+    "target_spawn_margin",
 }
 
 
@@ -115,11 +125,17 @@ def _mapping(value: Any, name: str) -> dict:
     return value
 
 
-def _keys(value: dict, allowed: frozenset | set, name: str, complete: bool) -> None:
+def _keys(
+    value: dict,
+    allowed: frozenset | set,
+    name: str,
+    complete: bool,
+    optional: frozenset = frozenset(),
+) -> None:
     unknown = set(value) - allowed
     if unknown:
         raise ValueError(f"Unknown {name} fields: {sorted(unknown)}")
-    if complete and (missing := allowed - set(value)):
+    if complete and (missing := allowed - set(value) - optional):
         raise ValueError(f"Missing default {name} fields: {sorted(missing)}")
 
 
@@ -132,7 +148,8 @@ def _read(path: Path, complete: bool = False) -> dict:
     _keys(document, set(SECTION_FIELDS), "settings sections", complete)
     for section, values in document.items():
         values = _mapping(values, section)
-        _keys(values, SECTION_FIELDS[section], section, complete)
+        optional = frozenset({"radius_min", "radius_max"}) if section == "task" else frozenset()
+        _keys(values, SECTION_FIELDS[section], section, complete, optional)
         if section == "training" and "batch_size" in values:
             batch = _mapping(values["batch_size"], "training.batch_size")
             _keys(batch, {"cpu", "gpu"}, "training.batch_size", complete)
@@ -194,6 +211,15 @@ def _validate(document: dict) -> tuple[dict, dict]:
                 }
             elif key == "hardware":
                 overrides[key] = HardwareNoise(**value)
+            elif key == "target_diameter_m":
+                overrides[key] = None if value is None else _number(value, name)
+            elif key == "target_scale_range":
+                if value is None:
+                    overrides[key] = None
+                elif not isinstance(value, (list, tuple)) or len(value) != 2:
+                    raise ValueError(f"{name} must contain two positive scale factors")
+                else:
+                    overrides[key] = tuple(_number(amount, name) for amount in value)
             elif key == "collision_offset":
                 if not isinstance(value, (list, tuple)) or len(value) != 3:
                     raise ValueError(f"{name} must contain three finite metre offsets")
@@ -202,7 +228,8 @@ def _validate(document: dict) -> tuple[dict, dict]:
                 overrides[key] = _integer(value, name, 0 if key in NOISE_FIELDS else 1)
             else:
                 overrides[key] = _number(value, name, nonnegative=key in NONNEGATIVE_FIELDS)
-    Config(**overrides)  # Keep coupled constraints, including the official 500 Hz rate.
+    validated = Config(**overrides)  # Includes derived target radius and official 500 Hz rate.
+    overrides["radius_min"], overrides["radius_max"] = validated.radius_min, validated.radius_max
     return training, overrides
 
 
@@ -226,6 +253,14 @@ def load_settings(path: Path | None = None) -> tuple[dict, dict]:
                 merged[section][key] = defaults[section][key] | value
             else:
                 merged[section][key] = value
+    custom_task = custom.get("task", {})
+    if {"radius_min", "radius_max"} & custom_task.keys():
+        if {"target_diameter_m", "target_scale_range"} & custom_task.keys():
+            raise ValueError("Choose canonical target diameter/scale or legacy radius bounds")
+        # A legacy custom YAML remains usable without silently applying the new scale range.
+        merged["task"].update(target_diameter_m=None, target_scale_range=None)
+        for key in ("radius_min", "radius_max"):
+            merged["task"].setdefault(key, validated_defaults[1][key])
     return _validate(merged)
 
 

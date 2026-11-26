@@ -25,12 +25,18 @@ task:
   # 影响 rollout.py:trajectory_loss 和 evaluate.py:summarize_trajectories 的接触球心/间隙。
   collision_offset: [0.0, 0.0, 0.02]
   drone_radius: 0.086  # 机体碰撞球半径 m；增大会更早触球，须按真实/官方几何核对。
-  # 初始任务分布：model.py:sample_batch；气球半径和前距分别在各自 min/max 间均匀采样。
-  radius_min: 0.13  # 气球半径下限 m；降低可训练更小、更难跟踪/接触的气球。
-  radius_max: 0.18  # 气球半径上限 m；提高扩大尺寸差异，单帧框大小与距离的歧义也更大。
+  # 初始任务分布：model.py:sample_batch；标称直径×尺度，不是 0.1..2 m 直径。
+  target_diameter_m: 0.3  # 标称气球直径 m；实际球半径=本值×尺度/2。
+  target_scale_range: [0.1, 2.0]  # 尺度按 log-uniform 采样，得到半径 0.015..0.3 m。
+  # 任意世界系 3D 方向匀速直线，速度模长均匀采样；速度不是策略输入。
+  target_speed_min: 0.0  # 非静止子集的速度模长下限 m/s。
+  target_speed_max: 1.5  # 非静止子集的速度模长上限 m/s。
+  target_stationary_prob: 0.2  # 每回合 20% 保持静止；其余采样上述速度及独立球面方向。
+  # 向下轨迹不反弹/不裁剪方向；按全段最低球面给飞机和球初态相同向上偏置，保持初始相对视觉。
+  target_spawn_margin: 0.05  # 球面高于 min_altitude 的额外合法出生裕量 m；不是运动边界。
   distance_min: 1.5  # 初始世界 +X 前距下限 m（不是完整三维距离）；降低增加近场框裁剪情况。
   distance_max: 3.0  # 初始世界 +X 前距上限 m；提高需飞得更远，初始 bbox 也更小。
-  # 超速阈值 m/s：trajectory_loss 对质心速度施软罚；评测用含偏置旋转速度的碰撞球心速度。
+  # 超速阈值 m/s：训练用质心相对目标速度施软罚；评测用含偏置旋转的碰撞球心相对目标速度。
   # 超过阈值标为 too_fast_contact，但实际接触仍计成功；提高阈值会减弱超速约束。
   max_impact_speed: 2.5
   min_altitude: 0.12  # 质心最低高度 m；提高使评测更早判低空失败，也抬高训练地面软罚起点。
@@ -53,7 +59,7 @@ objective:
     contact: 5.0
     # 全程质心世界速度平方均值，m²/s²；增大更慢，过强可能只悬停而不接近。
     speed: 0.04
-    # 按接近程度加权 relu(质心速度²-max_impact_speed²)²，m⁴/s⁴；增大抑制冲撞，过强可能提前停住。
+    # 按接近程度加权 relu(质心相对目标速度²-max_impact_speed²)²，m⁴/s⁴；增大抑制相对冲撞。
     impact: 0.15
     # observations.py:soft_fov_cost + camera.py:intrinsics，使用同一 K/外参的目标中心视锥软罚。
     # 无量纲；罚越过内侧 0.9 边界或前向分量不足，不是全图居中误差。
@@ -76,7 +82,7 @@ objective:
   tilt_soft_limit: 0.85  # 实际 roll/pitch 的软罚起点 rad；增大放松倾角软罚，不改变 max_tilt 指令限幅。
 
 noise:
-  # 开发先验，需用实测误差替换；幅度更大覆盖更多失配，但训练更难，不保证鲁棒性随之提高。
+  # 开发训练先验，可直接训练并后续按实测调整；幅度更大训练更难，不保证鲁棒性随之提高。
   # model.py:sample_batch/initialize 管物理；hardware.py 管新版观测/链路；rollout.py:observe 管旧 FIFO。
   # noisy 使用本节值；perturbed 将三个 fraction、gyro_bias_std、wind_std 放大 1.5 倍，其它观测项不变。
   # --nominal 关闭本节扰动，任务初态采样仍存在；同次 rollout 的采样固定，BPTT 对该轨迹反传。
@@ -110,7 +116,8 @@ noise:
     gyro_packet_loss_prob: 0.0  # 未知，测量后开启；不是 gyro 白噪声。
     attitude_packet_loss_prob: 0.0  # 未知，测量后开启。
     gyro_drift_std: 0.0  # gyro 相关漂移的稳态 std，rad/s；未知，测量后开启。
-    gyro_scale_std: 0.0  # 相对乘性 gyro 噪声；参考 CrazyRL 机制，默认 0，勿抄别机 10% 幅度。
+    # 按用户选择直接采用 CrazyRL 的 gyro 乘性噪声作为训练先验，非 cf21B 实测标定。
+    gyro_scale_std: 0.1  # 每个 500 Hz 样本、每轴独立乘 N(1,0.1²)；无量纲，保留原加性噪声/零偏。
     attitude_bias_std: 0.0  # 旋转向量相关偏置的稳态 std，rad；未知，测量后开启。
     bias_tau_s: 30.0  # 相关偏置的时间常数 s；零幅度时不制造漂移，须实测。
     attitude_command_delay_ms: [0.0, 20.0]  # RPY 指令链路范围 ms，来自本项目旧 FIFO 先验。

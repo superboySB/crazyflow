@@ -21,6 +21,7 @@ from crazyflow.balloon.model import (
     nominal_params,
     rotation_matrix,
     state_vector,
+    target_at_time,
 )
 from crazyflow.balloon.observations import actor_features, clip_bbox, ideal_bbox, soft_fov_cost
 from crazyflow.balloon.policy import PolicyParams, apply_policy
@@ -50,7 +51,9 @@ def trajectory_loss(
     """
     pos, rpy, vel = states[1:, :, :3], states[1:, :, 3:6], states[1:, :, 6:9]
     center = pos + jnp.einsum("tnij,j->tni", rotation_matrix(rpy), jnp.array(cfg.collision_offset))
-    delta = batch["target"][None] - center
+    times = (jnp.arange(cfg.steps) + 1) * cfg.dt
+    target = target_at_time(batch, times)
+    delta = target - center
     distance = jnp.sqrt(jnp.sum(delta**2, -1) + 1e-6)
     surface = distance - (batch["radius"][None] + cfg.drone_radius)
     # Soft minimum with a normalized logsumexp is smooth and independent of batch size.
@@ -60,8 +63,11 @@ def trajectory_loss(
     best = best + cfg.softmin_temperature * jnp.log(float(cfg.steps))
     weights = jax.nn.softmax(-surface / cfg.impact_temperature, axis=0)
     speed2 = jnp.sum(vel**2, -1)
-    impact = jnp.sum(weights * jax.nn.relu(speed2 - cfg.max_impact_speed**2) ** 2, axis=0)
-    fov = soft_fov_cost(pos, rpy, batch["target"][None], cfg)
+    relative_speed2 = jnp.sum(
+        (vel - batch.get("target_velocity", jnp.zeros_like(batch["target"]))[None]) ** 2, -1
+    )
+    impact = jnp.sum(weights * jax.nn.relu(relative_speed2 - cfg.max_impact_speed**2) ** 2, axis=0)
+    fov = soft_fov_cost(pos, rpy, target, cfg)
     # Ground/large-tilt barriers use every substep; official floor handling is retained.
     ground = jnp.mean(
         jax.nn.relu(cfg.min_altitude + cfg.ground_margin - substep_states[..., 2]) ** 2
@@ -154,10 +160,12 @@ def rollout(
     camera_fifo = jnp.zeros((cfg.max_delay_steps + 1, n, 5))
     action_fifo = jnp.zeros((cfg.action_delay_steps + 1, n, 4))
 
-    def step(carry: tuple, rng: jax.Array) -> tuple[tuple, tuple[jax.Array, ...]]:
+    def step(carry: tuple, inputs: tuple) -> tuple[tuple, tuple[jax.Array, ...]]:
         data, boxes, acts, camera_fifo, action_fifo = carry
+        time_s, rng = inputs
+        observation_batch = {**batch, "target": target_at_time(batch, time_s)}
         obs, boxes, camera_fifo, received = observe(
-            data, batch, cfg, rng, boxes, acts, camera_fifo, delay, noise
+            data, observation_batch, cfg, rng, boxes, acts, camera_fifo, delay, noise
         )
         issued = apply_policy(params, obs)
         acts = jnp.concatenate((acts[:, 1:], issued[:, None]), 1)
@@ -179,7 +187,7 @@ def rollout(
     _, (states, sub, bbox, actions, quaternions, gyro, rotor_vel) = jax.lax.scan(
         jax.checkpoint(step),
         (initial_data, boxes, acts, camera_fifo, action_fifo),
-        jax.random.split(keys[2], cfg.steps),
+        (jnp.arange(cfg.steps) * cfg.dt, jax.random.split(keys[2], cfg.steps)),
     )
     states = jnp.concatenate((batch["state"][None], states), 0)
     sub = jnp.concatenate((batch["state"][None], sub.reshape(-1, n, 12)), 0)
@@ -190,6 +198,7 @@ def rollout(
         "bbox": bbox,
         "actions": actions,
         "loss": loss,
+        "target_positions": target_at_time(batch, jnp.arange(cfg.steps + 1) * cfg.dt),
         "quaternion_xyzw": jnp.concatenate((initial_data.states.quat[:, 0][None], quaternions)),
         "body_gyro": jnp.concatenate((initial_data.states.ang_vel[:, 0][None], gyro)),
         "rotor_rpm": jnp.concatenate((initial_data.states.rotor_vel[:, 0][None], rotor_vel)),
@@ -216,8 +225,10 @@ def _hardware_rollout(
     def step(carry: tuple, rng: jax.Array) -> tuple[tuple, tuple]:
         data, boxes, acts, hardware = carry
         tick_keys = jax.random.split(rng, 4)
+        time_s = hardware.tick * (cfg.dt / cfg.substeps)
+        observation_batch = {**batch, "target": target_at_time(batch, time_s)}
         hardware, received, rotation, measured_gyro, timing = measure(
-            hardware, data, batch, cfg, tick_keys[0], noise
+            hardware, data, observation_batch, cfg, tick_keys[0], noise
         )
         boxes = jnp.concatenate((boxes[:, 1:], received[:, None]), 1)
         issued = apply_policy(params, actor_features(boxes, rotation, measured_gyro, acts, cfg))
@@ -275,6 +286,7 @@ def _hardware_rollout(
         "bbox": bbox,
         "actions": actions,
         "loss": trajectory_loss(states, sub, actions, batch, cfg),
+        "target_positions": target_at_time(batch, jnp.arange(cfg.steps + 1) * cfg.dt),
         "quaternion_xyzw": jnp.concatenate((initial_data.states.quat[:, 0][None], quaternions)),
         "body_gyro": jnp.concatenate((initial_data.states.ang_vel[:, 0][None], gyro)),
         "rotor_rpm": jnp.concatenate((initial_data.states.rotor_vel[:, 0][None], rotor_vel)),

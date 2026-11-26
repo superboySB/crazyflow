@@ -45,14 +45,31 @@ def test_shipped_yaml_covers_config_and_explicitly_enables_the_new_hardware_pipe
     assert set(overrides) == {field.name for field in fields(Config)} - excluded
     assert set(overrides) == TASK_FIELDS | NOISE_FIELDS | OBJECTIVE_FIELDS
     defaults = Config()
-    assert {key: value for key, value in overrides.items() if key != "hardware"} == {
-        name: getattr(defaults, name) for name in overrides if name != "hardware"
+    task_changes = {
+        "hardware",
+        "radius_min",
+        "radius_max",
+        "target_diameter_m",
+        "target_scale_range",
+        "target_speed_max",
+        "target_stationary_prob",
     }
+    assert {key: value for key, value in overrides.items() if key not in task_changes} == {
+        name: getattr(defaults, name) for name in overrides if name not in task_changes
+    }
+    assert defaults.target_speed_max == 0 and defaults.target_diameter_m is None
+    assert overrides["target_diameter_m"] == 0.3
+    assert overrides["target_scale_range"] == (0.1, 2.0)
+    assert overrides["radius_min"] == pytest.approx(0.015)
+    assert overrides["radius_max"] == pytest.approx(0.3)
+    assert overrides["target_speed_max"] == 1.5 and overrides["target_stationary_prob"] == 0.2
     # A legacy checkpoint has no hardware field; new training opts in via YAML.
     assert not defaults.hardware.enabled
+    assert defaults.hardware.gyro_scale_std == 0
     assert overrides["hardware"] == HardwareNoise(
         enabled=True,
         camera_delay_ms=(0, 40),
+        gyro_scale_std=0.1,
         attitude_command_delay_ms=(0, 20),
         thrust_command_delay_ms=(0, 20),
     )
@@ -83,7 +100,7 @@ noise:
     assert Config(**json.loads(json.dumps(cfg.to_dict()))) == cfg
     with pytest.raises(FrozenInstanceError):
         hardware.gyro_scale_std = 1
-    assert load_settings()[1]["hardware"].gyro_scale_std == 0
+    assert load_settings()[1]["hardware"].gyro_scale_std == 0.1
 
 
 @pytest.mark.parametrize(

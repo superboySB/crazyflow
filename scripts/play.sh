@@ -8,7 +8,7 @@ usage() {
   cat <<'EOF'
 用法：./dani play [选项]
 
-默认打开最近一次评测的原生 GUI，显示世界视图、相机画面和策略遥测。
+默认打开最近一次评测的原生 GUI，显示世界视图、XY 地图、相机画面和策略遥测。
 
   --example           复制随项目提供的策略到新目录并生成飞行
   --evaluation DIR    outputs 内的评测目录，或 /outputs/... 目录
@@ -23,11 +23,14 @@ usage() {
   --episode N         选择第 N 条轨迹，从 0 开始（默认 0）
   --frames N          自动关闭帧数；headless 自测至少需要 10 帧
   --screenshot PATH   outputs 内的截图路径（headless 默认生成唯一路径）
-  --self-test         运行至少 10 帧交互自测；不能与 --record 同用
+  --self-test         检查鼠标与随机重置；至少 10 帧，等待后台生成完成后退出
   -h, --help          显示帮助，不启动 Docker
 
 GUI 使用 Linux/X11 的 DISPLAY 与现有 Xauthority，不修改 xhost 权限。
-按 Space 暂停、R 重置、E 换样本、N 换种子、1/2/3 换场景、T 切换遥测/标定。
+默认跟随飞机与球；鼠标左拖旋转、右拖平移进入自由视角、滚轮缩放，F 恢复跟随。
+左下 XY 地图显示已飞轨迹、目标 1 秒水平位移箭头、三维速度和高度（仿真真值）。
+Space 暂停，R 随机重置，Backspace 重播同轨迹。
+1/2/3 换场景、T 切换遥测/标定；随机生成在后台进行，窗口会显示 Generating。
 参数必须使用完整名称；已保存评测始终使用其记录的飞行后端。
 EOF
 }

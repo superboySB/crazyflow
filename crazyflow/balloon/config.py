@@ -26,6 +26,12 @@ class Config:
     drone_radius: float = 0.086
     radius_min: float = 0.13
     radius_max: float = 0.18
+    target_diameter_m: float | None = None
+    target_scale_range: tuple | None = None
+    target_speed_min: float = 0.0
+    target_speed_max: float = 0.0
+    target_stationary_prob: float = 0.0
+    target_spawn_margin: float = 0.05
     distance_min: float = 1.5
     distance_max: float = 3.0
     max_impact_speed: float = 2.5
@@ -109,6 +115,47 @@ class Config:
             raise ValueError("Need positive dt/substeps, steps >= 2 and history >= 3")
         if not 0 < self.hfov_deg < 170 or min(self.image_width, self.image_height) < 1:
             raise ValueError("Invalid pinhole camera dimensions/FOV")
+        if (self.target_diameter_m is None) != (self.target_scale_range is None):
+            raise ValueError("target_diameter_m and target_scale_range must be provided together")
+        if self.target_diameter_m is not None:
+            diameter = self.target_diameter_m
+            bounds = self.target_scale_range
+            if (
+                isinstance(diameter, bool)
+                or not isinstance(diameter, (int, float, np.integer, np.floating))
+                or not np.isfinite(diameter)
+                or diameter <= 0
+            ):
+                raise ValueError("target_diameter_m must be positive and finite")
+            if not isinstance(bounds, (tuple, list)) or len(bounds) != 2:
+                raise ValueError("target_scale_range must contain two positive scale factors")
+            if (
+                any(
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float, np.integer, np.floating))
+                    or not np.isfinite(value)
+                    for value in bounds
+                )
+                or not 0 < bounds[0] <= bounds[1]
+            ):
+                raise ValueError("target_scale_range must satisfy finite 0 < low <= high")
+            bounds = tuple(float(value) for value in bounds)
+            object.__setattr__(self, "target_diameter_m", float(diameter))
+            object.__setattr__(self, "target_scale_range", bounds)
+            object.__setattr__(self, "radius_min", float(diameter) * bounds[0] / 2)
+            object.__setattr__(self, "radius_max", float(diameter) * bounds[1] / 2)
+        for name in ("target_speed_min", "target_speed_max", "target_spawn_margin"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not np.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and nonnegative")
+        if self.target_speed_min > self.target_speed_max:
+            raise ValueError("target_speed_min must not exceed target_speed_max")
+        if (
+            isinstance(self.target_stationary_prob, bool)
+            or not np.isfinite(self.target_stationary_prob)
+            or not 0 <= self.target_stationary_prob <= 1
+        ):
+            raise ValueError("target_stationary_prob must be finite and in [0,1]")
         if not 0 < self.radius_min <= self.radius_max < self.distance_min <= self.distance_max:
             raise ValueError("Need 0 < radius_min <= radius_max < distance_min <= distance_max")
         if not 0 <= self.dropout_prob < 1 or min(self.max_delay_steps, self.action_delay_steps) < 0:

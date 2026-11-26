@@ -118,6 +118,78 @@ def test_gyro_and_attitude_have_independent_500hz_capture_delays_and_warm_start(
     np.testing.assert_array_equal(telemetry["attitude_age_ms"], 2)
 
 
+def test_gyro_multiplicative_measurements_have_relative_std_and_independent_axes():
+    cfg = _config(gyro_scale_std=0.1)
+    batch, data, _ = _flight(cfg, n=4096)
+    truth = jnp.broadcast_to(jnp.array([1.0, -3.0, 0.25]), (4096, 1, 3))
+    data = data.replace(states=data.states.replace(ang_vel=truth))
+    mailbox = hardware.initialize_hardware(data, batch, cfg, jax.random.key(55), noise=True)
+    relative_error = np.asarray(mailbox.gyro_received / truth[:, 0] - 1)
+    # Three very different true rates must share 10% relative uncertainty;
+    # additive 0.1 rad/s noise would fail this distribution check.
+    np.testing.assert_allclose(relative_error.mean(axis=0), 0, atol=0.006)
+    np.testing.assert_allclose(relative_error.std(axis=0), 0.1, atol=0.01)
+    correlation = np.corrcoef(relative_error.T)
+    assert np.max(np.abs(correlation - np.eye(3))) < 0.06
+    np.testing.assert_array_equal(data.states.ang_vel, truth)
+
+
+def test_zero_true_gyro_has_no_multiplicative_offset_on_initial_or_later_capture():
+    cfg = _config(gyro_scale_std=0.1)
+    batch, data, mailbox = _flight(cfg)
+    np.testing.assert_array_equal(mailbox.gyro_received, 0)
+    mailbox, _, _ = hardware.actuate(mailbox, cfg, jax.random.key(10), noise=True)
+    mailbox = hardware.sample_imu(mailbox, data, cfg, jax.random.key(11), noise=True)
+    np.testing.assert_array_equal(mailbox.gyro_received, 0)
+    np.testing.assert_array_equal(data.states.ang_vel, 0)
+    assert int(mailbox.gyro_last_tick[0]) == 1
+
+
+def test_gyro_white_noise_and_fixed_episode_bias_stack_with_multiplicative_noise():
+    cfg = _config(gyro_scale_std=0.1)
+    batch, data, _ = _flight(cfg, n=4096)
+    truth = jnp.broadcast_to(jnp.array([1.0, -3.0, 0.25]), (4096, 1, 3))
+    data = data.replace(states=data.states.replace(ang_vel=truth))
+    bias = jnp.broadcast_to(jnp.array([0.04, -0.03, 0.02]), (4096, 3))
+    biased_batch = {**batch, "domain": {**batch["domain"], "gyro_bias": bias}}
+    noisy_cfg = replace(cfg, gyro_noise_std=0.015)
+    additive_cfg = replace(noisy_cfg, hardware=replace(cfg.hardware, gyro_scale_std=0))
+    key = jax.random.key(71)
+    multiplicative = hardware.initialize_hardware(data, batch, cfg, key, noise=True)
+    biased = hardware.initialize_hardware(data, biased_batch, cfg, key, noise=True)
+    combined = hardware.initialize_hardware(data, biased_batch, noisy_cfg, key, noise=True)
+    additive = hardware.initialize_hardware(data, biased_batch, additive_cfg, key, noise=True)
+    # Paired captures use the same random stream: toggling a component should
+    # add it to the measurement, not replace or multiply the other components.
+    np.testing.assert_allclose(biased.gyro_received - multiplicative.gyro_received, bias, atol=3e-7)
+    np.testing.assert_allclose(
+        combined.gyro_received - additive.gyro_received,
+        multiplicative.gyro_received - truth[:, 0],
+        atol=1e-6,
+    )
+    white = np.asarray(combined.gyro_received - biased.gyro_received)
+    np.testing.assert_allclose(white.mean(axis=0), 0, atol=0.001)
+    np.testing.assert_allclose(white.std(axis=0), 0.015, atol=0.002)
+    # The next 500 Hz capture refreshes white noise while retaining episode bias.
+    later_key = jax.random.key(72)
+    later_multiplicative = hardware.sample_imu(
+        multiplicative._replace(tick=jnp.array(1)), data, cfg, later_key, noise=True
+    )
+    later_biased = hardware.sample_imu(
+        biased._replace(tick=jnp.array(1)), data, cfg, later_key, noise=True
+    )
+    later_combined = hardware.sample_imu(
+        combined._replace(tick=jnp.array(1)), data, noisy_cfg, later_key, noise=True
+    )
+    np.testing.assert_allclose(
+        later_biased.gyro_received - later_multiplicative.gyro_received, bias, atol=3e-7
+    )
+    later_white = np.asarray(later_combined.gyro_received - later_biased.gyro_received)
+    assert not np.array_equal(white, later_white)
+    np.testing.assert_allclose(later_white.std(axis=0), 0.015, atol=0.002)
+    np.testing.assert_array_equal(data.states.ang_vel, truth)
+
+
 def test_independent_attitude_and_thrust_command_delays_preserve_causal_gradients():
     cfg = _config(attitude_command_delay_ms=(4, 4), thrust_command_delay_ms=(0, 0))
     _, _, initial = _flight(cfg)
