@@ -1,9 +1,10 @@
 # 保留的验收记录
 
-这里保留最佳 Crazyflow 策略和官方 baseline 的结果及核验依据。运行命令见[主 README](../README.md)，两份权重及哈希见 [`models/`](../models/)。
+这里保留最佳 Crazyflow 策略和官方 baseline 的结果及核验依据。运行命令见[主 README](../README.md)，模型及哈希见 [`models/`](../models/)。
 
 | 路径 | 内容 |
 | --- | --- |
+| [`dual-export.json`](dual-export.json) | 同一策略的 NPZ/PT 双导出、数值一致性、实际 PPO 保存和 Isaac 闭环对照 |
 | [`repository-cleanup.json`](repository-cleanup.json) | 本次目录整理、权重清理、双镜像独立构建、完整 CPU 检查和新旧镜像行为对照 |
 | [`crazyflow/`](crazyflow/README.md) | 训练预算与曲线、四候选选择、固定地图验证、新地图测试、GPU 容量及实时 GUI 证据 |
 | [`sim2sim/final/`](sim2sim/final/) | 两个策略的 320 条配对回合、五组相同初始场景、推理一致性和原生 GUI/video 验收 |

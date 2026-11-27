@@ -31,6 +31,10 @@ def record_video(env: Any, **kwargs: Any) -> Any:
 def load(self: Any, path: str, *args: Any, **kwargs: Any) -> Any:
     """Load the requested actor while preserving the native playback runner."""
     if Path(path).suffix != ".npz":
+        from torch_policy import load_into_runner
+
+        if load_into_runner(self, path):
+            return {}
         return original_load(self, path, *args, **kwargs)
     if not play.args_cli.skip_export:
         raise ValueError("NPZ playback requires --skip_export; actor is already exported")

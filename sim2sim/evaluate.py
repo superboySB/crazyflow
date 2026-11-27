@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Run the unmodified CrazyRL evaluator, optionally with a JAX-exported NPZ actor.
+"""Run the frozen CrazyRL evaluator with baseline or JAX-exported actors.
 
 All arguments are those of reference/e2e_drone/rsl_rl/evaluate_success_rate.py.
-A .pt checkpoint uses the original RSL-RL inference policy; .npz uses NpzPolicy.
+PT exports use native RSL inference; legacy NPZ exports use NpzPolicy.
 """
 
 from __future__ import annotations
@@ -30,14 +30,22 @@ original_reset = evaluator.SuccessRateEvaluator.reset_evaluation_state
 
 
 def load_checkpoint(self: Any, checkpoint_path: str) -> Any:
-    """Use native RSL inference for .pt, or the equivalent NPZ actor adapter."""
-    if Path(checkpoint_path).suffix != ".npz":
+    """Load marked PT exports or legacy NPZ, preserving baseline RSL loading."""
+    from torch_policy import load_into_runner, read_crazyflow_checkpoint
+
+    is_npz = Path(checkpoint_path).suffix == ".npz"
+    exported = None if is_npz else read_crazyflow_checkpoint(checkpoint_path)
+    if not is_npz and exported is None:
         return original_load(self, checkpoint_path)
     # Match the original baseline's network initialization and Torch RNG draws
     # before the evaluation reset. This runner is never trained or stepped.
     runner = evaluator.OnPolicyRunner(
         self.env, self.agent_cfg.to_dict(), log_dir=None, device=self.agent_cfg.device
     )
+    if exported is not None:
+        load_into_runner(runner, checkpoint_path, checkpoint=exported)
+        print(f"[INFO] Loaded JAX-exported RSL PT actor: {checkpoint_path}", flush=True)
+        return runner
     from npz_policy import NpzPolicy
 
     policy = NpzPolicy(checkpoint_path, self.env.unwrapped.device)

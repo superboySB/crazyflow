@@ -15,6 +15,9 @@ checkpoints
 *.mp4
 *.npz
 !models/crazyflow/policy.npz
+*.pt
+!models/crazyflow/policy.pt
+!models/baseline/model_36825.pt
 *.pdf
 !docs/*.pdf
 references

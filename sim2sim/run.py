@@ -15,7 +15,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = os.environ.get("CRAZYFLOW_EVAL_IMAGE", "crazyflow:dani-crazyrl-eval")
 BASELINE = ROOT / "models/baseline/model_36825.pt"
-CRAZYFLOW = ROOT / "models/crazyflow/policy.npz"
+CRAZYFLOW = ROOT / "models/crazyflow/policy.pt"
 ISAAC_PYTHON = "/workspace/isaaclab/_isaac_sim/python.sh"
 
 
@@ -189,7 +189,7 @@ def main() -> None:
     parser.add_argument(
         "--policy",
         default="baseline",
-        help="baseline, crazyflow, or an in-repository .npz/.pt path",
+        help="path to .pt; baseline/crazyflow aliases and legacy .npz also supported",
     )
     parser.add_argument("--num-envs", type=int, default=8)
     parser.add_argument("--episodes", type=int, default=1)
@@ -208,7 +208,7 @@ def main() -> None:
         evaluate(args, extra)
     elif args.mode == "compare":
         if args.policy == "baseline":
-            parser.error("compare requires --policy /path/to/your/actor.npz")
+            parser.error("compare requires --policy models/crazyflow/policy.pt")
         if args.episodes != 1:
             parser.error(
                 "Fair paired comparison uses one episode per environment "

@@ -27,4 +27,5 @@ MUJOCO_LOG.TXT
 *.ckpt
 *.onnx
 !models/crazyflow/policy.npz
+!models/crazyflow/policy.pt
 !models/baseline/model_36825.pt

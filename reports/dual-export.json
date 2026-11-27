@@ -1,0 +1,444 @@
+{
+  "passed": true,
+  "date": "2026-11-27",
+  "branch": "dani-crazyrl",
+  "scope": "Native JAX NPZ plus real Torch/RSL PT from each PPO save; unchanged task, dynamics, reward, action transform and selected actor weights.",
+  "artifacts": {
+    "models/crazyflow/policy.npz": {
+      "sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+      "bytes": 734619
+    },
+    "models/crazyflow/policy.pt": {
+      "sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+      "bytes": 796597
+    },
+    "models/baseline/model_36825.pt": {
+      "sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+      "bytes": 5004055
+    }
+  },
+  "export_contract": {
+    "native": "policy.npz: actor + own normalization + frozen environment metadata for JAX/MuJoCo",
+    "deployment": "policy.pt: native RSL model_state_dict and normalizer state dictionaries, tensors saved on CPU",
+    "actor_observations": 344,
+    "critic_observations": 434,
+    "raw_action_dimensions": 4,
+    "action_order": [
+      "roll attitude",
+      "pitch attitude",
+      "yaw rate",
+      "collective thrust"
+    ],
+    "activation": "ELU hidden layers, linear raw output; task applies tanh once",
+    "normalization": "(obs-mean)/(sqrt(var)+0.01)",
+    "weights": "Flax Dense kernel[in,out] transposed to RSL Linear weight[out,in]",
+    "noise": "std=exp(clip(logstd,-5,2)), matching PPO exploration",
+    "best_actor_only": true,
+    "best_actor_only_reason": "The selected historical NPZ contains no trained critic. Its PT does not fabricate critic or optimizer tensors.",
+    "future_training_saves": "Actual trained actor, critic and both normalizers; same-iteration latest files and numbered NPZ/PT snapshot pairs",
+    "resume": "checkpoint.msgpack contains JAX Agent/Optax/RNG/environment; PT is inference, not a Torch optimizer resume",
+    "export_probe": "Fixed 32-sample probe with locally scoped highest float32 matmul precision. Training precision and RNG streams unchanged.",
+    "publication": "Stage both files and verify conversion before replacing latest files. PT records the source NPZ SHA256; injected conversion failure preserves the previous pair."
+  },
+  "training_stack": {
+    "algorithm": "PPO",
+    "frameworks": [
+      "JAX",
+      "Flax",
+      "Optax"
+    ],
+    "torch": "2.7.0+cpu",
+    "torch_cuda": null,
+    "torch_role": "CPU tensor serialization and export check only"
+  },
+  "checks": {
+    "full_cpu_suite": {
+      "summary": "498 passed, 53 skipped, 16 deselected in 240.75s (0:04:00)",
+      "log": "outputs/dual-export-full-tests.log",
+      "log_sha256": "f547e980f625fe747ec1a3efd472812ed29271fc905dc8edde1edb917630483f"
+    },
+    "final_pair_and_contract_suite": {
+      "summary": "13 passed in 24.39s",
+      "log": "outputs/dual-export-final-policy-tests.log",
+      "log_sha256": "70e58cf882a326b80e4c11df7fcd379196c93696db7ea8ecbb4382010a2b9b1e"
+    },
+    "final_export_tests_after_gpu_precision_fix": {
+      "summary": "8 passed in 14.38s",
+      "log": "outputs/dual-export-delivery-policy-tests.log",
+      "log_sha256": "3c76e91ae48c86e5ff9c156142211b3868d201210b39bbc6ddf0055b7e37ad49"
+    },
+    "native_rsl_tests": {
+      "passed": 9,
+      "test_file": "tests/test_torch_policy.py",
+      "physics_or_gpu_required": false
+    },
+    "best_policy_native_rsl_vs_jax": {
+      "passed": true,
+      "backend": "CPU",
+      "native_rsl_policy": true,
+      "samples": 128,
+      "observations": "8 real Crazyflow CPU envs ×16 steps including history fill",
+      "pt_sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+      "npz_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+      "source_npz_sha256_matches": true,
+      "actor_only": true,
+      "native_rsl_vs_npz_max_abs_error": 9.5367431640625e-07,
+      "native_rsl_vs_jax_max_abs_error": 1.1920928955078125e-06,
+      "raw_action_min": -2.8611180782318115,
+      "raw_action_max": 3.0678110122680664,
+      "rng_unchanged_by_loading": true,
+      "normalizer_count_dtype": "torch.int64"
+    },
+    "gpu_training": {
+      "num_envs": 32,
+      "updates": 3,
+      "transitions": 1536,
+      "exit_code": 0,
+      "both_latest_and_numbered_formats_created": true,
+      "export_probe_max_abs_error": 1.1920928955078125e-07,
+      "memory": {
+        "exit_code": 0,
+        "own_process_peak_mib": 420.0,
+        "minimum_gpu_free_mib": 5813.0,
+        "process_limit_mib": 9500,
+        "watchdog_stopped": false,
+        "seconds": 10.745521626027767,
+        "command": [
+          "docker",
+          "run",
+          "--rm",
+          "--name",
+          "crazyflow-dual-export-gpu-check",
+          "--gpus",
+          "all",
+          "--shm-size=2g",
+          "--user",
+          "1000:1000",
+          "-e",
+          "JAX_PLATFORMS=cuda",
+          "-e",
+          "MUJOCO_GL=egl",
+          "-e",
+          "XLA_PYTHON_CLIENT_PREALLOCATE=false",
+          "-e",
+          "XLA_PYTHON_CLIENT_MEM_FRACTION=0.20",
+          "-e",
+          "JAX_COMPILATION_CACHE_DIR=/outputs/.cache/jax-dual-export",
+          "-v",
+          "${REPO}:/opt/crazyflow:ro",
+          "-v",
+          "${REPO}/outputs:/outputs",
+          "crazyflow:dani-crazyrl",
+          "python",
+          "-m",
+          "crazyflow.tof.train",
+          "--smoke",
+          "--output",
+          "/outputs/dual-export-gpu-smoke"
+        ],
+        "concurrent_jobs_untouched": true,
+        "note": "Direct container validation with own-process memory guard; the production launcher intentionally requires an otherwise idle CUDA device."
+      },
+      "log": "outputs/dual-export-gpu-smoke.log",
+      "log_sha256": "e4f4b3524234f0cc474bad7e1cb34090b89dea6c86e650fb1b2747c6f68ab1a7"
+    },
+    "gpu_trained_full_pt_native_strict_load": {
+      "passed": true,
+      "checkpoint": "outputs/dual-export-gpu-smoke/policy.pt",
+      "checkpoint_sha256": "504de8a72e1ed8692cf6520be10235146a40075b832f00c4ea340eda5221a31d",
+      "source_npz_sha256": "c7091bfb3f4c7368af7f2e7f02fb99537b7c52cd8e908d07775b6129adf3a3e2",
+      "actor_only": false,
+      "iteration": 3,
+      "native_rsl_load_optimizer": false,
+      "native_rsl_default_strict_load": true,
+      "optimizer_state_present": false,
+      "model_state_tensor_count": 21,
+      "critic_tensor_count": 10,
+      "actor_norm_shape": [
+        1,
+        344
+      ],
+      "critic_norm_shape": [
+        1,
+        434
+      ],
+      "native_and_adapter_state_equal": true,
+      "native_and_adapter_rng_unchanged": true,
+      "native_and_adapter_raw_actor_max_abs": 0.0,
+      "native_and_adapter_critic_max_abs": 0.0,
+      "native_and_npz_raw_actor_max_abs": 1.7881393432617188e-07,
+      "observation_packet_count": 128,
+      "noise_parameter": "std=exp(Flax logstd)",
+      "native_rsl_full_inference_only": "JAX optimizer deliberately absent; native load_optimizer=False"
+    },
+    "gpu_trained_npz_jax_load": {
+      "exit_code": 0,
+      "episodes": 4,
+      "debug_max_steps": 3,
+      "success_rate": 0.0,
+      "purpose": "Load/finite-rollout smoke only; not a performance score.",
+      "summary": "outputs/dual-export-jax-load/summary.json",
+      "summary_sha256": "922b9aa93e206837d16eda9abfd0fb4bf1639f00544dfc7a5f64f8d8202f189d"
+    },
+    "mujoco_interactive_explicit_path": {
+      "mode": "live_closed_loop",
+      "flight_backend": "crazyflow",
+      "visualizer": "mujoco",
+      "frames": 20,
+      "control_checks": [
+        "physics_held_across_paused_gui_frames",
+        "pause_resume_keys",
+        "new_pose_goal_same_maps",
+        "exact_episode_restart_key",
+        "clean_policy_sensor_toggle",
+        "three_camera_modes",
+        "mouse_orbit",
+        "mouse_pan",
+        "pan_target_preserved_after_pose_update",
+        "mouse_wheel_zoom",
+        "clickable_pause_resume",
+        "terminal_pose_and_packet_before_autoreset",
+        "continue_real_environment_autoreset"
+      ],
+      "self_test_forced_final_episode_tick": true
+    },
+    "mujoco_screenshot": {
+      "path": "outputs/dual-export-mujoco.png",
+      "sha256": "71c282af0b79bec373f54e403379e2714bb3bee917aef1727a1a8f4521ed1f50",
+      "visually_reviewed": true
+    },
+    "isaac_closed_loop_npz_vs_pt": {
+      "seed": 42,
+      "num_envs": 4,
+      "episodes_per_env": 1,
+      "image_id": "sha256:1d6e4b04902cd43e89ac592e5837c0acb3019f19edef50f3f6c0fdf6823e36ba",
+      "evaluation_source_sha256": "41ef2910b7de3d4f3010df0da7b3f0eabdc97dec35c6ac6388510f77ffe7caa4",
+      "both_exit_codes_zero": true,
+      "initial_scenes_exactly_equal": true,
+      "initial_scene_sha256": "13a1e777f0dbd6eb219a27dc3fc33d52f21696f0098278bc518a4d4e1351fb24",
+      "same_case_outcomes_and_flags": true,
+      "outcome_counts": {
+        "pt": {
+          "success": 2,
+          "collision": 2,
+          "numerical_instability": 0,
+          "timeout": 0,
+          "other_death": 0
+        },
+        "npz": {
+          "success": 2,
+          "collision": 2,
+          "numerical_instability": 0,
+          "timeout": 0,
+          "other_death": 0
+        }
+      },
+      "episode_csv_byte_identical": false,
+      "episode_field_max_absolute_deltas": {
+        "duration_s": 0.0,
+        "path_length_m": 1.1444091796875e-05,
+        "mean_speed_m_s": 4.192878459985394e-06,
+        "max_speed_m_s": 2.2649765014648438e-06,
+        "start_goal_distance_m": 0.0,
+        "commanded_speed_m_s": 0.0
+      },
+      "case_comparison": [
+        {
+          "env_id": 0,
+          "episode_index": 1,
+          "pt_outcome": "success",
+          "npz_outcome": "success",
+          "all_outcome_flags_match": true,
+          "absolute_numeric_deltas": {
+            "duration_s": 0.0,
+            "path_length_m": 7.62939453125e-06,
+            "mean_speed_m_s": 0.0,
+            "max_speed_m_s": 3.5762786865234375e-07,
+            "start_goal_distance_m": 0.0,
+            "commanded_speed_m_s": 0.0
+          }
+        },
+        {
+          "env_id": 1,
+          "episode_index": 1,
+          "pt_outcome": "collision",
+          "npz_outcome": "collision",
+          "all_outcome_flags_match": true,
+          "absolute_numeric_deltas": {
+            "duration_s": 0.0,
+            "path_length_m": 4.76837158203125e-07,
+            "mean_speed_m_s": 3.137086566074032e-07,
+            "max_speed_m_s": 0.0,
+            "start_goal_distance_m": 0.0,
+            "commanded_speed_m_s": 0.0
+          }
+        },
+        {
+          "env_id": 2,
+          "episode_index": 1,
+          "pt_outcome": "success",
+          "npz_outcome": "success",
+          "all_outcome_flags_match": true,
+          "absolute_numeric_deltas": {
+            "duration_s": 0.0,
+            "path_length_m": 1.1444091796875e-05,
+            "mean_speed_m_s": 1.430511474609375e-06,
+            "max_speed_m_s": 1.7881393432617188e-06,
+            "start_goal_distance_m": 0.0,
+            "commanded_speed_m_s": 0.0
+          }
+        },
+        {
+          "env_id": 3,
+          "episode_index": 1,
+          "pt_outcome": "collision",
+          "npz_outcome": "collision",
+          "all_outcome_flags_match": true,
+          "absolute_numeric_deltas": {
+            "duration_s": 0.0,
+            "path_length_m": 1.1444091796875e-05,
+            "mean_speed_m_s": 4.192878459985394e-06,
+            "max_speed_m_s": 2.2649765014648438e-06,
+            "start_goal_distance_m": 0.0,
+            "commanded_speed_m_s": 0.0
+          }
+        }
+      ],
+      "summary_ignored_identity_or_timing_fields": [
+        "evaluation_wall_time_s",
+        "checkpoint",
+        "checkpoint_sha256"
+      ],
+      "summary_numeric_absolute_deltas": {
+        "num_episodes": 0.0,
+        "num_envs": 0.0,
+        "episodes_per_env": 0.0,
+        "outcome_counts.success": 0.0,
+        "outcome_counts.collision": 0.0,
+        "outcome_counts.numerical_instability": 0.0,
+        "outcome_counts.timeout": 0.0,
+        "outcome_counts.other_death": 0.0,
+        "sampling_frequency_hz": 0.0,
+        "success_count": 0.0,
+        "success_rate": 0.0,
+        "collision_count": 0.0,
+        "collision_rate": 0.0,
+        "numerical_instability_count": 0.0,
+        "numerical_instability_rate": 0.0,
+        "timeout_count": 0.0,
+        "timeout_rate": 0.0,
+        "speed_m_s.samples": 0.0,
+        "speed_m_s.time_weighted_mean": 1.8630950955333958e-06,
+        "speed_m_s.median": 1.0132789611816406e-06,
+        "speed_m_s.p95": 5.84125518843237e-07,
+        "speed_m_s.max": 3.5762786865234375e-07,
+        "cruising_speed_m_s.samples": 0.0,
+        "cruising_speed_m_s.time_weighted_mean": 1.1160200463766756e-07,
+        "cruising_speed_m_s.median": 1.1920928955078125e-07,
+        "cruising_speed_m_s.p95": 2.455711364701685e-06,
+        "cruising_speed_m_s.max": 3.5762786865234375e-07,
+        "path_length_m.mean": 7.748603820800781e-06,
+        "path_length_m.median": 1.1444091796875e-05,
+        "path_length_m.p10": 3.767013549982323e-06,
+        "path_length_m.p90": 8.773803710226957e-06,
+        "path_length_m.min": 4.76837158203125e-07,
+        "path_length_m.max": 7.62939453125e-06,
+        "path_length_m.total": 3.0994415283203125e-05,
+        "duration_s.mean": 0.0,
+        "duration_s.median": 0.0,
+        "duration_s.p10": 0.0,
+        "duration_s.p90": 0.0,
+        "duration_s.min": 0.0,
+        "duration_s.max": 0.0,
+        "duration_s.total": 0.0,
+        "start_goal_distance_m.mean": 0.0,
+        "start_goal_distance_m.median": 0.0,
+        "start_goal_distance_m.p10": 0.0,
+        "start_goal_distance_m.p90": 0.0,
+        "start_goal_distance_m.min": 0.0,
+        "start_goal_distance_m.max": 0.0,
+        "start_goal_distance_m.total": 0.0,
+        "commanded_speed_m_s.mean": 0.0,
+        "commanded_speed_m_s.median": 0.0,
+        "commanded_speed_m_s.p10": 0.0,
+        "commanded_speed_m_s.p90": 0.0,
+        "commanded_speed_m_s.min": 0.0,
+        "commanded_speed_m_s.max": 0.0,
+        "commanded_speed_m_s.total": 0.0,
+        "seed": 0.0,
+        "simulation_steps": 0.0,
+        "evaluator_success_rate": 0.0
+      },
+      "summary_nonnumeric_fields_match": true,
+      "roundoff_qualification": "Native RSL uses F.linear with transposed kernels; legacy NPZ uses matmul+bias. Tiny floating-point differences can accumulate during closed-loop physics. Initial scenes and case outcomes must match; measured numeric deltas are retained."
+    },
+    "isaac_memory": {
+      "image_id": "sha256:1d6e4b04902cd43e89ac592e5837c0acb3019f19edef50f3f6c0fdf6823e36ba",
+      "peak_total_used_mib": 14470,
+      "peak_our_process_mib": 4664,
+      "minimum_free_mib": 1451,
+      "stopped_our_containers": [],
+      "other_processes_untouched": true,
+      "owned_container_ids": [
+        "727f652cba03",
+        "de3602cafce4"
+      ],
+      "sample_period_s": 0.5
+    },
+    "ruff": {
+      "passed": true,
+      "authored_changed_python_files": 10
+    },
+    "bash_syntax": {
+      "passed": true,
+      "files": [
+        "crazyrl",
+        "scripts/common.sh",
+        "scripts/play.sh",
+        "scripts/evaluate.sh"
+      ]
+    },
+    "isaac_native_pt_play": {
+      "passed": true,
+      "checkpoint": "models/crazyflow/policy.pt",
+      "checkpoint_sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+      "image_id": "sha256:056e23934a88807b855069b55b3dd37aa156a6815232865be4f50d9a28747cd8",
+      "launcher": "python3 sim2sim/run.py play --policy models/crazyflow/policy.pt --num-envs 4 --max-steps 30 --seed 42",
+      "test_container_name": "crazyflow-dual-export-pt-play",
+      "exit_code": 0,
+      "headless": true,
+      "simulated_steps": 30,
+      "num_envs": 4,
+      "seed": 42,
+      "native_on_policy_runner_inference": true,
+      "extra_tanh": false,
+      "own_process_sampled_peak_mib": 4664,
+      "total_gpu_sampled_peak_mib": 14436,
+      "minimum_sampled_free_mib": 1486,
+      "log": "outputs/dual-export-pt-play.log",
+      "memory_log": "outputs/dual-export-pt-play-memory.json"
+    },
+    "source_files_sha256": {
+      "crazyflow/tof/policy.py": "3ee03dd6b03f51da79358ea6172bdfaaa2bc0ca4291d34fa36a367c009c1ea23",
+      "crazyflow/tof/export.py": "258b9d29a85291d7bf120a4cb0612d1f5a1244474863cdd4d7221b3a6b0805c9",
+      "crazyflow/tof/train.py": "47b36230d3c19f8ba1574ca08c1abc609e82588d49f83e4432f03779d91cbad8",
+      "sim2sim/torch_policy.py": "19a51db317e68e89ae1368e71ecea0cb34e475f9ea543065f5875c2458c1287b",
+      "sim2sim/evaluate.py": "cea3d5f093582997fddac5233fa0c079cbdcd7c4d226dfb46d6bdb84761c5e09",
+      "sim2sim/play.py": "a3882e7f5d9fa68ee80a774f3dbaa7aeb3ef00c24e4dc8443f73acfd713afd5a",
+      "sim2sim/run.py": "265a04c6a75ee02ac3ddb64877be5bcafa13ebc6fc61cf78eabb9ff5c35092f3"
+    }
+  },
+  "images": {
+    "training": "sha256:61f945fd3dab0db269aa05672b9e873e00c12a16ffbe0f770a7e715e9233690d",
+    "evaluation": "sha256:056e23934a88807b855069b55b3dd37aa156a6815232865be4f50d9a28747cd8"
+  },
+  "intermediate_models": "Temporary GPU smoke weights are removed after acceptance; only selected NPZ/PT and the original baseline PT are published.",
+  "historical_results": "Existing selected-policy and baseline performance records remain unchanged. This format conversion is not a new best-model training run.",
+  "removed_intermediate_model_files": [
+    "outputs/dual-export-gpu-smoke/checkpoint.msgpack",
+    "outputs/dual-export-gpu-smoke/policies/policy_000003.npz",
+    "outputs/dual-export-gpu-smoke/policies/policy_000003.pt",
+    "outputs/dual-export-gpu-smoke/policy.npz",
+    "outputs/dual-export-gpu-smoke/policy.pt"
+  ]
+}

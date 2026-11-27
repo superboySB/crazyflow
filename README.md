@@ -10,13 +10,13 @@ Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，�
 | --- | --- |
 | `docker/` | 两份独立镜像配方：Crazyflow 训练/辨识/可视化，以及 Isaac Sim 评测 |
 | `crazyflow/tof/`、`config/` | JAX PPO、ToF 环境、CF21B 训练配置和默认物理参数 |
-| `models/crazyflow/policy.npz` | 本次选出的最佳 Crazyflow 策略，含自身归一化和冻结物理配置 |
+| `models/crazyflow/policy.npz`、`policy.pt` | 同一最佳策略的 JAX 与 Torch/RSL 导出，分别用于 Crazyflow/MuJoCo 和 Isaac Sim |
 | `models/baseline/` | 官方现成 `model_36825.pt` 及配套 `agent.yaml`、`env.yaml` |
 | `sim2sim/reference/` | 冻结的 Isaac baseline 任务、控制/动力学/传感器和必要 USD |
 | `reports/` | 最佳模型训练、选择、留出测试、配对评测和交互验收证据 |
 | `outputs/` | 新实验、完整 checkpoint、缓存、视频和 TensorBoard 等忽略产物 |
 
-Git 中只保留两份模型权重：选定的 Crazyflow NPZ 和用户要求的官方 baseline PT。训练中间模型不放入 `models/`。
+Git 保留两个固定策略、三个权重文件：最佳 Crazyflow 策略的 NPZ/PT，以及官方 baseline PT。训练中间模型不放入 `models/`。
 
 无人机可视化只保留 CF21B 的 XML/STL；辨识仍保留所需的四种官方动力学表及 Mellinger 控制参数。默认 CF21B 物理数值保持原值。
 
@@ -98,10 +98,10 @@ Git 中只保留两份模型权重：选定的 Crazyflow NPZ 和用户要求的�
 容量脚本每 0.25 s 采样 NVIDIA 计算进程显存，超过 9.5 GiB 即停止；JAX 分配器另有 55% 整卡限制。请先结束其它 CUDA 计算。结果包括每档环境数、显存采样峰值、完整更新耗时、实际命令和源码哈希，保存在 `outputs/tof-capacity/capacity.json`。首轮编译不作为稳态吞吐。
 
 ```bash
-./crazyrl train --device gpu
+./crazyrl train --device gpu --output outputs/my-tof
 # 修改总更新数、并行环境数或独立配置：
 ./crazyrl train --device gpu --iterations 1000 --num-envs 12288 --output outputs/my-tof
-./crazyrl train --device gpu --config config/training.yaml
+./crazyrl train --device gpu --config config/training.yaml --output outputs/my-tof-config
 # 延续同一批环境、随机状态和 Adam 状态；iterations 是目标总次数：
 ./crazyrl train --device gpu --resume outputs/my-tof/checkpoint.msgpack \
   --iterations 2000 --num-envs 12288 --output outputs/my-tof-continued
@@ -116,20 +116,30 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
 
 `--resume` 的 `iterations` 是该运行的总更新目标；`--warm-start` 从 0 重新计数，执行额外的指定次数，并记录父检查点的训练量。
 
-每次运行保存 `config.json`、`training.jsonl`、`training.png`、可独立推理的 `policy.npz` 和含优化器/RNG/环境状态的 `checkpoint.msgpack`。`policy.npz` 内包含网络、归一化、有效环境配置和源码哈希，不依赖后来修改的本地配置。GPU 正式训练全程由同样的显存 watchdog 监测，采样峰值写入 `gpu-memory.json`；超过限制会停止并保留此前成功 checkpoint。正式成功结束才更新 `outputs/.latest-policy`。日志的训练成功率来自带探索的在线回合，不能替代下面的确定性留出评测。
+每次 PPO 保存同时导出同目录的 `policy.npz` 与真正的 Torch/RSL `policy.pt`；它们来自同一组策略参数和归一化统计。**训练始终使用 JAX/Flax/Optax，Torch 只在 CPU 上序列化导出文件。**
+
+| 文件 | 用途 |
+| --- | --- |
+| `outputs/my-tof/policy.npz` | 原生 JAX 推理、Crazyflow 留出评测和 MuJoCo 可视化；包含冻结的有效环境配置 |
+| `outputs/my-tof/policy.pt` | Isaac Sim 加载同一策略；保存实际可用的 actor、critic 及各自归一化状态 |
+| `outputs/my-tof/checkpoint.msgpack` | 恢复 JAX PPO 的 Optax、RNG、环境和完整 Agent 状态 |
+
+现有最佳模型的 PT 是 actor 与 actor 归一化的推理导出；后续训练保存时，实际可用的 critic 和 critic 归一化也一并导出。继续训练使用 `checkpoint.msgpack`，部署用 `.pt` 不用于恢复 Optax。每次运行还保存 `config.json`、`training.jsonl` 和 `training.png`。GPU 正式训练由显存 watchdog 监测，采样峰值写入 `gpu-memory.json`；超过限制会停止并保留此前成功 checkpoint。日志的在线探索成功率不能替代下面的确定性留出评测。
+
+最佳策略的 NPZ 没有因导出而改变；对应 PT 的数值核验和加载记录见 [`reports/dual-export.json`](reports/dual-export.json)，三个文件的哈希见 [`models/README.md`](models/README.md)。
 
 ## 5. 留出评测与 MuJoCo 小飞机可视化
 
 ```bash
-./crazyrl evaluate --episodes 256 --seed 9001
+./crazyrl evaluate --checkpoint models/crazyflow/policy.npz --episodes 256 --seed 9001
 ./crazyrl evaluate --checkpoint outputs/my-tof/policy.npz \
   --episodes 256 --seed 9001 --output outputs/my-evaluation
 # 独立新障碍地图：训练模型的物理及其余任务参数保持冻结
-./crazyrl evaluate --example --episodes 256 --seed 14001 --map-seed 14001 \
+./crazyrl evaluate --checkpoint models/crazyflow/policy.npz \
+  --episodes 256 --seed 14001 --map-seed 14001 \
   --output outputs/my-unseen-map-test
-./crazyrl play
-# 仓库中保留本次选出的最终模型，可直接看示例：
-./crazyrl play --example
+# 仓库中保留本次选出的最佳模型：
+./crazyrl play --checkpoint models/crazyflow/policy.npz
 ./crazyrl play --checkpoint outputs/my-tof/policy.npz --seed 9001
 ./crazyrl play --headless --checkpoint outputs/my-tof/policy.npz \
   --output outputs/avoidance.mp4
@@ -137,9 +147,9 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
 ./crazyrl play --evaluation outputs/my-evaluation --episode 0
 ```
 
-`evaluate/play --example` 直接读取 `models/crazyflow/policy.npz`，不复制权重或改最近正式训练指针。省略模型参数时优先使用最近正式训练模型，没有指针则使用这份最佳策略；`--checkpoint` 可明确指定 `models/` 或 `outputs/` 下的 NPZ。`--seed` 只改变初态与观测随机数；默认保留模型中的地图。检查泛化时另外指定 `--map-seed` 生成新地图。评测使用确定性动作均值，每个并行世界只统计首个完整回合，保存 `summary.json`、`episodes.csv` 和 `trajectories.npz`；成功、碰撞、超时、数值失稳均保留在分母。`--max-steps` 是调试截短，剩余回合按超时计，不能用来制造成功率。
+用 `--checkpoint` 明确选择 `models/crazyflow/policy.npz` 或自己训练目录中的 `policy.npz`。`--seed` 只改变初态与观测随机数；默认保留模型中的地图。检查泛化时另外指定 `--map-seed` 生成新地图。评测使用确定性动作均值，每个并行世界只统计首个完整回合，保存 `summary.json`、`episodes.csv` 和 `trajectories.npz`；成功、碰撞、超时、数值失稳均保留在分母。`--max-steps` 是调试截短，剩余回合按超时计，不能用来制造成功率。
 
-`play --example` 默认打开持续运行的交互窗口：JAX 逐步执行真实策略与 Crazyflow 物理，回合结束短暂停留后自动开始下一回合，关闭窗口才退出。首次启动需要编译 actor 与物理步。右侧面板显示前向 **8×8 深度数值/热图**及最小、中心、最大值，另列出 **左、右、后、下 ToF**，单位均为 m；场景中同时画出测距射线。
+`play --checkpoint models/crazyflow/policy.npz` 打开持续运行的交互窗口：JAX 逐步执行真实策略与 Crazyflow 物理，回合结束短暂停留后自动开始下一回合，关闭窗口才退出。首次启动需要编译 actor 与物理步。右侧面板显示前向 **8×8 深度数值/热图**及最小、中心、最大值，另列出 **左、右、后、下 ToF**，单位均为 m；场景中同时画出测距射线。
 
 | 操作 | 功能 |
 | --- | --- |
@@ -156,7 +166,7 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
 交互验收可自动触发同一组按键处理，检查 reset、精确重开、暂停、传感器切换、三种视角及真实环境终止/自动重置，并保存窗口截图与报告：
 
 ```bash
-./crazyrl play --example --self-test --gui-frames 20 \
+./crazyrl play --checkpoint models/crazyflow/policy.npz --self-test --gui-frames 20 \
   --screenshot outputs/tof-live-check.png --gui-report outputs/tof-live-check.json
 ```
 
@@ -166,26 +176,26 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
 
 ## 6. 独立 Isaac Sim：同场景对比新模型和现成 baseline
 
-Isaac 镜像从 [`docker/sim2sim.Dockerfile`](docker/sim2sim.Dockerfile) 独立构建，运行本仓库 `sim2sim/reference/` 中冻结的 baseline 任务及 `sim2sim/reference/assets/` 中的 USD。官方权重为 `models/baseline/model_36825.pt`，其配套配置也在同目录；最佳新策略为 `models/crazyflow/policy.npz`。上游项目修订为 `9333442c18fa15799adac7e02988a978aeaf97b9`，保留文件的上游相对路径和 SHA256 见 [`sim2sim/provenance.json`](sim2sim/provenance.json)。
+Isaac 镜像从 [`docker/sim2sim.Dockerfile`](docker/sim2sim.Dockerfile) 独立构建，运行本仓库 `sim2sim/reference/` 中冻结的 baseline 任务及 `sim2sim/reference/assets/` 中的 USD。官方权重为 `models/baseline/model_36825.pt`，其配套配置也在同目录；最佳新策略使用 `models/crazyflow/policy.pt`。本地新训练完成后，选择同一训练目录里的 `policy.pt`；NPZ 继续用于上一节的 JAX 评测与 MuJoCo。上游任务修订为 `9333442c18fa15799adac7e02988a978aeaf97b9`，保留文件的上游相对路径和 SHA256 见 [`sim2sim/provenance.json`](sim2sim/provenance.json)。
 
 ```bash
 ./crazyrl sim2sim build
-./crazyrl sim2sim evaluate --policy baseline --num-envs 8 --seed 20261127 \
+./crazyrl sim2sim evaluate --policy models/baseline/model_36825.pt --num-envs 8 --seed 20261127 \
   --output outputs/sim2sim/baseline-new
-./crazyrl sim2sim compare --policy models/crazyflow/policy.npz --num-envs 32 \
+./crazyrl sim2sim compare --policy models/crazyflow/policy.pt --num-envs 32 \
   --seed 42 --output outputs/sim2sim/best-seed42
-# 本地新训练完成后，用相同评测入口加载其独立 NPZ：
-./crazyrl sim2sim compare --policy outputs/my-tof/policy.npz --num-envs 32 \
+# 本地新训练完成后，加载同次保存的 PT：
+./crazyrl sim2sim compare --policy outputs/my-tof/policy.pt --num-envs 32 \
   --seed 42 --output outputs/sim2sim/paired-seed42
 ```
 
-`compare` 依次加载同一个 Isaac 环境中的现成 `model_36825.pt` 和新 NPZ，使用相同种子、地图、初始位姿、目标和速度，**校验初始场景哈希相同才接受比较**；每环境各一个回合，避免策略结束时间不同使后续随机重置失去配对。更充分的比较应对 42–46 等多个种子重复运行，报告全部回合。评测保留源项目动力学、资产和 reward；没有在评测时调参帮助候选模型。这里比较两个已有策略的迁移表现，训练物理与训练预算不同，新模型的实际预算在结果中完整记录。
+`compare` 依次加载同一个 Isaac 环境中的官方 `models/baseline/model_36825.pt` 和指定的新策略 PT，使用相同种子、地图、初始位姿、目标和速度，**校验初始场景哈希相同才接受比较**；每环境各一个回合，避免策略结束时间不同使后续随机重置失去配对。更充分的比较应对 42–46 等多个种子重复运行，报告全部回合。评测保留源项目动力学、资产和 reward；没有在评测时调参帮助候选模型。这里比较两个已有策略的迁移表现，训练物理与训练预算不同，新模型的实际预算在结果中完整记录。
 
 ```bash
-./crazyrl sim2sim play --policy baseline --gui --num-envs 8 --max-steps 450
-./crazyrl sim2sim play --policy models/crazyflow/policy.npz --gui --num-envs 8 --max-steps 450
-./crazyrl sim2sim play --policy outputs/my-tof/policy.npz --gui --num-envs 8 --max-steps 450
-./crazyrl sim2sim play --policy baseline --video --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy models/baseline/model_36825.pt --gui --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy models/crazyflow/policy.pt --gui --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy outputs/my-tof/policy.pt --gui --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy models/baseline/model_36825.pt --video --num-envs 8 --max-steps 450
 ./crazyrl sim2sim tensorboard --port 6006
 ```
 
@@ -197,7 +207,7 @@ TensorBoard 打开 `http://127.0.0.1:6006`，读取本地忽略目录 `outputs/s
 
 独立 Isaac 镜像重建后的 4 环境加载检查为 baseline **4/4**、新模型 **2/4**。相同初态下，新旧镜像的新模型逐回合 CSV 字节一致；该检查用于确认打包没有改变行为，正式迁移成绩仍采用下表的 160 回合协议。
 
-本次完成两阶段 PPO 训练，共 270,336,000 次交互；交付第 75 次续训检查点，累计 233,472,000 次交互。12,288 环境的完整 100 次续训采样峰值为 **9,310 MiB**，经过三次课程换图。新模型与 baseline 的结果如下：
+本次完成两阶段 PPO 训练，共 270,336,000 次交互；交付第 75 次续训检查点，累计 233,472,000 次交互。12,288 环境的完整 100 次续训采样峰值为 **9,310 MiB**，经过三次课程换图。以下为既有固定策略的配对成绩；双格式导出不增加训练，也不改写这些结果：
 
 | 环境 / 模型 | 成功 | 碰撞 |
 | --- | ---: | ---: |

@@ -30,6 +30,9 @@ dependencies = [
     # Official automatic identification imports matplotlib for optional fit plots.
     "matplotlib",
     "PyYAML==6.0.4",
+    # Official CPU wheel index: https://download.pytorch.org/whl/cpu
+    # Serialization only; PPO, autodiff and simulation remain entirely in JAX.
+    "torch==2.7.0+cpu",
 ]
 
 [project.optional-dependencies]
@@ -61,7 +64,7 @@ version = { attr = "crazyflow.__version__" }
 "share/crazyflow/docs/crazyflow_experiments_sysid" = ["docs/crazyflow_experiments_sysid/README.md", "docs/crazyflow_experiments_sysid/LICENSE", "docs/crazyflow_experiments_sysid/provenance.json"]
 "share/crazyflow/examples/identification" = ["examples/identification/*.md", "examples/identification/*.csv", "examples/identification/*.json"]
 
-"share/crazyflow/models/crazyflow" = ["models/crazyflow/policy.npz"]
+"share/crazyflow/models/crazyflow" = ["models/crazyflow/policy.npz", "models/crazyflow/policy.pt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

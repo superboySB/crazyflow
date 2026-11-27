@@ -1,35 +1,253 @@
 {
-  "format": "crazyflow-crazyrl-actor-v1",
-  "container": "NumPy .npz, allow_pickle=False",
-  "metadata": {
-    "type": "scalar JSON string",
-    "required": {
-      "obs_dim": 344,
-      "critic_obs_dim": 434,
-      "hidden_dims": [256, 256, 128, 64],
-      "activation": "elu",
-      "normalization": "sqrt_var_plus_epsilon",
-      "normalization_epsilon": 0.01
-    }
+  "task_contract": {
+    "actor_observations": 344,
+    "critic_observations": 434,
+    "hidden_dims": [
+      256,
+      256,
+      128,
+      64
+    ],
+    "activation": "ELU hidden layers; raw linear final layer",
+    "action_order": [
+      "roll attitude",
+      "pitch attitude",
+      "yaw rate",
+      "collective thrust"
+    ],
+    "environment_transform": "tanh once in the task, then thrust=(tanh(raw_thrust)+1)/2",
+    "normalization": "(observation-own_mean)/(own_std+0.01)",
+    "policy_frequency_hz": 15,
+    "physics_frequency_hz": 150
   },
-  "arrays": {
-    "obs_mean": [344],
-    "obs_var": [344],
-    "actor_0_kernel": [344, 256],
-    "actor_0_bias": [256],
-    "actor_1_kernel": [256, 256],
-    "actor_1_bias": [256],
-    "actor_2_kernel": [256, 128],
-    "actor_2_bias": [128],
-    "actor_3_kernel": [128, 64],
-    "actor_3_bias": [64],
-    "actor_4_kernel": [64, 4],
-    "actor_4_bias": [4]
+  "rsl_pt": {
+    "role": "Isaac native RSL inference checkpoint exported from JAX/Flax PPO",
+    "container": "torch.save state dictionaries; load tensors on CPU with weights_only=True",
+    "metadata_key": "crazyflow_metadata",
+    "required_metadata": {
+      "export_format": "rsl_rl",
+      "actor_only": "bool: true for the retained actor-only best policy; false for future real actor+critic exports",
+      "source_npz_sha256": "SHA256 of the matching native NPZ export"
+    },
+    "required_checkpoint_keys": [
+      "model_state_dict",
+      "obs_norm_state_dict",
+      "iter",
+      "infos",
+      "crazyflow_metadata"
+    ],
+    "actor_state_float32_shapes": {
+      "std": [
+        4
+      ],
+      "actor.0.weight": [
+        256,
+        344
+      ],
+      "actor.0.bias": [
+        256
+      ],
+      "actor.2.weight": [
+        256,
+        256
+      ],
+      "actor.2.bias": [
+        256
+      ],
+      "actor.4.weight": [
+        128,
+        256
+      ],
+      "actor.4.bias": [
+        128
+      ],
+      "actor.6.weight": [
+        64,
+        128
+      ],
+      "actor.6.bias": [
+        64
+      ],
+      "actor.8.weight": [
+        4,
+        64
+      ],
+      "actor.8.bias": [
+        4
+      ]
+    },
+    "std_semantics": "std=exp(Flax logstd), positive vector4; matches RSL noise_std_type=scalar",
+    "actor_normalizer": {
+      "_mean": {
+        "shape": [
+          1,
+          344
+        ],
+        "dtype": "float32"
+      },
+      "_var": {
+        "shape": [
+          1,
+          344
+        ],
+        "dtype": "float32"
+      },
+      "_std": {
+        "shape": [
+          1,
+          344
+        ],
+        "dtype": "float32",
+        "value": "sqrt(_var)"
+      },
+      "count": {
+        "shape": [],
+        "dtype": "int64"
+      }
+    },
+    "full_export_only": {
+      "additional_model_state_float32_shapes": {
+        "critic.0.weight": [
+          256,
+          434
+        ],
+        "critic.0.bias": [
+          256
+        ],
+        "critic.2.weight": [
+          256,
+          256
+        ],
+        "critic.2.bias": [
+          256
+        ],
+        "critic.4.weight": [
+          128,
+          256
+        ],
+        "critic.4.bias": [
+          128
+        ],
+        "critic.6.weight": [
+          64,
+          128
+        ],
+        "critic.6.bias": [
+          64
+        ],
+        "critic.8.weight": [
+          1,
+          64
+        ],
+        "critic.8.bias": [
+          1
+        ]
+      },
+      "privileged_obs_norm_state_dict": {
+        "_mean": {
+          "shape": [
+            1,
+            434
+          ],
+          "dtype": "float32"
+        },
+        "_var": {
+          "shape": [
+            1,
+            434
+          ],
+          "dtype": "float32"
+        },
+        "_std": {
+          "shape": [
+            1,
+            434
+          ],
+          "dtype": "float32",
+          "value": "sqrt(_var)"
+        },
+        "count": {
+          "shape": [],
+          "dtype": "int64"
+        }
+      }
+    },
+    "actor_only_loading": "Validate all actor/std/normalizer tensors, allow only intentionally missing critic keys, then use existing native RSL inference modules. No fake critic tensors are serialized.",
+    "full_export_loading": "Complete actor+critic checkpoints also support native OnPolicyRunner.load(path,load_optimizer=False).",
+    "optimizer_state": "Torch optimizer state is not exported; JAX/Flax optimizer resume state remains separate."
   },
-  "dtype": "float32",
-  "inference": "Normalize by (obs-obs_mean)/(sqrt(obs_var)+0.01), ELU after hidden layers, raw linear actor mean at output",
-  "action_order": ["roll", "pitch", "yaw_rate", "thrust"],
-  "task_squash": "Frozen CrazyRL task applies tanh once; actor export must not apply tanh",
-  "policy_frequency_hz": 15,
-  "physics_frequency_hz": 150
+  "native_jax_npz": {
+    "format": "crazyflow-crazyrl-actor-v1",
+    "container": "NumPy .npz, allow_pickle=False",
+    "metadata": {
+      "type": "scalar JSON string",
+      "required": {
+        "obs_dim": 344,
+        "critic_obs_dim": 434,
+        "hidden_dims": [
+          256,
+          256,
+          128,
+          64
+        ],
+        "activation": "elu",
+        "normalization": "sqrt_var_plus_epsilon",
+        "normalization_epsilon": 0.01
+      }
+    },
+    "arrays": {
+      "obs_mean": [
+        344
+      ],
+      "obs_var": [
+        344
+      ],
+      "actor_0_kernel": [
+        344,
+        256
+      ],
+      "actor_0_bias": [
+        256
+      ],
+      "actor_1_kernel": [
+        256,
+        256
+      ],
+      "actor_1_bias": [
+        256
+      ],
+      "actor_2_kernel": [
+        256,
+        128
+      ],
+      "actor_2_bias": [
+        128
+      ],
+      "actor_3_kernel": [
+        128,
+        64
+      ],
+      "actor_3_bias": [
+        64
+      ],
+      "actor_4_kernel": [
+        64,
+        4
+      ],
+      "actor_4_bias": [
+        4
+      ]
+    },
+    "dtype": "float32",
+    "inference": "Normalize by (obs-obs_mean)/(sqrt(obs_var)+0.01), ELU after hidden layers, raw linear actor mean at output",
+    "action_order": [
+      "roll",
+      "pitch",
+      "yaw_rate",
+      "thrust"
+    ],
+    "task_squash": "Frozen CrazyRL task applies tanh once; actor export must not apply tanh",
+    "policy_frequency_hz": 15,
+    "physics_frequency_hz": 150
+  }
 }

@@ -33,7 +33,7 @@ from flax import serialization, struct
 from flax.training.train_state import TrainState
 
 from crazyflow.tof.config import env_config, load_config
-from crazyflow.tof.policy import MLP, Moments, gaussian_logprob, save_policy
+from crazyflow.tof.policy import MLP, Moments, gaussian_logprob, save_policy_pair
 
 
 @struct.dataclass
@@ -483,17 +483,20 @@ def main() -> None:
                     "env_config": env.effective_config(),
                     "env_runtime": env.runtime_state(),
                 }
-                save_policy(
-                    output / "policy.npz",
+                save_policy_pair(
+                    output,
                     meta,
                     agent.train.params["actor"],
                     agent.actor_norm,
                     agent.train.params["logstd"],
+                    critic_params=agent.train.params["critic"],
+                    critic_moments=agent.critic_norm,
                 )
                 if not args.benchmark:
-                    snapshot = output / "policies" / f"policy_{iteration + 1:06d}.npz"
-                    snapshot.parent.mkdir(exist_ok=True)
-                    shutil.copy2(output / "policy.npz", snapshot)
+                    for suffix in ("npz", "pt"):
+                        snapshot = output / "policies" / f"policy_{iteration + 1:06d}.{suffix}"
+                        snapshot.parent.mkdir(exist_ok=True)
+                        shutil.copy2(output / f"policy.{suffix}", snapshot)
                     payload = {
                         "agent": serialization.to_state_dict(agent),
                         "env_state": serialization.to_state_dict(state),

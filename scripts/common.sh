@@ -149,14 +149,14 @@ cf_checkpoint_to_container() {
     *) cf_to_container "$path" ;;
   esac
 }
-cf_example_policy() {
+cf_bundled_policy() {
   cf_checkpoint_to_container "$CF_ROOT/models/crazyflow/policy.npz"
 }
 cf_default_checkpoint() {
   if [[ -s $CF_OUTPUTS/.latest-policy ]]; then
     cf_to_container "$(cf_latest_policy)/policy.npz"
   else
-    cf_example_policy
+    cf_bundled_policy
   fi
 }
 cf_record_latest() {
