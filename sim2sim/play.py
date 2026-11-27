@@ -18,6 +18,14 @@ sys.modules[spec.name] = play
 spec.loader.exec_module(play)
 original_load = play.OnPolicyRunner.load
 original_policy = play.OnPolicyRunner.get_inference_policy
+original_record_video = play.gym.wrappers.RecordVideo
+
+
+def record_video(env: Any, **kwargs: Any) -> Any:
+    """Keep native recordings in the ignored output tree beside other run data."""
+    checkpoint_name = Path(play.args_cli.checkpoint).stem
+    kwargs["video_folder"] = str(ROOT.parent / "outputs/sim2sim/videos" / checkpoint_name)
+    return original_record_video(env, **kwargs)
 
 
 def load(self: Any, path: str, *args: Any, **kwargs: Any) -> Any:
@@ -40,6 +48,7 @@ def get_policy(self: Any, device: str | None = None) -> Any:
 
 play.OnPolicyRunner.load = load
 play.OnPolicyRunner.get_inference_policy = get_policy
+play.gym.wrappers.RecordVideo = record_video
 if __name__ == "__main__":
     try:
         play.main()

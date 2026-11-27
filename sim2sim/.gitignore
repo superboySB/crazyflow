@@ -1,8 +1,0 @@
-artifacts/**
-!artifacts/assets/
-!artifacts/assets/replementation/
-!artifacts/assets/replementation/rl/
-!artifacts/assets/replementation/rl/model_36825.pt
-!artifacts/assets/replementation/rl/params/
-!artifacts/assets/replementation/rl/params/env.yaml
-!artifacts/assets/replementation/rl/params/agent.yaml

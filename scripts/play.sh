@@ -9,7 +9,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --device) cf_require_value "$@"; CF_DEVICE_REQUEST=$2; shift 2 ;;
     --example) example=true; shift ;;
-    --checkpoint) cf_require_value "$@"; checkpoint=$(cf_to_container "$2"); shift 2 ;;
+    --checkpoint) cf_require_value "$@"; checkpoint=$(cf_checkpoint_to_container "$2"); shift 2 ;;
     --headless) headless=true; args+=(--headless); shift ;;
     --output|--record|--trajectory|--evaluation|--screenshot|--gui-report)
       cf_require_value "$@"; flag=$1; path=$2
@@ -21,17 +21,17 @@ done
 if [[ " ${args[*]} " == *" --help "* || " ${args[*]} " == *" -h "* ]]; then
   cf_ensure_image
   cf_container_cpu python -m crazyflow.tof.play --help
-  printf '\n%s\n' '启动器另支持 --device auto|gpu|cpu、--example；省略 --checkpoint 时读取最近正式模型。 --evaluation DIR 回放该目录的 trajectories.npz。'
+  printf '\n%s\n' '启动器另支持 --device auto|gpu|cpu、--example；省略 --checkpoint 时读取最近正式模型，没有正式运行则读取内置最佳模型。 --evaluation DIR 回放该目录的 trajectories.npz。'
   exit
 fi
 if "$example"; then
   [[ -z "$checkpoint" ]] || cf_die '--example 与 --checkpoint 请选择其一。'
-  checkpoint=$(cf_to_container "$(cf_stage_example_policy)")
+  checkpoint=$(cf_example_policy)
 fi
 if [[ -n "$checkpoint" ]]; then
   args+=(--checkpoint "$checkpoint")
 elif [[ " ${args[*]} " != *" --trajectory "* ]]; then
-  args+=(--checkpoint "$(cf_to_container "$(cf_latest_policy)/policy.npz")")
+  args+=(--checkpoint "$(cf_default_checkpoint)")
 fi
 cf_runtime
 args+=(--device "$CF_DEVICE")

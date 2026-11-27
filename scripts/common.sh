@@ -19,7 +19,7 @@ cf_docker() {
 cf_build() {
   cf_docker
   printf '构建 %s（Python、JAX/CUDA 和 MuJoCo 都在镜像中）…\n' "$CF_IMAGE"
-  docker build -f "$CF_ROOT/.devcontainer/Dockerfile" -t "$CF_IMAGE" "$CF_ROOT"
+  docker build -f "$CF_ROOT/docker/crazyflow.Dockerfile" -t "$CF_IMAGE" "$CF_ROOT"
 }
 cf_ensure_image() {
   cf_docker
@@ -133,12 +133,31 @@ cf_new_directory() {
   mkdir -p "$CF_OUTPUTS"
   mktemp -d "$CF_OUTPUTS/${1:-run}-$(date +%Y%m%d-%H%M%S)-XXXXXX"
 }
-cf_stage_example_policy() {
-  local source="$CF_ROOT/examples/tof/policy.npz" directory
-  [[ -s $source ]] || cf_die "缺少示例模型：$source。请保留 examples/tof/policy.npz。"
-  directory=$(cf_new_directory tof-example)
-  cp -- "$source" "$directory/policy.npz"
-  printf '%s\n' "$directory/policy.npz"
+cf_checkpoint_to_container() {
+  local path=$1
+  case "$path" in
+    /outputs|/outputs/*) cf_to_container "$path"; return ;;
+    /opt/crazyflow/models/*) path="$CF_ROOT/${path#/opt/crazyflow/}" ;;
+    /*) ;;
+    *) path="$CF_ROOT/$path" ;;
+  esac
+  path=$(realpath -m -- "$path")
+  case "$path" in
+    "$CF_ROOT/models/"*)
+      [[ -s $path ]] || cf_die "模型不存在：$path"
+      printf '/opt/crazyflow/%s\n' "${path#"$CF_ROOT/"}" ;;
+    *) cf_to_container "$path" ;;
+  esac
+}
+cf_example_policy() {
+  cf_checkpoint_to_container "$CF_ROOT/models/crazyflow/policy.npz"
+}
+cf_default_checkpoint() {
+  if [[ -s $CF_OUTPUTS/.latest-policy ]]; then
+    cf_to_container "$(cf_latest_policy)/policy.npz"
+  else
+    cf_example_policy
+  fi
 }
 cf_record_latest() {
   local key=${1#.} path pointer_tmp

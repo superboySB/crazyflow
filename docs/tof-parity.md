@@ -43,7 +43,7 @@ critic 每帧在上述真值帧之后加入：目标相对三维位置（模长�
 
 NPZ 和原始 `.pt` 的 actor 使用同样的输入物理约定，但分别携带各自训练得到的归一化统计。在上述单位与倍率之后，NPZ 使用 `(obs−own_mean)/(sqrt(own_var)+0.01)`，原始 RSL `.pt` 使用保存的 `own_std+0.01` 作分母，再经过 ELU MLP 输出原始动作均值。基线文件内保存的 std 与重新计算的 sqrt(var) 有约 `7.63e−6` 的最大浮点差异；不是输入物理含义的变化。JAX [`policy.py`](../crazyflow/tof/policy.py) 的 `act` 与 Isaac [`npz_policy.py`](../sim2sim/npz_policy.py) 的 `NpzPolicy.__call__` 不再做 `tanh`；Isaac 仍由冻结任务 `_pre_physics_step` 映射一次。不能把 baseline 的 mean/var 配到新模型上，也不能把 434 维 critic 输入传给 344 维部署 actor。
 
-相同接口并不意味着两个独立训练模型输出相同。[实际 checkpoint I/O 验收](../sim2sim/results/contract-20261127/checkpoint-io-audit.json) 检查了交付 NPZ、原始 `.pt` 和 128 个闭环飞行观测包，交付模型在 JAX 与 Torch 的最大动作差为 `1.43e−6`；多加一次 `tanh` 则会产生最大约 2.07 的原始动作偏差。同一模型的另一组数值一致性验收见 [`jax-torch-policy-parity.json`](../sim2sim/results/final-20261127/jax-torch-policy-parity.json)。
+相同接口并不意味着两个独立训练模型输出相同。[实际 checkpoint I/O 验收](../reports/sim2sim/checkpoint-io-audit.json) 检查了交付 NPZ、原始 `.pt` 和 128 个闭环飞行观测包，交付模型在 JAX 与 Torch 的最大动作差为 `1.43e−6`；多加一次 `tanh` 则会产生最大约 2.07 的原始动作偏差。同一模型的另一组数值一致性验收见 [`jax-torch-policy-parity.json`](../reports/sim2sim/final/jax-torch-policy-parity.json)。
 
 策略 15 Hz，物理 150 Hz，每拍 10 个子步。这里选用 Crazyflow 自带的 `Integrator.rk4`，配置与模型元数据明确保存 `integrator: rk4`；旧 Euler 模型仍可按其 `integrator: euler` 重放。选择理由是：原生电机动态与参考高增益 PD 组合在 Euler/150 Hz 下出现数值振荡。相同初始姿态 `[0.2,−0.1,0]`、悬停转速、无噪声条件下，8 s 测试最后一秒的 roll RMS 为 Euler/150 Hz 0.281 rad、RK4/150 Hz 0.00259 rad；Euler/500 Hz 参考为 0.000274 rad。RK4 保持参考 150 Hz 控制与延迟时间，不修改辨识参数。动作 FIFO 延迟 4 个物理子步，即约 26.7 ms。参考初始 FIFO 的默认命令是 `[0, 0, 0.5, 0]`，这里保留该初始化。本实现逐世界重置 FIFO；参考源码中的共享 deque 未在 `_reset_idx` 清空，可能跨回合保留命令。本实现避免这项回合间状态泄漏。
 

@@ -1,344 +1,309 @@
 {
-  "source_repository": "/home/dzp/projects/CrazyRL",
-  "source_commit": "9333442c18fa15799adac7e02988a978aeaf97b9",
-  "source_dirty": false,
-  "source_note": "note.md, verified 2026-11-27; evaluation only, no training entrypoint copied",
+  "format_version": 2,
+  "path_base": "repository_root",
+  "upstream_project": "CrazyRL",
+  "upstream_commit": "9333442c18fa15799adac7e02988a978aeaf97b9",
+  "upstream_dirty": false,
+  "scope": "Self-contained Isaac evaluation only; no Isaac training entrypoint or external source-directory importer.",
+  "dependency_stack": {
+    "base_image": "nvcr.io/nvidia/isaac-sim:4.5.0",
+    "isaaclab_repository": "https://github.com/Jason-xy/IsaacLab.git",
+    "isaaclab_commit": "083ca3cd6039410eabce69daad869a1426e8635e",
+    "rsl_rl_repository": "https://github.com/Jason-xy/rsl_rl.git",
+    "rsl_rl_commit": "750e84566d91877a8bbabc7971578be24429bca8",
+    "torch": "2.7.0+cu128",
+    "torchvision": "0.22.0+cu128",
+    "numpy_major": 1
+  },
   "local_changes": [
     {
-      "path": "reference/e2e_drone/tasks/__init__.py",
-      "reason": "register copied baseline only; exclude maze task"
+      "path": "sim2sim/reference/e2e_drone/utils/asset_paths.py",
+      "upstream_sha256": "876fa23b2979b1310e6b4652b2fae7031b463c176b5de02a30506341173a5ba8",
+      "current_sha256": "63bed5e4b0264f364a42ba1bb66f2a0418234af085a1b3580413d0c06a8320df",
+      "reason": "Portability only: resolve the adjacent packaged USD assets; remove environment/external-directory search fallbacks. No asset bytes, dynamics or task calculations change."
+    },
+    {
+      "path": "models/baseline/env.yaml",
+      "upstream_sha256": "921c858bc499de884750a8b706145fc7af570826821f38c66630e2d08c9178d4",
+      "current_sha256": "bcec4a27fd258143d94514e375c9e3ee49b3ac86cccd0cd2a89e9969e5f98f29",
+      "reason": "Portability only: saved robot USD path now points to this repository packaged assets. All other saved environment parameters are unchanged."
+    },
+    {
+      "path": "sim2sim/reference/e2e_drone/tasks/__init__.py",
+      "upstream_sha256": null,
+      "current_sha256": "60d6fa810b964308e9f0cecd8033aff0bedb6649447f978dd0ad468d01780bb8",
+      "reason": "Package-local registration includes only the bundled baseline task."
+    },
+    {
+      "path": "docker/sim2sim.Dockerfile",
+      "upstream_sha256": "683d5b165c4a2499bee97745bfd2ea50cfe63a7acba4ab762e778c97fe4e037c",
+      "current_sha256": "c1c54e628498796676d248979f95db79abfb7cfdc77fa1eba6c148b8b1616eea",
+      "reason": "One independent recipe builds directly from Isaac Sim4.5, keeps the pinned IsaacLab/RSL stack, adds libusb, and packages local task/assets/both models; removes external-project image, mount and compatibility symlinks."
     }
   ],
   "files": [
     {
-      "source": "LICENSE",
-      "destination": "reference/LICENSE",
-      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-      "bytes": 35149
+      "destination": "docker/sim2sim.Dockerfile",
+      "sha256": "c1c54e628498796676d248979f95db79abfb7cfdc77fa1eba6c148b8b1616eea",
+      "bytes": 5754,
+      "kind": "local_recipe",
+      "upstream_path": "docker/simulation.dockerfile",
+      "upstream_sha256": "683d5b165c4a2499bee97745bfd2ea50cfe63a7acba4ab762e778c97fe4e037c"
     },
     {
-      "source": "e2e_drone/__init__.py",
-      "destination": "reference/e2e_drone/__init__.py",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "bytes": 0
-    },
-    {
-      "source": "e2e_drone/utils/__init__.py",
-      "destination": "reference/e2e_drone/utils/__init__.py",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "bytes": 0
-    },
-    {
-      "source": "e2e_drone/rsl_rl/__init__.py",
-      "destination": "reference/e2e_drone/rsl_rl/__init__.py",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "bytes": 0
-    },
-    {
-      "source": "e2e_drone/rsl_rl/cli_args.py",
-      "destination": "reference/e2e_drone/rsl_rl/cli_args.py",
-      "sha256": "8cee92bada2c3ba562fa88f9200c1d62528f2ed5401af1cbc53b3a99a1dbd3fd",
-      "bytes": 3555
-    },
-    {
-      "source": "e2e_drone/rsl_rl/play.py",
-      "destination": "reference/e2e_drone/rsl_rl/play.py",
-      "sha256": "09a5ba756111b76b879a33fa3e44c74a3ba5219ba7bcdb64f65efa6879155a76",
-      "bytes": 15269
-    },
-    {
-      "source": "e2e_drone/rsl_rl/evaluate_success_rate.py",
-      "destination": "reference/e2e_drone/rsl_rl/evaluate_success_rate.py",
-      "sha256": "09ba48da1fceb423a28a617480ea53e85440de7ce8380c68953ec97686080c8c",
-      "bytes": 16663
-    },
-    {
-      "source": "e2e_drone/rsl_rl/navigation_metrics.py",
-      "destination": "reference/e2e_drone/rsl_rl/navigation_metrics.py",
-      "sha256": "00f781ec718ea07f8176e4307780a4645903bb1df6487988a97c60264bdfa75b",
-      "bytes": 9569
-    },
-    {
-      "source": "e2e_drone/rsl_rl/summarize_navigation_metrics.py",
-      "destination": "reference/e2e_drone/rsl_rl/summarize_navigation_metrics.py",
-      "sha256": "d8b8797c9676e8edfe5863f2784da472c79c0e3715e84e6dce5a8d2b8f4a04dc",
-      "bytes": 13182
-    },
-    {
-      "source": "e2e_drone/tasks/baseline/__init__.py",
-      "destination": "reference/e2e_drone/tasks/baseline/__init__.py",
-      "sha256": "98208413b7bb4c56a86020976842cdcfc1aab99f04e5b49fb6d73b1cd61ed121",
-      "bytes": 565
-    },
-    {
-      "source": "e2e_drone/tasks/baseline/quad_baseline_env.py",
-      "destination": "reference/e2e_drone/tasks/baseline/quad_baseline_env.py",
-      "sha256": "98881a5e75fd753cb4160e0ca63bc19b0f096f69b48384ea47e1b381e107e488",
-      "bytes": 71700
-    },
-    {
-      "source": "e2e_drone/tasks/baseline/quad_baseline_env_cfg.py",
-      "destination": "reference/e2e_drone/tasks/baseline/quad_baseline_env_cfg.py",
-      "sha256": "b722ebd1e6c609d855185993443f8e83d46f010f397d5e46767129e4c13bd162",
-      "bytes": 14927
-    },
-    {
-      "source": "e2e_drone/tasks/baseline/agents/__init__.py",
-      "destination": "reference/e2e_drone/tasks/baseline/agents/__init__.py",
-      "sha256": "3b5e6719ce9bb1348409ac63eb6105dc78c9bf6920a772af0232462325e1b165",
-      "bytes": 126
-    },
-    {
-      "source": "e2e_drone/tasks/baseline/agents/rsl_rl_ppo_cfg.py",
-      "destination": "reference/e2e_drone/tasks/baseline/agents/rsl_rl_ppo_cfg.py",
-      "sha256": "5621f574beb6e93851eccf8700348526034a2ca047d16d4eab03ccb3ff1eb682",
-      "bytes": 2281
-    },
-    {
-      "source": "e2e_drone/utils/asset_paths.py",
-      "destination": "reference/e2e_drone/utils/asset_paths.py",
-      "sha256": "876fa23b2979b1310e6b4652b2fae7031b463c176b5de02a30506341173a5ba8",
-      "bytes": 1000
-    },
-    {
-      "source": "e2e_drone/utils/bev_utils.py",
-      "destination": "reference/e2e_drone/utils/bev_utils.py",
-      "sha256": "9184c1940faa4dd334a869edfe2df0fc3462136e13dabb4128efac51285f9977",
-      "bytes": 4375
-    },
-    {
-      "source": "e2e_drone/utils/controller.py",
-      "destination": "reference/e2e_drone/utils/controller.py",
-      "sha256": "efddde7d6cf3d7959143d566784363bec40525bc5bb3afb5556d73e80d468ea9",
-      "bytes": 24726
-    },
-    {
-      "source": "e2e_drone/utils/death_replay_collector.py",
-      "destination": "reference/e2e_drone/utils/death_replay_collector.py",
-      "sha256": "7a19025ea694f6b7ff0b032bc02df08bcfbe8d4b3f6436104d369df87567923b",
-      "bytes": 16751
-    },
-    {
-      "source": "e2e_drone/utils/death_replay_viz.py",
-      "destination": "reference/e2e_drone/utils/death_replay_viz.py",
-      "sha256": "1a98aaeb77c92bb641f692bc5636826e4f5058571823fe01dada14bd5c4dc241",
-      "bytes": 24540
-    },
-    {
-      "source": "e2e_drone/utils/height_randomizer.py",
-      "destination": "reference/e2e_drone/utils/height_randomizer.py",
-      "sha256": "08647543e5d7e50b2df4aab62bfcd3d611f638f51127ea88f4f39995d21a6387",
-      "bytes": 11730
-    },
-    {
-      "source": "e2e_drone/utils/map_generator.py",
-      "destination": "reference/e2e_drone/utils/map_generator.py",
-      "sha256": "fda17275a9d9345e3c68e1125e01378aaaced592c5923949611d92007b89e337",
-      "bytes": 58757
-    },
-    {
-      "source": "e2e_drone/utils/reloadable_raycaster_camera.py",
-      "destination": "reference/e2e_drone/utils/reloadable_raycaster_camera.py",
-      "sha256": "317e7cd65302e532f9e96be7eda9ca425ab72a0705f0e54d9be6120f2823f595",
-      "bytes": 5666
-    },
-    {
-      "source": "e2e_drone/utils/thrust_uncertainty.py",
-      "destination": "reference/e2e_drone/utils/thrust_uncertainty.py",
-      "sha256": "db246d4d27d284f9845180d42a848464444482d25a2d53eabd3c300c2bf12a8c",
-      "bytes": 20454
-    },
-    {
-      "source": "e2e_drone/utils/wind_gen.py",
-      "destination": "reference/e2e_drone/utils/wind_gen.py",
-      "sha256": "8b3bd77c82cfaf58e953f5465811c9eb173efccfdb81d494219a6062d71ef3e2",
-      "bytes": 6408
-    },
-    {
-      "source": "assets/Assets/Isaac/4.5/Isaac/Robots/Crazyflie/cf2x.usd",
-      "destination": "reference/assets/Assets/Isaac/4.5/Isaac/Robots/Crazyflie/cf2x.usd",
-      "sha256": "d5e57dcdd28f929b018186aa41c35e8e8685c11ea6582f2eca2b450736ccb5ad",
-      "bytes": 215712
-    },
-    {
-      "source": "assets/Assets/Isaac/4.5/Isaac/Props/UIElements/arrow_x.usd",
-      "destination": "reference/assets/Assets/Isaac/4.5/Isaac/Props/UIElements/arrow_x.usd",
-      "sha256": "d321116a8fecfef657ac95a5392115b2bfbe7d5eeae2a74556a7037f15259132",
-      "bytes": 5377
-    },
-    {
-      "source": "assets/Assets/Isaac/4.5/Isaac/Props/UIElements/frame_prim.usd",
-      "destination": "reference/assets/Assets/Isaac/4.5/Isaac/Props/UIElements/frame_prim.usd",
-      "sha256": "d1299a3164458df37f636eefa5963f2ba60dcbf435cac69f61c6a4af39e0449b",
-      "bytes": 4662
-    },
-    {
-      "source": "assets/replementation/rl/model_36825.pt",
-      "destination": "artifacts/assets/replementation/rl/model_36825.pt",
-      "sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
-      "bytes": 5004055
-    },
-    {
-      "source": "assets/replementation/rl/events.out.tfevents.1768936229.dcj.32.0",
-      "destination": "artifacts/assets/replementation/rl/events.out.tfevents.1768936229.dcj.32.0",
-      "sha256": "2f7a310383d85593b93c5aae13390289f6f31e9de23088446b79a93e91ebf6d5",
-      "bytes": 81883824
-    },
-    {
-      "source": "assets/replementation/rl/params/env.yaml",
-      "destination": "artifacts/assets/replementation/rl/params/env.yaml",
-      "sha256": "921c858bc499de884750a8b706145fc7af570826821f38c66630e2d08c9178d4",
-      "bytes": 18908
-    },
-    {
-      "source": "assets/replementation/rl/params/agent.yaml",
-      "destination": "artifacts/assets/replementation/rl/params/agent.yaml",
+      "destination": "models/baseline/agent.yaml",
       "sha256": "2415c673e8c194383dd84f57ab76a0d1760a543135a32ead0fc0ee3938a3f9e4",
-      "bytes": 939
+      "bytes": 939,
+      "kind": "upstream",
+      "upstream_path": "assets/replementation/rl/params/agent.yaml",
+      "upstream_sha256": "2415c673e8c194383dd84f57ab76a0d1760a543135a32ead0fc0ee3938a3f9e4"
     },
     {
-      "source": "docs/evaluation/20261127/episodes.csv",
-      "destination": "results/reference-20261127/episodes.csv",
-      "sha256": "615da2b2c0bf05b0970bf7adae4843eb1cd52a52c20c9ebca6d3cca33d84516c",
-      "bytes": 186840
+      "destination": "models/baseline/env.yaml",
+      "sha256": "bcec4a27fd258143d94514e375c9e3ee49b3ac86cccd0cd2a89e9969e5f98f29",
+      "bytes": 18928,
+      "kind": "upstream",
+      "upstream_path": "assets/replementation/rl/params/env.yaml",
+      "upstream_sha256": "921c858bc499de884750a8b706145fc7af570826821f38c66630e2d08c9178d4"
     },
     {
-      "source": "docs/evaluation/20261127/protocol.json",
-      "destination": "results/reference-20261127/protocol.json",
-      "sha256": "c27940e48c04ca49af7587b71683f53c81ba16760293a79339ff6052e4e608dd",
-      "bytes": 1672
+      "destination": "models/baseline/model_36825.pt",
+      "sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+      "bytes": 5004055,
+      "kind": "upstream",
+      "upstream_path": "assets/replementation/rl/model_36825.pt",
+      "upstream_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3"
     },
     {
-      "source": "docs/evaluation/20261127/seed_42/model_36825.environment.json",
-      "destination": "results/reference-20261127/seed_42/model_36825.environment.json",
-      "sha256": "44368af8f61fa20f4e9297ab6f6bef69c80555c5f2002b586b8e84be26d08eec",
-      "bytes": 22760
+      "destination": "sim2sim/reference/LICENSE",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "kind": "upstream",
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
     },
     {
-      "source": "docs/evaluation/20261127/seed_42/model_36825.episodes.csv",
-      "destination": "results/reference-20261127/seed_42/model_36825.episodes.csv",
-      "sha256": "61035bc26ce799c6401ee0860bda94dd1155d29d6ce722f4bc1539d59145c422",
-      "bytes": 36732
+      "destination": "sim2sim/reference/assets/Assets/Isaac/4.5/Isaac/Props/UIElements/arrow_x.usd",
+      "sha256": "d321116a8fecfef657ac95a5392115b2bfbe7d5eeae2a74556a7037f15259132",
+      "bytes": 5377,
+      "kind": "upstream",
+      "upstream_path": "assets/Assets/Isaac/4.5/Isaac/Props/UIElements/arrow_x.usd",
+      "upstream_sha256": "d321116a8fecfef657ac95a5392115b2bfbe7d5eeae2a74556a7037f15259132"
     },
     {
-      "source": "docs/evaluation/20261127/seed_42/model_36825.summary.json",
-      "destination": "results/reference-20261127/seed_42/model_36825.summary.json",
-      "sha256": "159f536e6fef2691397078f7cdcf783b182fe3590cde12efd982317853e70ddf",
-      "bytes": 2855
+      "destination": "sim2sim/reference/assets/Assets/Isaac/4.5/Isaac/Props/UIElements/frame_prim.usd",
+      "sha256": "d1299a3164458df37f636eefa5963f2ba60dcbf435cac69f61c6a4af39e0449b",
+      "bytes": 4662,
+      "kind": "upstream",
+      "upstream_path": "assets/Assets/Isaac/4.5/Isaac/Props/UIElements/frame_prim.usd",
+      "upstream_sha256": "d1299a3164458df37f636eefa5963f2ba60dcbf435cac69f61c6a4af39e0449b"
     },
     {
-      "source": "docs/evaluation/20261127/seed_42/success.csv",
-      "destination": "results/reference-20261127/seed_42/success.csv",
-      "sha256": "3da41ffe41afc7c2ab803fd572bb3cc4b5a8ea13ddd1400896efea514de56e57",
-      "bytes": 36
+      "destination": "sim2sim/reference/assets/Assets/Isaac/4.5/Isaac/Robots/Crazyflie/cf2x.usd",
+      "sha256": "d5e57dcdd28f929b018186aa41c35e8e8685c11ea6582f2eca2b450736ccb5ad",
+      "bytes": 215712,
+      "kind": "upstream",
+      "upstream_path": "assets/Assets/Isaac/4.5/Isaac/Robots/Crazyflie/cf2x.usd",
+      "upstream_sha256": "d5e57dcdd28f929b018186aa41c35e8e8685c11ea6582f2eca2b450736ccb5ad"
     },
     {
-      "source": "docs/evaluation/20261127/seed_43/model_36825.environment.json",
-      "destination": "results/reference-20261127/seed_43/model_36825.environment.json",
-      "sha256": "80430b9a320ce2054f603d27565a10fffaa9b09a66e89ece8466bf02d2b3678f",
-      "bytes": 22760
+      "destination": "sim2sim/reference/e2e_drone/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/__init__.py",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "source": "docs/evaluation/20261127/seed_43/model_36825.episodes.csv",
-      "destination": "results/reference-20261127/seed_43/model_36825.episodes.csv",
-      "sha256": "b92c40f16cf86cfda9b934b277aa34d7d03d4653bf2073eb9f20a68425df3ccd",
-      "bytes": 36752
+      "destination": "sim2sim/reference/e2e_drone/rsl_rl/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/rsl_rl/__init__.py",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "source": "docs/evaluation/20261127/seed_43/model_36825.summary.json",
-      "destination": "results/reference-20261127/seed_43/model_36825.summary.json",
-      "sha256": "960f8471a237369d0c36de3c09f00e23f10a96b70587bd9a79c2d15d3e1b0b1b",
-      "bytes": 2869
+      "destination": "sim2sim/reference/e2e_drone/rsl_rl/cli_args.py",
+      "sha256": "8cee92bada2c3ba562fa88f9200c1d62528f2ed5401af1cbc53b3a99a1dbd3fd",
+      "bytes": 3555,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/rsl_rl/cli_args.py",
+      "upstream_sha256": "8cee92bada2c3ba562fa88f9200c1d62528f2ed5401af1cbc53b3a99a1dbd3fd"
     },
     {
-      "source": "docs/evaluation/20261127/seed_43/success.csv",
-      "destination": "results/reference-20261127/seed_43/success.csv",
-      "sha256": "50fe16ee31382d22ab293549efc37d0ad8eef2f975e48112ed56fe802e26ebef",
-      "bytes": 36
+      "destination": "sim2sim/reference/e2e_drone/rsl_rl/evaluate_success_rate.py",
+      "sha256": "09ba48da1fceb423a28a617480ea53e85440de7ce8380c68953ec97686080c8c",
+      "bytes": 16663,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/rsl_rl/evaluate_success_rate.py",
+      "upstream_sha256": "09ba48da1fceb423a28a617480ea53e85440de7ce8380c68953ec97686080c8c"
     },
     {
-      "source": "docs/evaluation/20261127/seed_44/model_36825.environment.json",
-      "destination": "results/reference-20261127/seed_44/model_36825.environment.json",
-      "sha256": "45e34e3aff14e68668e5e450112c378d669a2f1face66febecd3f634ab6c818a",
-      "bytes": 22760
+      "destination": "sim2sim/reference/e2e_drone/rsl_rl/navigation_metrics.py",
+      "sha256": "00f781ec718ea07f8176e4307780a4645903bb1df6487988a97c60264bdfa75b",
+      "bytes": 9569,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/rsl_rl/navigation_metrics.py",
+      "upstream_sha256": "00f781ec718ea07f8176e4307780a4645903bb1df6487988a97c60264bdfa75b"
     },
     {
-      "source": "docs/evaluation/20261127/seed_44/model_36825.episodes.csv",
-      "destination": "results/reference-20261127/seed_44/model_36825.episodes.csv",
-      "sha256": "32d574a6c20aa74b03d17dd6896eb799e83ee467607317da6f7a94480d32782a",
-      "bytes": 36737
+      "destination": "sim2sim/reference/e2e_drone/rsl_rl/play.py",
+      "sha256": "09a5ba756111b76b879a33fa3e44c74a3ba5219ba7bcdb64f65efa6879155a76",
+      "bytes": 15269,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/rsl_rl/play.py",
+      "upstream_sha256": "09a5ba756111b76b879a33fa3e44c74a3ba5219ba7bcdb64f65efa6879155a76"
     },
     {
-      "source": "docs/evaluation/20261127/seed_44/model_36825.summary.json",
-      "destination": "results/reference-20261127/seed_44/model_36825.summary.json",
-      "sha256": "e472ca5ceb03c0bd99a0e950c870a2350793a8cd4979b03da17e43d425bbcf1e",
-      "bytes": 2867
+      "destination": "sim2sim/reference/e2e_drone/rsl_rl/summarize_navigation_metrics.py",
+      "sha256": "d8b8797c9676e8edfe5863f2784da472c79c0e3715e84e6dce5a8d2b8f4a04dc",
+      "bytes": 13182,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/rsl_rl/summarize_navigation_metrics.py",
+      "upstream_sha256": "d8b8797c9676e8edfe5863f2784da472c79c0e3715e84e6dce5a8d2b8f4a04dc"
     },
     {
-      "source": "docs/evaluation/20261127/seed_44/success.csv",
-      "destination": "results/reference-20261127/seed_44/success.csv",
-      "sha256": "851a1734f225ee7ef593cdcbadb439ab31a7d4889639b1b681af53b1e355acd9",
-      "bytes": 36
+      "destination": "sim2sim/reference/e2e_drone/tasks/__init__.py",
+      "sha256": "60d6fa810b964308e9f0cecd8033aff0bedb6649447f978dd0ad468d01780bb8",
+      "bytes": 75,
+      "kind": "local_registration"
     },
     {
-      "source": "docs/evaluation/20261127/seed_45/model_36825.environment.json",
-      "destination": "results/reference-20261127/seed_45/model_36825.environment.json",
-      "sha256": "4d1824f5e066fdd06698aa4ca5dddc5ec7370c99517f9cb8a3bf6d98c9ed0f23",
-      "bytes": 22760
+      "destination": "sim2sim/reference/e2e_drone/tasks/baseline/__init__.py",
+      "sha256": "98208413b7bb4c56a86020976842cdcfc1aab99f04e5b49fb6d73b1cd61ed121",
+      "bytes": 565,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/tasks/baseline/__init__.py",
+      "upstream_sha256": "98208413b7bb4c56a86020976842cdcfc1aab99f04e5b49fb6d73b1cd61ed121"
     },
     {
-      "source": "docs/evaluation/20261127/seed_45/model_36825.episodes.csv",
-      "destination": "results/reference-20261127/seed_45/model_36825.episodes.csv",
-      "sha256": "7e31022dfc549a99af4825fa6993ed7ebfca3b6f393ecf570d29df8799ae50c2",
-      "bytes": 36737
+      "destination": "sim2sim/reference/e2e_drone/tasks/baseline/agents/__init__.py",
+      "sha256": "3b5e6719ce9bb1348409ac63eb6105dc78c9bf6920a772af0232462325e1b165",
+      "bytes": 126,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/tasks/baseline/agents/__init__.py",
+      "upstream_sha256": "3b5e6719ce9bb1348409ac63eb6105dc78c9bf6920a772af0232462325e1b165"
     },
     {
-      "source": "docs/evaluation/20261127/seed_45/model_36825.summary.json",
-      "destination": "results/reference-20261127/seed_45/model_36825.summary.json",
-      "sha256": "127830dbac5628e0a3ff73c8700a680f444228a3eb6edbe213ab227bca5a86a7",
-      "bytes": 2872
+      "destination": "sim2sim/reference/e2e_drone/tasks/baseline/agents/rsl_rl_ppo_cfg.py",
+      "sha256": "5621f574beb6e93851eccf8700348526034a2ca047d16d4eab03ccb3ff1eb682",
+      "bytes": 2281,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/tasks/baseline/agents/rsl_rl_ppo_cfg.py",
+      "upstream_sha256": "5621f574beb6e93851eccf8700348526034a2ca047d16d4eab03ccb3ff1eb682"
     },
     {
-      "source": "docs/evaluation/20261127/seed_45/success.csv",
-      "destination": "results/reference-20261127/seed_45/success.csv",
-      "sha256": "03729a41d2111986f8acfaa781173740527380031e13748cea46a7c2ae5ed4b6",
-      "bytes": 34
+      "destination": "sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env.py",
+      "sha256": "98881a5e75fd753cb4160e0ca63bc19b0f096f69b48384ea47e1b381e107e488",
+      "bytes": 71700,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/tasks/baseline/quad_baseline_env.py",
+      "upstream_sha256": "98881a5e75fd753cb4160e0ca63bc19b0f096f69b48384ea47e1b381e107e488"
     },
     {
-      "source": "docs/evaluation/20261127/seed_46/model_36825.environment.json",
-      "destination": "results/reference-20261127/seed_46/model_36825.environment.json",
-      "sha256": "1ff843a42e97e8d313a4cc9528994fe1f6aa96b8167b932808ca04c8396817ce",
-      "bytes": 22760
+      "destination": "sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env_cfg.py",
+      "sha256": "b722ebd1e6c609d855185993443f8e83d46f010f397d5e46767129e4c13bd162",
+      "bytes": 14927,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/tasks/baseline/quad_baseline_env_cfg.py",
+      "upstream_sha256": "b722ebd1e6c609d855185993443f8e83d46f010f397d5e46767129e4c13bd162"
     },
     {
-      "source": "docs/evaluation/20261127/seed_46/model_36825.episodes.csv",
-      "destination": "results/reference-20261127/seed_46/model_36825.episodes.csv",
-      "sha256": "a778e22c6c386b37da5fbb5147951f8f89e948dc88fb78a0bc8ff52822906b2f",
-      "bytes": 36729
+      "destination": "sim2sim/reference/e2e_drone/utils/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/__init__.py",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "source": "docs/evaluation/20261127/seed_46/model_36825.summary.json",
-      "destination": "results/reference-20261127/seed_46/model_36825.summary.json",
-      "sha256": "f5c13172a1639024b0fed43d6e1a4288a9d017206cac74621376fdcfe93100c8",
-      "bytes": 2875
+      "destination": "sim2sim/reference/e2e_drone/utils/asset_paths.py",
+      "sha256": "63bed5e4b0264f364a42ba1bb66f2a0418234af085a1b3580413d0c06a8320df",
+      "bytes": 756,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/asset_paths.py",
+      "upstream_sha256": "876fa23b2979b1310e6b4652b2fae7031b463c176b5de02a30506341173a5ba8"
     },
     {
-      "source": "docs/evaluation/20261127/seed_46/success.csv",
-      "destination": "results/reference-20261127/seed_46/success.csv",
-      "sha256": "64406690f19ac410954d33d18ca8cd8e8449cb3b9af1293e08c1cf48720bf8a3",
-      "bytes": 35
+      "destination": "sim2sim/reference/e2e_drone/utils/bev_utils.py",
+      "sha256": "9184c1940faa4dd334a869edfe2df0fc3462136e13dabb4128efac51285f9977",
+      "bytes": 4375,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/bev_utils.py",
+      "upstream_sha256": "9184c1940faa4dd334a869edfe2df0fc3462136e13dabb4128efac51285f9977"
     },
     {
-      "source": "docs/evaluation/20261127/summary.json",
-      "destination": "results/reference-20261127/summary.json",
-      "sha256": "e7ca7e23052f5e65b6c8595fe5e17fdba95d48f3fc1aa63d45def7539ecd8aae",
-      "bytes": 15231
+      "destination": "sim2sim/reference/e2e_drone/utils/controller.py",
+      "sha256": "efddde7d6cf3d7959143d566784363bec40525bc5bb3afb5556d73e80d468ea9",
+      "bytes": 24726,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/controller.py",
+      "upstream_sha256": "efddde7d6cf3d7959143d566784363bec40525bc5bb3afb5556d73e80d468ea9"
     },
     {
-      "source": "docker/simulation.dockerfile",
-      "destination": "artifacts/upstream/docker/simulation.dockerfile",
-      "sha256": "683d5b165c4a2499bee97745bfd2ea50cfe63a7acba4ab762e778c97fe4e037c",
-      "bytes": 6534
+      "destination": "sim2sim/reference/e2e_drone/utils/death_replay_collector.py",
+      "sha256": "7a19025ea694f6b7ff0b032bc02df08bcfbe8d4b3f6436104d369df87567923b",
+      "bytes": 16751,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/death_replay_collector.py",
+      "upstream_sha256": "7a19025ea694f6b7ff0b032bc02df08bcfbe8d4b3f6436104d369df87567923b"
+    },
+    {
+      "destination": "sim2sim/reference/e2e_drone/utils/death_replay_viz.py",
+      "sha256": "1a98aaeb77c92bb641f692bc5636826e4f5058571823fe01dada14bd5c4dc241",
+      "bytes": 24540,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/death_replay_viz.py",
+      "upstream_sha256": "1a98aaeb77c92bb641f692bc5636826e4f5058571823fe01dada14bd5c4dc241"
+    },
+    {
+      "destination": "sim2sim/reference/e2e_drone/utils/height_randomizer.py",
+      "sha256": "08647543e5d7e50b2df4aab62bfcd3d611f638f51127ea88f4f39995d21a6387",
+      "bytes": 11730,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/height_randomizer.py",
+      "upstream_sha256": "08647543e5d7e50b2df4aab62bfcd3d611f638f51127ea88f4f39995d21a6387"
+    },
+    {
+      "destination": "sim2sim/reference/e2e_drone/utils/map_generator.py",
+      "sha256": "fda17275a9d9345e3c68e1125e01378aaaced592c5923949611d92007b89e337",
+      "bytes": 58757,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/map_generator.py",
+      "upstream_sha256": "fda17275a9d9345e3c68e1125e01378aaaced592c5923949611d92007b89e337"
+    },
+    {
+      "destination": "sim2sim/reference/e2e_drone/utils/reloadable_raycaster_camera.py",
+      "sha256": "317e7cd65302e532f9e96be7eda9ca425ab72a0705f0e54d9be6120f2823f595",
+      "bytes": 5666,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/reloadable_raycaster_camera.py",
+      "upstream_sha256": "317e7cd65302e532f9e96be7eda9ca425ab72a0705f0e54d9be6120f2823f595"
+    },
+    {
+      "destination": "sim2sim/reference/e2e_drone/utils/thrust_uncertainty.py",
+      "sha256": "db246d4d27d284f9845180d42a848464444482d25a2d53eabd3c300c2bf12a8c",
+      "bytes": 20454,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/thrust_uncertainty.py",
+      "upstream_sha256": "db246d4d27d284f9845180d42a848464444482d25a2d53eabd3c300c2bf12a8c"
+    },
+    {
+      "destination": "sim2sim/reference/e2e_drone/utils/wind_gen.py",
+      "sha256": "8b3bd77c82cfaf58e953f5465811c9eb173efccfdb81d494219a6062d71ef3e2",
+      "bytes": 6408,
+      "kind": "upstream",
+      "upstream_path": "e2e_drone/utils/wind_gen.py",
+      "upstream_sha256": "8b3bd77c82cfaf58e953f5465811c9eb173efccfdb81d494219a6062d71ef3e2"
+    }
+  ],
+  "optional_local_history": [
+    {
+      "destination": "outputs/sim2sim/tensorboard/events.out.tfevents.1768936229.dcj.32.0",
+      "sha256": "2f7a310383d85593b93c5aae13390289f6f31e9de23088446b79a93e91ebf6d5",
+      "bytes": 81883824,
+      "tracked": false,
+      "required_for_evaluation": false
     }
   ]
 }

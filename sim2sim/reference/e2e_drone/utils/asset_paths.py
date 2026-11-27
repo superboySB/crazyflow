@@ -1,25 +1,14 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 
-def _asset_roots() -> list[Path]:
-    candidates: list[Path] = []
-    asset_root = os.environ.get("CRAZYRL_ASSET_ROOT")
-    if asset_root:
-        candidates.append(Path(asset_root))
-    candidates.append(Path("/workspace/CrazyRL/assets"))
-    candidates.append(Path(__file__).resolve().parents[2] / "assets")
-    return candidates
-
-
 def _resolve_asset(relative_path: str) -> str:
-    for root in _asset_roots():
-        candidate = root / relative_path
-        if candidate.exists():
-            return str(candidate)
-    return str(_asset_roots()[0] / relative_path)
+    """Resolve only the assets bundled beside this evaluation package."""
+    candidate = Path(__file__).resolve().parents[2] / "assets" / relative_path
+    if not candidate.is_file():
+        raise FileNotFoundError(f"Missing bundled Isaac asset: {candidate}")
+    return str(candidate)
 
 
 def get_crazyflie_usd_path() -> str:

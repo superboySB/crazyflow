@@ -14,7 +14,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = os.environ.get("CRAZYFLOW_EVAL_IMAGE", "crazyflow:dani-crazyrl-eval")
-BASELINE = ROOT / "sim2sim/artifacts/assets/replementation/rl/model_36825.pt"
+BASELINE = ROOT / "models/baseline/model_36825.pt"
+CRAZYFLOW = ROOT / "models/crazyflow/policy.npz"
 ISAAC_PYTHON = "/workspace/isaaclab/_isaac_sim/python.sh"
 
 
@@ -23,30 +24,8 @@ def container_path(path: str | Path) -> str:
     return "/workspace/crazyflow/" + str(Path(path).resolve().relative_to(ROOT))
 
 
-def build_base() -> None:
-    """Build the pinned upstream Isaac Sim, IsaacLab and RSL dependency image."""
-    subprocess.run(
-        [
-            "docker",
-            "build",
-            "--network=host",
-            "--progress=plain",
-            "-f",
-            str(ROOT / "sim2sim/docker/isaac45.dockerfile"),
-            "-t",
-            "crazyrl_image:sim",
-            str(ROOT),
-        ],
-        check=True,
-    )
-
-
 def build() -> None:
-    """Build the dedicated evaluation image from the pinned dependency stack."""
-    if subprocess.run(
-        ["docker", "image", "inspect", "crazyrl_image:sim"], capture_output=True
-    ).returncode:
-        build_base()
+    """Build Isaac evaluation directly from its independent pinned Docker recipe."""
     subprocess.run(
         [
             "docker",
@@ -54,7 +33,7 @@ def build() -> None:
             "--network=host",
             "--progress=plain",
             "-f",
-            str(ROOT / "sim2sim/docker/evaluation.dockerfile"),
+            str(ROOT / "docker/sim2sim.Dockerfile"),
             "-t",
             IMAGE,
             str(ROOT),
@@ -63,7 +42,7 @@ def build() -> None:
     )
 
 
-def docker_command(gui: bool = False, port: int | None = None) -> list[str]:
+def docker_command(gui: bool = False, *, gpu: bool = True) -> list[str]:
     """Prepare an isolated container with local source, assets and ignored caches."""
     check = subprocess.run(["docker", "image", "inspect", IMAGE], capture_output=True)
     if check.returncode:
@@ -72,8 +51,6 @@ def docker_command(gui: bool = False, port: int | None = None) -> list[str]:
         "docker",
         "run",
         "--rm",
-        "--gpus",
-        os.environ.get("CRAZYFLOW_EVAL_GPUS", "all"),
         "--network",
         "host",
         "--shm-size=2g",
@@ -87,13 +64,16 @@ def docker_command(gui: bool = False, port: int | None = None) -> list[str]:
         "OMNI_KIT_ALLOW_ROOT=1",
         "-e",
         "PYTHONUNBUFFERED=1",
-        "-e",
-        "CUDA_VISIBLE_DEVICES=" + os.environ.get("GPU_ID", "0"),
         "-v",
         f"{ROOT}:/workspace/crazyflow",
-        "-v",
-        f"{ROOT}/sim2sim/reference:/workspace/CrazyRL",
     ]
+    if gpu:
+        command += [
+            "--gpus",
+            os.environ.get("CRAZYFLOW_EVAL_GPUS", "all"),
+            "-e",
+            "CUDA_VISIBLE_DEVICES=" + os.environ.get("GPU_ID", "0"),
+        ]
     cache_dirs = {
         "kit": "/isaac-sim/kit/cache",
         "ov": "/root/.cache/ov",
@@ -158,13 +138,12 @@ def run(
 
 
 def policy_path(value: str) -> Path:
-    """Resolve a local policy, including the staged pretrained baseline alias."""
-    path = BASELINE if value == "baseline" else Path(value).expanduser().resolve()
+    """Resolve a bundled policy alias or another in-repository checkpoint."""
+    aliases = {"baseline": BASELINE, "crazyflow": CRAZYFLOW}
+    path = aliases.get(value, Path(value).expanduser().resolve())
     path.relative_to(ROOT)
     if not path.is_file():
-        raise FileNotFoundError(
-            f"Missing policy {path}; stage baseline with python3 sim2sim/stage_reference.py"
-        )
+        raise FileNotFoundError(f"Missing in-repository policy: {path}")
     return path
 
 
@@ -206,20 +185,11 @@ def evaluate(
 def main() -> None:
     """Launch evaluation, paired comparison, playback or baseline TensorBoard."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=["build", "evaluate", "compare", "play", "tensorboard"])
     parser.add_argument(
-        "mode",
-        choices=[
-            "build",
-            "build-base",
-            "evaluate",
-            "compare",
-            "play",
-            "convert-baseline",
-            "tensorboard",
-        ],
-    )
-    parser.add_argument(
-        "--policy", default="baseline", help="baseline or an in-repository .npz/.pt path"
+        "--policy",
+        default="baseline",
+        help="baseline, crazyflow, or an in-repository .npz/.pt path",
     )
     parser.add_argument("--num-envs", type=int, default=8)
     parser.add_argument("--episodes", type=int, default=1)
@@ -234,8 +204,6 @@ def main() -> None:
         parser.error("Environment count, episode count and step limit must be positive")
     if args.mode == "build":
         build()
-    elif args.mode == "build-base":
-        build_base()
     elif args.mode == "evaluate":
         evaluate(args, extra)
     elif args.mode == "compare":
@@ -280,23 +248,14 @@ def main() -> None:
                 indent=2,
             )
         )
-    elif args.mode == "convert-baseline":
-        run(
-            docker_command()
-            + [
-                "/workspace/crazyflow/sim2sim/convert_baseline.py",
-                container_path(BASELINE),
-                "/workspace/crazyflow/sim2sim/artifacts/baseline-actor.npz",
-            ]
-        )
     elif args.mode == "tensorboard":
         run(
-            docker_command()
+            docker_command(gpu=False)
             + [
                 "-m",
                 "tensorboard.main",
                 "--logdir",
-                "/workspace/crazyflow/sim2sim/artifacts/assets/replementation/rl",
+                "/workspace/crazyflow/outputs/sim2sim/tensorboard",
                 "--host",
                 "127.0.0.1",
                 "--port",

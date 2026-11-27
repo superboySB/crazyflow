@@ -14,6 +14,7 @@ from jax import Array
 from scipy.spatial.transform import Rotation as R
 
 from crazyflow.control import Control
+from crazyflow.drones import Drone
 from crazyflow.dynamics import supported_dynamics
 from crazyflow.exception import ConfigError
 from crazyflow.sim import Dynamics, Sim
@@ -610,7 +611,7 @@ def test_scan_results(dynamics: Dynamics):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", ["cf2x_L250", "cf2x_P250", "cf2x_T350", "cf21B_500"])
+@pytest.mark.parametrize("drone", Drone)
 @pytest.mark.parametrize("mat_name", ["led_top", "led_bot"])
 def test_change_material(device: str, drone: str, mat_name: str):
     """change_material should broadcast RGBA/emission and update MuJoCo materials appropriately."""
@@ -670,7 +671,7 @@ def test_build_data(control: Control):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("drone", ["cf2x_L250", "cf2x_P250", "cf2x_T350", "cf21B_500", "hb_x500"])
+@pytest.mark.parametrize("drone", Drone)
 def test_fused_model(device: str, drone: str):
     dynamics = supported_dynamics(drone)[0]  # Test for all drones, but on one available dynamics
     sim = Sim(drone=drone, dynamics=dynamics, fused_mjx_model=True, device=device)

@@ -18,10 +18,6 @@ class Drone(StrEnum):
     """Drone configurations with an outer ``assets/drones/<name>.xml`` resource."""
 
     cf21B_500 = "cf21B_500"
-    cf2x_L250 = "cf2x_L250"
-    cf2x_P250 = "cf2x_P250"
-    cf2x_T350 = "cf2x_T350"
-    hb_x500 = "hb_x500"
 
     @property
     def path(self) -> Path:

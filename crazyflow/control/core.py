@@ -82,7 +82,7 @@ def parametrize(
     from crazyflow.drones import Drone
     from scipy.spatial.transform import Rotation as R
 
-    ctrl = parametrize(state2attitude, Drone.cf2x_L250)
+    ctrl = parametrize(state2attitude, Drone.cf21B_500)
     pos, quat = np.zeros(3), np.array([0.0, 0.0, 0.0, 1.0])
     vel, cmd = np.zeros(3), np.zeros(16)
     cmd[9:13] = R.from_euler("z", 0.0).as_quat()
@@ -105,7 +105,7 @@ def load_params(
 
     Args:
         controller: Name of the controller package, e.g. ``"mellinger"``.
-        drone: The drone configuration, e.g. ``Drone.cf2x_L250``.
+        drone: The drone configuration, e.g. ``Drone.cf21B_500``.
         xp: The array API module to use. If not provided, numpy is used.
         device: The device to use. If None, the device is inferred from the xp module.
 
@@ -134,7 +134,7 @@ def load_fn_params(
 
     Args:
         fn: The controller function for which to load parameters.
-        drone: The drone configuration, e.g. ``Drone.cf2x_L250``.
+        drone: The drone configuration, e.g. ``Drone.cf21B_500``.
         xp: The array API module to use. If not provided, numpy is used.
         device: The device to use. If None, the device is inferred from the xp module.
 

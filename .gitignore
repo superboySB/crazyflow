@@ -20,4 +20,11 @@ saves/
 .github/
 references/
 MUJOCO_LOG.TXT
-/examples/tof/videos/
+*.npz
+*.pt
+*.pth
+*.msgpack
+*.ckpt
+*.onnx
+!models/crazyflow/policy.npz
+!models/baseline/model_36825.pt

@@ -15,7 +15,7 @@ case "$command_name" in
   setup       构建 Docker，检测 GPU；不可用时自动选择 CPU
   identify    建立测量模板、拟合推力/电机参数或检查辨识工具
   train       训练 JAX PPO ToF 避障策略，自动创建结果目录
-  evaluate    用 Crazyflow 评测最近一次正式模型
+  evaluate    用 Crazyflow 评测最近正式模型，暂无训练时使用内置最佳模型
   play        实时 MuJoCo 避障与 ToF 面板，支持 reset（--headless 导出轨迹）
 
   capacity    实测多环境 PPO 吞吐与显存（GPU）

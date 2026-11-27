@@ -4,6 +4,22 @@
 
 Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，不在 Isaac 中重新训练。MuJoCo 用于显示 Crazyflow 实际闭环飞行轨迹和 ToF。所有入口在项目根目录运行，宿主只需 Docker；GPU 需要 NVIDIA 驱动和 NVIDIA Container Toolkit；宿主调度器使用 Python 3 标准库。
 
+运行所需的任务源码、动力学、USD 资产和两个模型均在本仓库。目录按用途组织：
+
+| 目录 | 内容 |
+| --- | --- |
+| `docker/` | 两份独立镜像配方：Crazyflow 训练/辨识/可视化，以及 Isaac Sim 评测 |
+| `crazyflow/tof/`、`config/` | JAX PPO、ToF 环境、CF21B 训练配置和默认物理参数 |
+| `models/crazyflow/policy.npz` | 本次选出的最佳 Crazyflow 策略，含自身归一化和冻结物理配置 |
+| `models/baseline/` | 官方现成 `model_36825.pt` 及配套 `agent.yaml`、`env.yaml` |
+| `sim2sim/reference/` | 冻结的 Isaac baseline 任务、控制/动力学/传感器和必要 USD |
+| `reports/` | 最佳模型训练、选择、留出测试、配对评测和交互验收证据 |
+| `outputs/` | 新实验、完整 checkpoint、缓存、视频和 TensorBoard 等忽略产物 |
+
+Git 中只保留两份模型权重：选定的 Crazyflow NPZ 和用户要求的官方 baseline PT。训练中间模型不放入 `models/`。
+
+无人机可视化只保留 CF21B 的 XML/STL；辨识仍保留所需的四种官方动力学表及 Mellinger 控制参数。默认 CF21B 物理数值保持原值。
+
 ## 1. 安装、独立 Docker 与检查
 
 ```bash
@@ -11,7 +27,14 @@ Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，�
 ./crazyrl train --smoke --device gpu
 ```
 
-训练镜像是 **`crazyflow:dani-crazyrl`**，评测镜像是 **`crazyflow:dani-crazyrl-eval`**，均独立于 `dani` 的镜像。依赖固定在 `requirements-{cpu,gpu}.lock`；`setup` 运行真实 JAX GPU 运算。省略 `--device` 时自动选择 GPU，失败则使用 CPU；强制 GPU 失败会退出。首次 JIT 编译较慢，`training.jsonl` 分别记录首轮和后续耗时。
+两份镜像分别构建、互不依赖，也独立于 `dani` 镜像：
+
+| 镜像 | 配方 | 构建与用途 |
+| --- | --- | --- |
+| `crazyflow:dani-crazyrl` | [`docker/crazyflow.Dockerfile`](docker/crazyflow.Dockerfile) | `./crazyrl setup`；JAX PPO、辨识、Crazyflow 评测和 MuJoCo |
+| `crazyflow:dani-crazyrl-eval` | [`docker/sim2sim.Dockerfile`](docker/sim2sim.Dockerfile) | `./crazyrl sim2sim build`；Isaac Sim 加载两个固定策略作独立评测 |
+
+训练依赖固定在 `requirements-{cpu,gpu}.lock`；`setup` 运行真实 JAX GPU 运算。省略 `--device` 时自动选择 GPU，失败则使用 CPU；强制 GPU 失败会退出。首次 JIT 编译较慢，`training.jsonl` 分别记录首轮和后续耗时。
 
 训练源码和配置只读挂载进容器，实验写入 `outputs/`。改代码后可直接重跑；依赖变更后需重新 `setup`。训练默认关闭 JAX 显存预分配，分配器限制为整卡的 55%，并提供独立的多环境容量测量。`--smoke` 只检查完整训练/导出流程，不更新“最近正式模型”指针。
 
@@ -40,7 +63,7 @@ Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，�
 ./crazyrl identify drag --mass 0.0434
 ```
 
-`flight/rotor` 导出 `physical.toml`。需要采用真实辨识结果时，在训练 YAML 的 `environment.model_params_path` 填 **`/outputs/measurements/physical.toml`**。本次训练保持默认值。简化模型的 `closed-loop-so-rpy-rotor-drag.toml` 不能作为该物理表。CrazyRL 的 PD 控制器与 Crazyflow 的物理模型分别配置；`config/controller.toml` 是保留的 Mellinger 辨识模板，并非本任务的 PD 参数入口。
+`flight/rotor` 导出 `physical.toml`。需要采用真实辨识结果时，在训练 YAML 的 `environment.model_params_path` 填容器内路径 **`/outputs/measurements/physical.toml`**，对应项目中的 `outputs/measurements/physical.toml`。本次训练保持默认值。简化模型的 `closed-loop-so-rpy-rotor-drag.toml` 不能作为该物理表。CrazyRL 的 PD 控制器与 Crazyflow 的物理模型分别配置；`config/controller.toml` 是保留的 Mellinger 辨识模板，并非本任务的 PD 参数入口。
 
 ## 3. state、action、reward 与随机化
 
@@ -58,7 +81,7 @@ Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，�
 | 回合 | 最长 80 s；接触、成功或数值失稳终止；超时单独记录并正确 bootstrap |
 | 成功 | 目标距离 <0.5 m 且速度 <0.5 m/s，持续时间按配置；评测不把超时剔除 |
 
-已直接检查交付 NPZ 与原 baseline `.pt` 的权重：两者 actor 均为 **344 → 256 → 256 → 128 → 64 → 4**，434 维只供 critic 使用。输入的坐标系、通道顺序、历史顺序、深度展开及倍率相同，各自使用自己的归一化统计。四维原始输出依次为 **roll 姿态角、pitch 姿态角、yaw 角速度、总推力指令**，两边均在环境中做一次 `tanh`，不是直接输出电机转速。逐索引的物理含义及单位见[接口对照](docs/tof-parity.md#策略输入与动作)，实际权重与 128 组闭环观测的检查见[模型接口审计](sim2sim/results/contract-20261127/checkpoint-io-audit.json)。接口一致不表示两个物理引擎的动力学相同。
+已直接检查交付 NPZ 与原 baseline `.pt` 的权重：两者 actor 均为 **344 → 256 → 256 → 128 → 64 → 4**，434 维只供 critic 使用。输入的坐标系、通道顺序、历史顺序、深度展开及倍率相同，各自使用自己的归一化统计。四维原始输出依次为 **roll 姿态角、pitch 姿态角、yaw 角速度、总推力指令**，两边均在环境中做一次 `tanh`，不是直接输出电机转速。逐索引的物理含义及单位见[接口对照](docs/tof-parity.md#策略输入与动作)，实际权重与 128 组闭环观测的检查见[模型接口审计](reports/sim2sim/checkpoint-io-audit.json)。接口一致不表示两个物理引擎的动力学相同。
 
 原始 reward 逐项重写，保留单位和限幅，不额外乘 dt：距离进展（上限 0.01）×8、yaw 方向×0.3、动作模长×0.3、动作差×0.5、速度方向 Huber×0.15、超速指数罚×0.5、高度 Huber×0.25、碰撞 −80、ESDF 安全距离指数罚×0.1、到达 +80。速度匹配系数默认 0。精确公式和参考的非直观处理在代码及[环境对应说明](docs/tof-parity.md)中列明。
 
@@ -87,7 +110,7 @@ Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，�
   --iterations 100 --num-envs 12288 --output outputs/my-tof-large
 ```
 
-本机已测得 12,288 环境可运行；默认使用此并行数。14,336 环境触发显存保护。容量和每秒交互数是两个指标，详见[本机结果](examples/tof/README.md)。
+本机已测得 12,288 环境可运行；默认使用此并行数。14,336 环境触发显存保护。容量和每秒交互数是两个指标，详见[本机结果](reports/crazyflow/README.md)。
 
 PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `5e-4` 按 KL 自适应，γ=0.99、λ=0.95、clip=0.2、entropy=0.005、value=1、梯度范数上限 1。用 `num_envs×120` 计算每次更新的 transitions；改变并行数不等于增加训练更新数。最初使用随机 rollout 校准观测归一化，之后只做 PPO。
 
@@ -114,7 +137,7 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
 ./crazyrl play --evaluation outputs/my-evaluation --episode 0
 ```
 
-`evaluate/play --example` 使用 `examples/tof/policy.npz`，不改最近正式训练指针。`--seed` 只改变初态与观测随机数；默认保留模型中的地图。检查泛化时另外指定 `--map-seed` 生成新地图。评测使用确定性动作均值，每个并行世界只统计首个完整回合，保存 `summary.json`、`episodes.csv` 和 `trajectories.npz`；成功、碰撞、超时、数值失稳均保留在分母。`--max-steps` 是调试截短，剩余回合按超时计，不能用来制造成功率。
+`evaluate/play --example` 直接读取 `models/crazyflow/policy.npz`，不复制权重或改最近正式训练指针。省略模型参数时优先使用最近正式训练模型，没有指针则使用这份最佳策略；`--checkpoint` 可明确指定 `models/` 或 `outputs/` 下的 NPZ。`--seed` 只改变初态与观测随机数；默认保留模型中的地图。检查泛化时另外指定 `--map-seed` 生成新地图。评测使用确定性动作均值，每个并行世界只统计首个完整回合，保存 `summary.json`、`episodes.csv` 和 `trajectories.npz`；成功、碰撞、超时、数值失稳均保留在分母。`--max-steps` 是调试截短，剩余回合按超时计，不能用来制造成功率。
 
 `play --example` 默认打开持续运行的交互窗口：JAX 逐步执行真实策略与 Crazyflow 物理，回合结束短暂停留后自动开始下一回合，关闭窗口才退出。首次启动需要编译 actor 与物理步。右侧面板显示前向 **8×8 深度数值/热图**及最小、中心、最大值，另列出 **左、右、后、下 ToF**，单位均为 m；场景中同时画出测距射线。
 
@@ -137,19 +160,21 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
   --screenshot outputs/tof-live-check.png --gui-report outputs/tof-live-check.json
 ```
 
-已在 GPU 原生窗口与 CPU/Xvfb 窗口实测，13 项控制检查通过；持续运行自然完成两回合并进入第三回合。实际[窗口截图](examples/tof/live-play.png)和[验收记录](examples/tof/live-play.json)随分支保存。
+已在 GPU 原生窗口与 CPU/Xvfb 窗口实测，13 项控制检查通过；持续运行自然完成两回合并进入第三回合。实际[窗口截图](reports/crazyflow/live-play.png)和[验收记录](reports/crazyflow/live-play.json)随分支保存。
 
 启动时的 `Failed to import warp/mujoco_warp` 来自 MuJoCo 对可选 Warp 后端的探测；本任务使用 Crazyflow/JAX 物理与原生 MuJoCo 显示，不依赖该后端。
 
 ## 6. 独立 Isaac Sim：同场景对比新模型和现成 baseline
 
-本目录的 `sim2sim/reference/` 仅保留 baseline 任务、必要控制/动力学/传感器/地图与评测源码；必要 USD 随 `sim2sim/reference/assets/` 保存，原始 baseline 权重与参数随 `sim2sim/artifacts/assets/replementation/rl/` 保存；TensorBoard 历史事件也已复制到本机同目录，作为训练产物由 git 忽略。没有搬入 CrazyRL 的训练器和其它任务。导入器记录逐文件 SHA256，当前工作目录已包含运行所需文件，baseline 权重、USD 与参数随分支保留；重新导入历史 TensorBoard 或刷新副本时才需要参考项目：
+Isaac 镜像从 [`docker/sim2sim.Dockerfile`](docker/sim2sim.Dockerfile) 独立构建，运行本仓库 `sim2sim/reference/` 中冻结的 baseline 任务及 `sim2sim/reference/assets/` 中的 USD。官方权重为 `models/baseline/model_36825.pt`，其配套配置也在同目录；最佳新策略为 `models/crazyflow/policy.npz`。上游项目修订为 `9333442c18fa15799adac7e02988a978aeaf97b9`，保留文件的上游相对路径和 SHA256 见 [`sim2sim/provenance.json`](sim2sim/provenance.json)。
 
 ```bash
-python3 sim2sim/stage_reference.py --source ~/projects/CrazyRL
 ./crazyrl sim2sim build
 ./crazyrl sim2sim evaluate --policy baseline --num-envs 8 --seed 20261127 \
   --output outputs/sim2sim/baseline-new
+./crazyrl sim2sim compare --policy models/crazyflow/policy.npz --num-envs 32 \
+  --seed 42 --output outputs/sim2sim/best-seed42
+# 本地新训练完成后，用相同评测入口加载其独立 NPZ：
 ./crazyrl sim2sim compare --policy outputs/my-tof/policy.npz --num-envs 32 \
   --seed 42 --output outputs/sim2sim/paired-seed42
 ```
@@ -158,14 +183,19 @@ python3 sim2sim/stage_reference.py --source ~/projects/CrazyRL
 
 ```bash
 ./crazyrl sim2sim play --policy baseline --gui --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy models/crazyflow/policy.npz --gui --num-envs 8 --max-steps 450
 ./crazyrl sim2sim play --policy outputs/my-tof/policy.npz --gui --num-envs 8 --max-steps 450
 ./crazyrl sim2sim play --policy baseline --video --num-envs 8 --max-steps 450
 ./crazyrl sim2sim tensorboard --port 6006
 ```
 
-TensorBoard 打开 `http://127.0.0.1:6006`，展示复制的 CrazyRL 历史训练日志。新 Crazyflow 模型的训练曲线直接用 `training.png/jsonl`。Isaac 的 shader/cache、运行日志、视频和评测中间产物均在忽略目录。Isaac 容器需要本机支持的 NVIDIA GPU；不与正在训练的 JAX 进程同时争用显存。
+TensorBoard 打开 `http://127.0.0.1:6006`，读取本地忽略目录 `outputs/sim2sim/tensorboard/` 中留存的官方历史训练事件。新 Crazyflow 模型的训练曲线直接用 `training.png/jsonl`，交付模型的曲线见 [`reports/crazyflow/training.png`](reports/crazyflow/training.png)。Isaac 的 shader/cache、运行日志、视频和评测中间产物均写入 `outputs/`。Isaac 容器需要本机支持的 NVIDIA GPU；不与正在训练的 JAX 进程同时争用显存。
 
 ## 7. 验收与版本边界
+
+目录整理后完整 CPU 检查为 **494 passed、45 skipped、16 deselected**；CF21B 参数、网格和两份权重均保持原值，清理了 148 份历史 ToF 中间权重。双镜像构建与重新验收记录见 [`reports/repository-cleanup.json`](reports/repository-cleanup.json)。
+
+独立 Isaac 镜像重建后的 4 环境加载检查为 baseline **4/4**、新模型 **2/4**。相同初态下，新旧镜像的新模型逐回合 CSV 字节一致；该检查用于确认打包没有改变行为，正式迁移成绩仍采用下表的 160 回合协议。
 
 本次完成两阶段 PPO 训练，共 270,336,000 次交互；交付第 75 次续训检查点，累计 233,472,000 次交互。12,288 环境的完整 100 次续训采样峰值为 **9,310 MiB**，经过三次课程换图。新模型与 baseline 的结果如下：
 
@@ -176,8 +206,8 @@ TensorBoard 打开 `http://127.0.0.1:6006`，展示复制的 CrazyRL 历史训�
 | Isaac 同场景 / 原 baseline | 155/160（96.875%） | 5 |
 | Isaac 同场景 / 新模型 | 132/160（82.5%） | 28 |
 
-Isaac 比较为 seeds 42–46、每种子 32 环境各一个回合；无超时或数值失稳，所有初始场景与随机化审计通过。新模型迁移成功率仍低于 baseline **14.375 个百分点**。完整 320 回合和场景记录见 [`sim2sim/results/final-20261127/`](sim2sim/results/final-20261127/)，模型选择在这些测试之前完成。
+Isaac 比较为 seeds 42–46、每种子 32 环境各一个回合；无超时或数值失稳，所有初始场景与随机化审计通过。新模型迁移成功率仍低于 baseline **14.375 个百分点**。完整 320 回合和场景记录见 [`reports/sim2sim/final/`](reports/sim2sim/final/)，模型选择在这些测试之前完成。
 
-原项目 2026-11-27 的留存验收为 seeds 42–46、32 环境×8 回合，共 **1265/1280 成功、15 次接触**，原始协议与每回合结果原样保存在 [`sim2sim/results/reference-20261127/`](sim2sim/results/reference-20261127/)。这是既有 baseline 的结果，不能充当新策略的成绩。
+上游 baseline 的 2026-11-27 留存验收为 seeds 42–46、32 环境×8 回合，共 **1265/1280 成功、15 次接触**，协议、汇总及每回合结果保存在 [`reports/baseline-reference/`](reports/baseline-reference/)。这是既有 baseline 的结果，不能充当新策略的成绩。
 
-本目录重新运行的独立镜像验收、NPZ 与原始 Torch 权重的数值一致性、配对场景一致性保存在 [`sim2sim/results/local-20261127/`](sim2sim/results/local-20261127/)。完整本次训练、容量、留出与迁移结果见 [`examples/tof/README.md`](examples/tof/README.md)。中间 checkpoint、缓存、TensorBoard 事件及视频均由 `.gitignore` 排除；仓库保留必要的原始 baseline、一份最终 Crazyflow NPZ，以及实现、配置、说明和可核验的精简结果。
+独立镜像验收、JAX/Torch 推理一致性、配对场景和原生 GUI 证据集中在 [`reports/sim2sim/final/`](reports/sim2sim/final/)，实际 checkpoint 通道审计见 [`reports/sim2sim/checkpoint-io-audit.json`](reports/sim2sim/checkpoint-io-audit.json)。完整训练、容量、留出与迁移结果见 [`reports/crazyflow/README.md`](reports/crazyflow/README.md)。历史报告中的机器路径已规范为项目相对路径；这项整理保留原始数值和模型哈希，不表示重新执行了历史评测，细节见 [`reports/README.md`](reports/README.md)。

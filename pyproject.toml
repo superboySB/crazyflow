@@ -49,9 +49,7 @@ version = { attr = "crazyflow.__version__" }
 [tool.setuptools.data-files]
 "share/crazyflow/assets" = ["assets/scene.xml"]
 "share/crazyflow/assets/drones" = ["assets/drones/*.xml"]
-"share/crazyflow/assets/drones/assets/cf2x" = ["assets/drones/assets/cf2x/*.stl"]
 "share/crazyflow/assets/drones/assets/cf21B" = ["assets/drones/assets/cf21B/*.stl"]
-"share/crazyflow/assets/drones/assets/hb_x500" = ["assets/drones/assets/hb_x500/*.stl"]
 "share/crazyflow/config" = ["config/*.yaml", "config/*.json", "config/*.toml", "config/README.md"]
 "share/crazyflow/config/dynamics" = ["config/dynamics/params.toml"]
 "share/crazyflow/config/dynamics/first_principles" = ["config/dynamics/first_principles/params.toml"]
@@ -59,11 +57,11 @@ version = { attr = "crazyflow.__version__" }
 "share/crazyflow/config/dynamics/so_rpy_rotor" = ["config/dynamics/so_rpy_rotor/params.toml"]
 "share/crazyflow/config/dynamics/so_rpy_rotor_drag" = ["config/dynamics/so_rpy_rotor_drag/params.toml"]
 "share/crazyflow/config/control/mellinger" = ["config/control/mellinger/params.toml"]
-"share/crazyflow/docs" = ["docs/*.md", "docs/*.pdf"]
+"share/crazyflow/docs" = ["docs/*.md"]
 "share/crazyflow/docs/crazyflow_experiments_sysid" = ["docs/crazyflow_experiments_sysid/README.md", "docs/crazyflow_experiments_sysid/LICENSE", "docs/crazyflow_experiments_sysid/provenance.json"]
 "share/crazyflow/examples/identification" = ["examples/identification/*.md", "examples/identification/*.csv", "examples/identification/*.json"]
 
-"share/crazyflow/examples/tof" = ["examples/tof/*.md", "examples/tof/*.npz", "examples/tof/*.json", "examples/tof/*.png", "examples/tof/*.csv"]
+"share/crazyflow/models/crazyflow" = ["models/crazyflow/policy.npz"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -87,6 +85,7 @@ exclude = [
     "build",
     "dist",
     "site-packages",
+    "sim2sim/reference",
     "venv",
 ]
 

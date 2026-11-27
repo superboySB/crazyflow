@@ -1,0 +1,12 @@
+{
+  "policy": "models/crazyflow/policy.npz",
+  "backend": "CPU",
+  "samples": 128,
+  "input_sampling": "64 training-normalizer mean/variance samples plus 64 standard normal raw observations; RNG seed20261127",
+  "max_abs_error": 1.0728836059570312e-06,
+  "rtol": 2e-05,
+  "atol": 2e-05,
+  "pass": true,
+  "policy_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "input_archive_sha256": "61a5bd50be9f679f46f6ce1ac529ab550b08331fd3327c5495d832fba226e4ed"
+}

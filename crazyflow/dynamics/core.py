@@ -71,7 +71,7 @@ def parametrize(
     from crazyflow.dynamics.core import parametrize
     from crazyflow.dynamics.first_principles import dynamics
 
-    dynamics_fn = parametrize(dynamics, Drone.cf2x_L250)
+    dynamics_fn = parametrize(dynamics, Drone.cf21B_500)
     pos, quat = np.zeros(3), np.array([0.0, 0.0, 0.0, 1.0])
     vel, ang_vel = np.zeros(3), np.zeros(3)
     rotor_vel, cmd = np.zeros(4), np.zeros(4)
@@ -96,7 +96,7 @@ def load_params(
 
     Args:
         dynamics: The dynamics model, e.g. ``Dynamics.so_rpy``.
-        drone: The drone configuration, e.g. ``Drone.cf2x_L250``.
+        drone: The drone configuration, e.g. ``Drone.cf21B_500``.
         xp: Array API module used to convert parameter values. If ``None``, NumPy is used.
         device: The device to use for the arrays. If ``None``, the device is inferred from the xp
             module.
@@ -132,7 +132,7 @@ def load_fn_params(
 
     Args:
         fn: The dynamics function for which to load parameters.
-        drone: The drone configuration, e.g. ``Drone.cf2x_L250``.
+        drone: The drone configuration, e.g. ``Drone.cf21B_500``.
         xp: Array API module used to convert parameter values. If ``None``, NumPy is used.
         device: The device to use for the arrays. If ``None``, the device is inferred from the xp
             module.
@@ -173,7 +173,7 @@ def supported_dynamics(drone: Drone) -> tuple[Dynamics, ...]:
     ``drone``.
 
     Args:
-        drone: The drone configuration, e.g. ``Drone.cf2x_L250``.
+        drone: The drone configuration, e.g. ``Drone.cf21B_500``.
 
     Returns:
         The supported models in the order of [Dynamics][crazyflow.dynamics.Dynamics].

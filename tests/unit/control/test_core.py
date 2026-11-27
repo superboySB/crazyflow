@@ -46,7 +46,7 @@ def test_unknown_drone() -> None:
 @pytest.mark.unit
 def test_unknown_controller() -> None:
     with pytest.raises(KeyError, match="nonexistent_controller"):
-        load_params("nonexistent_controller", "cf2x_L250")
+        load_params("nonexistent_controller", Drone.cf21B_500)
 
 
 @pytest.mark.unit

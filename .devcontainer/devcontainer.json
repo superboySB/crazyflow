@@ -1,7 +1,7 @@
 {
   "name": "Crazyflow dani-crazyrl",
   "build": {
-    "dockerfile": "Dockerfile",
+    "dockerfile": "../docker/crazyflow.Dockerfile",
     "context": ".."
   },
   "workspaceFolder": "/workspace/crazyflow",

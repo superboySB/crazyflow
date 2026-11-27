@@ -1,0 +1,154 @@
+{
+  "passed": true,
+  "verified_at_utc": "2026-11-27T11:22:26.859405+00:00",
+  "layout": {
+    "models": "models/",
+    "docker": "docker/",
+    "runtime_evaluation": "sim2sim/",
+    "retained_evidence": "reports/",
+    "ignored_experiments": "outputs/"
+  },
+  "git_weight_files": {
+    "models/crazyflow/policy.npz": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+    "models/baseline/model_36825.pt": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3"
+  },
+  "model_selection": "Highest validation success count; ties by mean return. Selected stageC75 actor and official baseline are unchanged.",
+  "interface": {
+    "actor_inputs": 344,
+    "history_frames": 10,
+    "features_per_history_frame": 28,
+    "current_front_depth_pixels": 64,
+    "critic_inputs_training_only": 434,
+    "raw_actions": 4,
+    "action_order": [
+      "roll attitude",
+      "pitch attitude",
+      "yaw rate",
+      "collective thrust"
+    ],
+    "own_normalization_per_policy": true,
+    "tanh_applied_once_in_environment": true,
+    "detailed_audit": "reports/sim2sim/checkpoint-io-audit.json"
+  },
+  "cleanup": {
+    "historical_tof_weight_files_deleted": 148,
+    "historical_tof_weight_bytes_deleted": 356998324,
+    "temporary_acceptance_weights_deleted": 3,
+    "unused_drone_asset_files_deleted": 39,
+    "preserved_cf21b_asset_files": 12,
+    "cf21b_parameter_values_unchanged": true,
+    "loaded_parameter_sha256": "d42e6ba6dab63d81c9ea9dbbcddcf05571c572e4d5d8db17ab928c5969ee146c",
+    "earlier_dani_research_data_and_measurements_preserved": true
+  },
+  "self_contained": {
+    "external_source_directory_required": false,
+    "external_source_path_references_in_release_files": 0,
+    "other_project_image_required": false,
+    "docker_recipes": 2,
+    "provenance_manifest_files_verified": 32,
+    "source_and_assets_shipped": true
+  },
+  "images": {
+    "crazyflow": {
+      "tag": "crazyflow:dani-crazyrl",
+      "id": "sha256:11807afb8538aa3d39191bb0da2a4f7d1c371d91f4f6ad1f1f386f14a737a0a9",
+      "recipe": "docker/crazyflow.Dockerfile",
+      "recipe_sha256": "6dd7150df40d592b1e052ae7e4b425e0ac9de4de62398cdd3b274c982a8e9932",
+      "build_exit_code": 0,
+      "no_repository_bind_package_probe": true,
+      "installed_package_gpu_training_iterations": 3,
+      "training_test_image_id": "sha256:23de2d9336ddedf6098b1f0d22215df3451a7656a68f52ad0599c09e70fd3cf1",
+      "installed_best_model_episodes": 8,
+      "installed_best_model_successes": 8,
+      "installed_best_model_checkpoint_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206"
+    },
+    "sim2sim": {
+      "tag": "crazyflow:dani-crazyrl-eval",
+      "id": "sha256:a1c6ac6bd69042a32e0cdd675f323d089009831cf679e0db288215fc6cf2458c",
+      "recipe": "docker/sim2sim.Dockerfile",
+      "recipe_sha256": "c1c54e628498796676d248979f95db79abfb7cfdc77fa1eba6c148b8b1616eea",
+      "build_exit_code": 0,
+      "build_base": "nvcr.io/nvidia/isaac-sim:4.5.0",
+      "no_repository_bind_runtime_files_verified": 31,
+      "no_repository_bind_model_inference_shape": [
+        2,
+        4
+      ],
+      "torch_version": "2.7.0+cu128",
+      "peak_evaluator_process_gpu_mib": 4668
+    }
+  },
+  "cpu_suite": {
+    "passed": 494,
+    "skipped": 45,
+    "deselected": 16,
+    "seconds": 198.03,
+    "ruff_passed": true,
+    "full_log_ignored": "outputs/repository-cleanup-20261127/cpu-tests.log"
+  },
+  "interactive_gpu": {
+    "controls_passed": 13,
+    "manual_resets": 1,
+    "exact_restarts": 1,
+    "raw_report_ignored": "outputs/repository-cleanup-20261127/live.json"
+  },
+  "isaac_packaging_check": {
+    "purpose": "Small loading/regression check; does not replace the retained160episode benchmark.",
+    "seed": 42,
+    "num_envs": 4,
+    "episodes_per_env": 1,
+    "baseline_successes": 4,
+    "crazyflow_successes": 2,
+    "baseline_collisions": 0,
+    "crazyflow_collisions": 2,
+    "paired_scene_sha256": "13a1e777f0dbd6eb219a27dc3fc33d52f21696f0098278bc518a4d4e1351fb24",
+    "initial_scene_matching": true,
+    "previous_image_outcomes": {
+      "success": 2,
+      "collision": 2,
+      "numerical_instability": 0,
+      "timeout": 0,
+      "other_death": 0
+    },
+    "new_image_outcomes": {
+      "success": 2,
+      "collision": 2,
+      "numerical_instability": 0,
+      "timeout": 0,
+      "other_death": 0
+    },
+    "previous_and_new_image_episode_csv_identical": true,
+    "episode_csv_sha256": "d35f1caeeaeee426f68c1035fc943e8d7126c2dc509ff4d2971c5ceaa5a9a78c",
+    "only_summary_difference": "evaluation_wall_time_s",
+    "formal_benchmark_retained": "reports/sim2sim/final/summary.json",
+    "raw_runs_ignored": "outputs/repository-cleanup-20261127/paired/"
+  },
+  "tensorboard": {
+    "http_status": 200,
+    "scalar_tags": 35,
+    "test_port": 16006,
+    "logdir": "outputs/sim2sim/tensorboard"
+  },
+  "raw_evidence_ignored": "outputs/repository-cleanup-20261127/",
+  "isaac_video": {
+    "passed": true,
+    "frames": 29,
+    "fps": 15.0,
+    "pixels": [
+      1280,
+      720
+    ],
+    "decoded_frames": [
+      0,
+      28
+    ],
+    "mean_pixel_values": [
+      0.0,
+      151.99887767650463
+    ],
+    "video": "outputs/sim2sim/videos/policy/rl-video-step-0.mp4",
+    "requested_steps": 30,
+    "recording_kept_outside_models": true,
+    "note": "Native renderer warmup gives a black first frame; final frame is visible and was visually inspected. The original recording loop is preserved."
+  }
+}

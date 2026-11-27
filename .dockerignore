@@ -14,12 +14,10 @@ outputs
 checkpoints
 *.mp4
 *.npz
-!examples/tof/*.npz
+!models/crazyflow/policy.npz
 *.pdf
 !docs/*.pdf
 references
 
-sim2sim/artifacts
-sim2sim/results
-examples/tof/videos
+reports
 *.msgpack

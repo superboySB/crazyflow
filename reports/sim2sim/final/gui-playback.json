@@ -1,0 +1,49 @@
+{
+  "command": [
+    "python3",
+    "sim2sim/run.py",
+    "play",
+    "--policy",
+    "models/crazyflow/policy.npz",
+    "--gui",
+    "--video",
+    "--num-envs",
+    "2",
+    "--seed",
+    "9001",
+    "--max-steps",
+    "450"
+  ],
+  "policy": "models/crazyflow/policy.npz",
+  "policy_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "image_id": "sha256:b24de653e360bf51cb378de1d1425da917c4089a33f7a37d93ad664590bcb369",
+  "started_at": "2026-11-27T09:46:42.949895+00:00",
+  "finished_at": "2026-11-27T09:47:41.359934+00:00",
+  "wall_time_s": 58.41004149598302,
+  "exit_code": 0,
+  "completed_steps": 450,
+  "log": "outputs/sim2sim/native-final-play.log",
+  "video": {
+    "video": "outputs/sim2sim/videos/policy/rl-video-step-0.mp4",
+    "video_sha256": "923bcfed18a1dd6981b9d0b7e3112bdecde3f05ac624bc9a53272b3f65d4a52c",
+    "bytes": 500251,
+    "frames": 449,
+    "fps": 15.0,
+    "width": 1280,
+    "height": 720,
+    "duration_s": 29.933333333333334,
+    "first_to_middle_mean_abs_pixel_change": 149.39880353009258,
+    "preview": "reports/sim2sim/final/gui-preview.png",
+    "preview_frame": 224,
+    "decoded_first_middle_last": true,
+    "note": "Native RecordVideo output from the confirmed 450 simulation steps; frame count is reported as encoded."
+  },
+  "gpu_memory": {
+    "metric": "nvidia-smi sampled total device used memory",
+    "peak_used_mib": 6697,
+    "samples": 38,
+    "sample_period_s": 0.5,
+    "raw_log": "outputs/sim2sim/final-gui-gpu.json"
+  },
+  "render_inspection": "Midpoint frame inspected: reference obstacle field, walls, cylinders, cuboids and suspended obstacles render correctly."
+}

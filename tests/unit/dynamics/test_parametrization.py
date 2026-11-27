@@ -49,7 +49,7 @@ def test_unknown_drone() -> None:
 @pytest.mark.unit
 def test_unknown_dynamics() -> None:
     with pytest.raises(ValueError, match="nonexistent_dynamics"):
-        load_params("nonexistent_dynamics", "cf2x_L250")
+        load_params("nonexistent_dynamics", Drone.cf21B_500)
     with pytest.raises(ValueError, match="nonexistent_dynamics"):
         supported_drones("nonexistent_dynamics")
 

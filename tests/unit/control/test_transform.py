@@ -7,11 +7,12 @@ import pytest
 
 from crazyflow.control import load_params
 from crazyflow.control.transform import force2pwm, motor_force2rotor_vel, pwm2force
+from crazyflow.drones import Drone
 
 
 @pytest.fixture(scope="module")
 def core_params() -> dict[str, Any]:
-    return load_params("mellinger", "cf2x_L250")["core"]
+    return load_params("mellinger", Drone.cf21B_500)["core"]
 
 
 @pytest.mark.unit
