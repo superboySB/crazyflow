@@ -15,20 +15,35 @@
 
 每个 actor 帧为 28 维，排列和倍率如下，历史按“旧 → 新”连接，共 10 帧，最后连接当前 64 维前向深度，合计 344 维。
 
-| 数据 | 维数 | 输入倍率 | 逐元素乘性噪声 |
-|---|---:|---:|---|
-| body 线速度 | 3 | 25 | N(1, 0.3²) |
-| body→world 旋转矩阵，按行展开 | 9 | 127 | 无 |
-| body gyro | 3 | 30 | N(1, 0.1²) |
-| world XY 目标单位方向、目标绝对 z | 3 | 127 | XY 位移先乘 N(1, 0.2²)，再单位化 |
-| 当前 z − 目标 z | 1 | 30 | N(1, 0.1²) |
-| 当前期望速度 | 1 | 25 | 无 |
-| 上一拍处理后的动作 | 4 | 127 | 无 |
-| 左、右、后、下单点 ToF | 4 | 30 | N(1, 0.1²) |
+| 每帧切片（从 0 起，右端不含） | 数据 | 维数 | 输入倍率 | 逐元素乘性噪声 |
+|---|---|---:|---:|---|
+| `[0:3]` | body 线速度，m/s | 3 | 25 | N(1, 0.3²) |
+| `[3:12]` | body→world 旋转矩阵，按行展开 | 9 | 127 | 无 |
+| `[12:15]` | body gyro，rad/s | 3 | 30 | N(1, 0.1²) |
+| `[15:18]` | world XY 目标单位方向、目标绝对 z（m） | 3 | 127 | XY 位移先乘 N(1, 0.2²)，再单位化 |
+| `[18:19]` | 当前 z − 目标 z，m | 1 | 30 | N(1, 0.1²) |
+| `[19:20]` | 当前期望速度，m/s | 1 | 25 | 无 |
+| `[20:24]` | 上一拍归一化动作：前三项为 tanh 后的量，第四项为 [0,1] throttle | 4 | 127 | 无 |
+| `[24:28]` | 左、右、后、下单点 ToF，m | 4 | 30 | N(1, 0.1²) |
+
+最终 actor 输入 `[0:280]` 是 10 个完整帧，最新一帧为 `[252:280]`；`[280:344]` 只有当前前向 8×8 深度，不是 10 帧深度历史。像素按行、再按列展开，索引为 `8×row+column`；图像左上角射线指向 body 的 +y/+z，右下角为 −y/−z。四个辅助 ToF 保留在每个历史帧内部。上一拍动作通道尚未换算为 rad、rad/s 或 N。冻结参考对应 [`quad_baseline_env.py`](../sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env.py) 的 `_get_observations`，本分支对应 [`env.py`](../crazyflow/tof/env.py) 的 `_observe`；[`test_tof_observation_contract.py`](../tests/test_tof_observation_contract.py) 用不同通道/历史/像素的哨兵值检查这些语义。
 
 critic 每帧在上述真值帧之后加入：目标相对三维位置（模长截到 5 m）×127、最近障碍相对向量（模长截到 1 m）×127、最近 10 个物理子步的平均风加速度 ×30。37×10+64=434 维。参考代码实际上复用了带 XY 噪声的目标方向，critic 也保留这个细节；其余上述通道不加观测噪声。回合开始时历史清零，再写入首帧。
 
 网络输出原始无界 Gaussian 四维动作。环境先 `tanh`，再将推力通道从 [−1,1] 映射到 [0,1]。最终物理目标是 roll/pitch ±π/6 rad、yaw rate ±π/1.5 rad/s、总推力 `throttle × reference_max_thrust`。最大总推力沿用参考控制器的多项式与 1.358 系数，不另用“悬停附近”的动作定义。PPO 的 log probability 始终对应原始 Gaussian 动作。
+
+| 原始输出索引 | 经过环境映射后的物理含义 |
+|---|---|
+| `0` | `tanh(u[0])×π/6`，期望 roll **角度**，rad |
+| `1` | `tanh(u[1])×π/6`，期望 pitch **角度**，rad |
+| `2` | `tanh(u[2])×π/1.5`，期望 body yaw 角速度，rad/s |
+| `3` | `(tanh(u[3])+1)/2×0.775313294`，期望总推力，N |
+
+参考观测的部分注释把 roll/pitch 写成 rate，但实际 [`controller.py`](../sim2sim/reference/e2e_drone/utils/controller.py) 的 `compute_control` 使用姿态角；两边都按实际控制器实现。原始四个输出为零时，推力是 0.5 倍上限，而不是 0 N。策略不直接输出电机 RPM；Crazyflow 后续通过自己的电机分配与动态执行这些目标。
+
+NPZ 和原始 `.pt` 的 actor 使用同样的输入物理约定，但分别携带各自训练得到的归一化统计。在上述单位与倍率之后，NPZ 使用 `(obs−own_mean)/(sqrt(own_var)+0.01)`，原始 RSL `.pt` 使用保存的 `own_std+0.01` 作分母，再经过 ELU MLP 输出原始动作均值。基线文件内保存的 std 与重新计算的 sqrt(var) 有约 `7.63e−6` 的最大浮点差异；不是输入物理含义的变化。JAX [`policy.py`](../crazyflow/tof/policy.py) 的 `act` 与 Isaac [`npz_policy.py`](../sim2sim/npz_policy.py) 的 `NpzPolicy.__call__` 不再做 `tanh`；Isaac 仍由冻结任务 `_pre_physics_step` 映射一次。不能把 baseline 的 mean/var 配到新模型上，也不能把 434 维 critic 输入传给 344 维部署 actor。
+
+相同接口并不意味着两个独立训练模型输出相同。[实际 checkpoint I/O 验收](../sim2sim/results/contract-20261127/checkpoint-io-audit.json) 检查了交付 NPZ、原始 `.pt` 和 128 个闭环飞行观测包，交付模型在 JAX 与 Torch 的最大动作差为 `1.43e−6`；多加一次 `tanh` 则会产生最大约 2.07 的原始动作偏差。同一模型的另一组数值一致性验收见 [`jax-torch-policy-parity.json`](../sim2sim/results/final-20261127/jax-torch-policy-parity.json)。
 
 策略 15 Hz，物理 150 Hz，每拍 10 个子步。这里选用 Crazyflow 自带的 `Integrator.rk4`，配置与模型元数据明确保存 `integrator: rk4`；旧 Euler 模型仍可按其 `integrator: euler` 重放。选择理由是：原生电机动态与参考高增益 PD 组合在 Euler/150 Hz 下出现数值振荡。相同初始姿态 `[0.2,−0.1,0]`、悬停转速、无噪声条件下，8 s 测试最后一秒的 roll RMS 为 Euler/150 Hz 0.281 rad、RK4/150 Hz 0.00259 rad；Euler/500 Hz 参考为 0.000274 rad。RK4 保持参考 150 Hz 控制与延迟时间，不修改辨识参数。动作 FIFO 延迟 4 个物理子步，即约 26.7 ms。参考初始 FIFO 的默认命令是 `[0, 0, 0.5, 0]`，这里保留该初始化。本实现逐世界重置 FIFO；参考源码中的共享 deque 未在 `_reset_idx` 清空，可能跨回合保留命令。本实现避免这项回合间状态泄漏。
 

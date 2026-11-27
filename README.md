@@ -58,6 +58,8 @@ Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，�
 | 回合 | 最长 80 s；接触、成功或数值失稳终止；超时单独记录并正确 bootstrap |
 | 成功 | 目标距离 <0.5 m 且速度 <0.5 m/s，持续时间按配置；评测不把超时剔除 |
 
+已直接检查交付 NPZ 与原 baseline `.pt` 的权重：两者 actor 均为 **344 → 256 → 256 → 128 → 64 → 4**，434 维只供 critic 使用。输入的坐标系、通道顺序、历史顺序、深度展开及倍率相同，各自使用自己的归一化统计。四维原始输出依次为 **roll 姿态角、pitch 姿态角、yaw 角速度、总推力指令**，两边均在环境中做一次 `tanh`，不是直接输出电机转速。逐索引的物理含义及单位见[接口对照](docs/tof-parity.md#策略输入与动作)，实际权重与 128 组闭环观测的检查见[模型接口审计](sim2sim/results/contract-20261127/checkpoint-io-audit.json)。接口一致不表示两个物理引擎的动力学相同。
+
 原始 reward 逐项重写，保留单位和限幅，不额外乘 dt：距离进展（上限 0.01）×8、yaw 方向×0.3、动作模长×0.3、动作差×0.5、速度方向 Huber×0.15、超速指数罚×0.5、高度 Huber×0.25、碰撞 −80、ESDF 安全距离指数罚×0.1、到达 +80。速度匹配系数默认 0。精确公式和参考的非直观处理在代码及[环境对应说明](docs/tof-parity.md)中列明。
 
 保留参考的观测乘性噪声、深度无效点、OU 风、质量/惯量控制模型随机化、推力初始效率 `[0.85,1]`、退化率 `[0.10,0.15]`、最低效率 0.7、速度 `[0.5,1.5]`、目标采样噪声和障碍尺寸随机化。训练与最终对比使用各自冻结的配置。Crazyflow 继续使用自己的 RPM 电机/刚体模型，使用官方 RK4 积分以避免 150 Hz Euler 引入的数值振荡；其解析几何碰撞与 Isaac PhysX 碰撞不是逐步相同的物理结果，最终迁移效果由独立 Isaac 评测衡量。
@@ -114,7 +116,30 @@ PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `
 
 `evaluate/play --example` 使用 `examples/tof/policy.npz`，不改最近正式训练指针。`--seed` 只改变初态与观测随机数；默认保留模型中的地图。检查泛化时另外指定 `--map-seed` 生成新地图。评测使用确定性动作均值，每个并行世界只统计首个完整回合，保存 `summary.json`、`episodes.csv` 和 `trajectories.npz`；成功、碰撞、超时、数值失稳均保留在分母。`--max-steps` 是调试截短，剩余回合按超时计，不能用来制造成功率。
 
-MuJoCo 画面显示官方 CF21B 网格、随机障碍、目标、轨迹和仿真 ToF 射线；支持 follow/overview/fpv 视角及 PNG/GIF/MP4。GUI 用鼠标控制 MuJoCo 相机、空格暂停；`--headless` 使用 EGL，CPU 使用 OSMesa。这里显示的是 **Crazyflow 闭环产生的轨迹**，不是第二套 MuJoCo 动力学控制实验；独立物理迁移评测在 Isaac 进行。
+`play --example` 默认打开持续运行的交互窗口：JAX 逐步执行真实策略与 Crazyflow 物理，回合结束短暂停留后自动开始下一回合，关闭窗口才退出。首次启动需要编译 actor 与物理步。右侧面板显示前向 **8×8 深度数值/热图**及最小、中心、最大值，另列出 **左、右、后、下 ToF**，单位均为 m；场景中同时画出测距射线。
+
+| 操作 | 功能 |
+| --- | --- |
+| `R` / Reset 按钮 | 同一组障碍地图中重新采样初态和目标 |
+| `Backspace` | 精确重开当前回合，连随机状态一起恢复 |
+| `Space` / Pause 按钮 | 暂停 / 继续 |
+| `C` / Camera 按钮 | follow → overview → fpv；`F` 回到跟随 |
+| `T` | 切换干净测距与 actor 实际收到的带噪声、无效点数据，已除去输入倍率，尚未做模型归一化 |
+| 鼠标左键 / 右键 / 滚轮 | 旋转 / 平移 / 缩放视角 |
+| `+` / `-` / `Esc` | 调整仿真播放速度 / 关闭窗口 |
+
+前向传感器沿 body +X，其他方向也相对机体定义。前向显示的是 image-plane depth，中心值为中央四像素均值；`T` 下噪声或无效深度属于实际 actor 输入。MuJoCo 只显示 **Crazyflow 闭环产生的状态**，独立物理迁移评测在 Isaac 进行。`--trajectory/--evaluation` 仍精确回放已保存轨迹；`--output/--record` 导出 PNG/GIF/MP4，`--headless` 使用 EGL，CPU 使用 OSMesa。
+
+交互验收可自动触发同一组按键处理，检查 reset、精确重开、暂停、传感器切换、三种视角及真实环境终止/自动重置，并保存窗口截图与报告：
+
+```bash
+./crazyrl play --example --self-test --gui-frames 20 \
+  --screenshot outputs/tof-live-check.png --gui-report outputs/tof-live-check.json
+```
+
+已在 GPU 原生窗口与 CPU/Xvfb 窗口实测，13 项控制检查通过；持续运行自然完成两回合并进入第三回合。实际[窗口截图](examples/tof/live-play.png)和[验收记录](examples/tof/live-play.json)随分支保存。
+
+启动时的 `Failed to import warp/mujoco_warp` 来自 MuJoCo 对可选 Warp 后端的探测；本任务使用 Crazyflow/JAX 物理与原生 MuJoCo 显示，不依赖该后端。
 
 ## 6. 独立 Isaac Sim：同场景对比新模型和现成 baseline
 

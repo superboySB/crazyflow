@@ -54,6 +54,8 @@
 - 断点恢复对照：连续两次更新与保存后恢复的策略、Adam、归一化、环境、RNG、地图逐数组一致。把原 TOML 质量从 0.045 改成 0.060 kg 后恢复仍使用冻结的 0.045 kg，结果逐位一致。
 - `identify check` 与 `drag-check` 实际运行通过；后者两次优化收敛，合成验证的 roll/pitch RMSE 为 0、R² 为 1。这是软件验收结果。
 - MuJoCo：OSMesa/EGL、PNG/GIF/MP4、follow/overview/fpv、Xvfb GLFW、空格暂停与有限帧退出实际验证。
+- 交互版 `play`：原生 GPU 窗口通过 13 项控制检查，600 显示帧的持续运行自然结束两个回合并进入第三回合；reset、精确重开和终止帧测距分别验收。截图与本次记录见 [live-play.png](live-play.png)、[live-play.json](live-play.json)。
+- 实际 NPZ/PT 接口审计：两个 actor 均接受 344 维观测并返回 4 维原始动作；128 个真实闭环输入的 JAX/Torch 最大差为 `1.43e−6`，详见 [checkpoint-io-audit.json](../../sim2sim/results/contract-20261127/checkpoint-io-audit.json)。通道、历史、像素方向及新交互逻辑的 17 项相关 CPU 测试通过。
 - 发布训练镜像：不挂载仓库，从已安装包在 CPU/GPU 各执行 3 次 PPO 更新并导出；镜像内源码和交付模型哈希均核对一致，内置模型 8 回合检查通过。
 - Isaac 两种模型加载路径：原始 PT 和新 NPZ 均完成原生 GUI/video 450 步，退出码 0；各生成 449 帧、1280×720、15 fps 视频，首/中/末帧解码通过。
 - Isaac 独立镜像：原始 `.pt` 与转换 NPZ 在相同场景均 8/8 成功，场景哈希相同；JAX 与 Torch 推理最大绝对差约 5.4e-7。

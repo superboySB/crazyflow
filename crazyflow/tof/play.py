@@ -1,4 +1,4 @@
-"""MuJoCo visualization of exact Crazyflow ToF obstacle-avoidance trajectories.
+"""Live Crazyflow ToF flight and MuJoCo visualization of saved trajectories.
 
 The aircraft poses are computed by Crazyflow. MuJoCo renders the same map, goal
 and recorded poses with the bundled Crazyflie visual mesh; no second controller
@@ -25,6 +25,152 @@ if TYPE_CHECKING:
 
 def _numbers(values: Any) -> str:
     return " ".join(f"{x:.9g}" for x in np.asarray(values).ravel())
+
+
+def sensor_packet(
+    front: np.ndarray, auxiliary: np.ndarray, actor_observation: np.ndarray
+) -> dict[str, np.ndarray]:
+    """Keep clean ranges distinct from the actual noisy inputs before normalization.
+
+    The actor has ten 28-channel history entries, ending with L/R/back/down,
+    followed by its current 64 front pixels. Both range groups are scaled by 30
+    in the task observation. No new observation or random sensor sample is made.
+    """
+    observation = np.asarray(actor_observation).reshape(-1)
+    if observation.shape != (344,):
+        raise ValueError("the ToF actor observation must have 344 channels")
+    return {
+        "clean_front": np.asarray(front).reshape(8, 8).copy(),
+        "clean_auxiliary": np.asarray(auxiliary).reshape(4).copy(),
+        "policy_front": observation[-64:].reshape(8, 8).copy() / 30,
+        "policy_auxiliary": observation[276:280].copy() / 30,
+    }
+
+
+class LiveFlight:
+    """Advance one genuine Crazyflow world; retain exact terminal poses until resumed."""
+
+    def __init__(self, actor: Any, env: Any, seed: int = 42):
+        import jax
+
+        if env.num_envs != 1:
+            raise ValueError("live play requires exactly one environment")
+        self.jax, self.env = jax, env
+        self.actor = jax.jit(actor)
+        self.seed = seed
+        self.generation = 0
+        self.completed = 0
+        self.manual_resets = 0
+        self.restarts = 0
+        self.last_outcome = "none"
+        self._scene = jax.device_get(env.scene)
+        self.reset(seed)
+
+    def reset(self, seed: int | None = None) -> None:
+        """Sample a new pose/goal on the existing maps without changing task physics."""
+        if seed is None:
+            self.seed += 1
+            self.manual_resets += 1
+        else:
+            self.seed = seed
+        self.state = self.env.reset(self.jax.random.key(self.seed))
+        self._begin_episode()
+
+    def restart(self) -> None:
+        """Repeat this episode's exact initial state, including all random streams."""
+        self.state = self.initial_state
+        self.restarts += 1
+        self._begin_episode()
+
+    def _begin_episode(self) -> None:
+        state = self.jax.device_get(self.state)
+        self.initial_state = self.state
+        self.elapsed = 0.0
+        self.episode_return = 0.0
+        self.steps = 0
+        self.pending_episode = False
+        self.status = "flying"
+        self.generation += 1
+        map_id = int(np.asarray(state.map_id)[0])
+        count = int(np.sum(np.asarray(self._scene.counts)[map_id]))
+        self.episode = {
+            "positions": np.asarray(state.sim.states.pos[0, :1]).copy(),
+            "quaternions_xyzw": np.asarray(state.sim.states.quat[0, :1]).copy(),
+            "goal": np.asarray(state.goal[0]).copy(),
+            "centers": np.asarray(self._scene.centers[map_id, :count]),
+            "half_sizes": np.asarray(self._scene.half_sizes[map_id, :count]),
+            "kinds": np.asarray(self._scene.kinds[map_id, :count]),
+            "rotations": np.asarray(self._scene.rotations[map_id, :count]),
+            "room_half_size": np.asarray(self._scene.room_half_size),
+            "floor_height": np.asarray(self._scene.floor),
+            "ceiling_height": np.asarray(self._scene.ceiling),
+            "dt": np.asarray(self.env.config.dt),
+            "front_ray_directions": np.asarray(self.jax.device_get(self.env.ray_directions)),
+            "front_depth_m": np.asarray(state.depth[:1]).copy(),
+            "auxiliary_depth_m": np.asarray(state.auxiliary_depth[:1]).copy(),
+        }
+        self.map_id = map_id
+        self.packet = sensor_packet(state.depth[0], state.auxiliary_depth[0], state.obs[0])
+        self.velocity = np.asarray(state.sim.states.vel[0, 0])
+
+    def continue_episode(self) -> None:
+        """Use the environment's own already-sampled autoreset state."""
+        if self.pending_episode:
+            self._begin_episode()
+
+    def advance(self) -> None:
+        """Issue the frozen actor mean and display the resulting physical transition."""
+        if self.pending_episode:
+            return
+        action = self.actor(self.state.obs)
+        if not np.isfinite(np.asarray(self.jax.device_get(action))).all():
+            raise ValueError("the selected actor returned nonfinite live actions")
+        self.state, transition = self.env.step(self.state, action)
+        state, result = self.jax.device_get((self.state, transition))
+        terminal = bool(np.asarray(result.done)[0])
+        if terminal:
+            pos, quat, velocity = (
+                result.terminal_pos[0],
+                result.terminal_quat[0],
+                result.terminal_vel[0],
+            )
+            front = result.terminal_critic_obs[0, -64:] / 30
+            # Critic history has 37 channels per tick, and the same four clean
+            # auxiliary ranges at offsets 24..27 of the most recent history row.
+            auxiliary = result.terminal_critic_obs[0, 9 * 37 + 24 : 9 * 37 + 28] / 30
+            observation = result.terminal_obs[0]
+        else:
+            pos, quat = state.sim.states.pos[0, 0], state.sim.states.quat[0, 0]
+            velocity = state.sim.states.vel[0, 0]
+            front, auxiliary, observation = state.depth[0], state.auxiliary_depth[0], state.obs[0]
+        if not np.isfinite(np.r_[pos, quat, velocity]).all():
+            raise ValueError("the live Crazyflow transition contains nonfinite physical state")
+        self.steps += 1
+        self.elapsed = self.steps * self.env.config.dt
+        self.episode_return += float(np.asarray(result.reward)[0])
+        self.velocity = np.asarray(velocity)
+        self.packet = sensor_packet(front, auxiliary, observation)
+        for name, value in (
+            ("positions", pos),
+            ("quaternions_xyzw", quat),
+            ("front_depth_m", front),
+            ("auxiliary_depth_m", auxiliary),
+        ):
+            self.episode[name] = np.concatenate([self.episode[name], np.asarray(value)[None]])
+        if terminal:
+            self.completed += 1
+            self.pending_episode = True
+            if bool(np.asarray(result.collision)[0]):
+                self.status = "collision"
+            elif bool(np.asarray(result.success)[0]):
+                self.status = "success"
+            elif bool(np.asarray(result.instability)[0]):
+                self.status = "unstable"
+            elif bool(np.asarray(result.truncated)[0]):
+                self.status = "timeout"
+            else:
+                self.status = "unstable"
+            self.last_outcome = self.status
 
 
 def make_visual_model(
@@ -333,6 +479,29 @@ class TrajectoryViewer:
                 )
                 scene.ngeom += 1
 
+            if "auxiliary_depth_m" in self.episode:
+                auxiliary = self.episode["auxiliary_depth_m"][packet]
+                axes = np.array([[0, 1, 0], [0, -1, 0], [-1, 0, 0], [0, 0, -1]])
+                colors = ([0.4, 1, 0.4, 1], [1, 0.5, 0.3, 1], [0.8, 0.5, 1, 1], [1, 1, 0.3, 1])
+                for axis, distance, color in zip(axes, auxiliary, colors, strict=True):
+                    if scene.ngeom >= scene.maxgeom or not np.isfinite(distance):
+                        continue
+                    start = self.episode["positions"][self.index] + rotation.apply(axis * 0.02)
+                    end = start + rotation.apply(axis * distance)
+                    geom = scene.geoms[scene.ngeom]
+                    self.mujoco.mjv_initGeom(
+                        geom,
+                        self.mujoco.mjtGeom.mjGEOM_LINE,
+                        np.zeros(3),
+                        np.zeros(3),
+                        np.eye(3).ravel(),
+                        np.asarray(color),
+                    )
+                    self.mujoco.mjv_connector(
+                        geom, self.mujoco.mjtGeom.mjGEOM_LINE, 2.0, start, end
+                    )
+                    scene.ngeom += 1
+
     def render(self) -> np.ndarray:
         """Return one RGB frame; OpenGL backend is chosen before importing MuJoCo."""
         if self.renderer is None:
@@ -475,8 +644,452 @@ def interactive_trajectory(
         view.close()
 
 
+def interactive_live(
+    flight: LiveFlight,
+    *,
+    camera: str = "follow",
+    speed: float = 1.0,
+    max_frames: int | None = None,
+    width: int = 1280,
+    height: int = 800,
+    screenshot: Path | None = None,
+    report_path: Path | None = None,
+    self_test: bool = False,
+) -> dict[str, Any]:
+    """Run a closed loop with a native GLFW world and actual ToF observation HUD."""
+    import glfw
+    import mujoco
+
+    if speed <= 0 or (max_frames is not None and max_frames < 1):
+        raise ValueError("speed and max_frames must be positive")
+    print("Compiling live Crazyflow actor and physics (no complete flight rollout)...", flush=True)
+    flight.jax.block_until_ready(flight.env.step(flight.state, flight.actor(flight.state.obs)))
+    if not glfw.init():
+        raise RuntimeError("GLFW could not open a display; use --headless for file rendering")
+    window = glfw.create_window(
+        max(width, 960), max(height, 720), "Crazyflow | Live ToF", None, None
+    )
+    if window is None:
+        glfw.terminate()
+        raise RuntimeError("GLFW could not create the live ToF window")
+    glfw.make_context_current(window)
+    glfw.set_window_size_limits(window, 960, 720, glfw.DONT_CARE, glfw.DONT_CARE)
+    glfw.swap_interval(1)
+    context = None
+    view = None
+    scene = None
+    generation = -1
+    options = mujoco.MjvOption()
+    ui = {
+        "paused": False,
+        "policy": False,
+        "camera": camera,
+        "speed": speed,
+        "follow": camera == "follow",
+        "cursor": (0.0, 0.0),
+        "buttons": [],
+        "drag": None,
+        "test_cursor": None,
+        "world_width": max(width, 960) - 340,
+    }
+    checks: list[str] = []
+    frames = 0
+    next_tick = time.monotonic()
+    terminal_until = 0.0
+    self_test_stage = 0
+    paused_state = None
+
+    def set_camera(mode: str) -> None:
+        ui["camera"], ui["follow"] = mode, mode == "follow"
+        if view is None:
+            return
+        view.camera_mode = mode
+        view.camera.type = (
+            mujoco.mjtCamera.mjCAMERA_FIXED if mode == "fpv" else mujoco.mjtCamera.mjCAMERA_FREE
+        )
+        if mode == "fpv":
+            view.camera.fixedcamid = view.model.camera("tof_view").id
+        else:
+            view.camera.azimuth = 135
+            view.camera.elevation = -40 if mode == "overview" else -22
+            view.camera.distance = (
+                float(flight.episode["room_half_size"]) * 2.6 if mode == "overview" else 2.2
+            )
+            view.camera.lookat[:] = (
+                [0, 0, 0.7] if mode == "overview" else flight.episode["positions"][-1]
+            )
+
+    def action(name: str) -> None:
+        nonlocal next_tick, terminal_until
+        if name == "pause":
+            ui["paused"] = not ui["paused"]
+        elif name == "reset":
+            flight.reset()
+            terminal_until = 0.0
+        elif name == "restart":
+            flight.restart()
+            terminal_until = 0.0
+        elif name == "sensor":
+            ui["policy"] = not ui["policy"]
+        elif name == "camera":
+            modes = ("follow", "overview", "fpv")
+            set_camera(modes[(modes.index(ui["camera"]) + 1) % len(modes)])
+        next_tick = time.monotonic()
+
+    def key_callback(_window: Any, key: int, _scan: int, pressed: int, _mods: int) -> None:
+        if pressed != glfw.PRESS:
+            return
+        controls = {
+            glfw.KEY_SPACE: "pause",
+            glfw.KEY_R: "reset",
+            glfw.KEY_BACKSPACE: "restart",
+            glfw.KEY_T: "sensor",
+            glfw.KEY_C: "camera",
+        }
+        if key in controls:
+            action(controls[key])
+        elif key == glfw.KEY_ESCAPE:
+            glfw.set_window_should_close(window, True)
+        elif key == glfw.KEY_F:
+            set_camera("follow")
+        elif key in (glfw.KEY_EQUAL, glfw.KEY_KP_ADD):
+            ui["speed"] = min(4.0, ui["speed"] * 2)
+        elif key in (glfw.KEY_MINUS, glfw.KEY_KP_SUBTRACT):
+            ui["speed"] = max(0.125, ui["speed"] / 2)
+
+    def cursor_pixels() -> tuple[float, float]:
+        if ui["test_cursor"] is not None:
+            return ui["test_cursor"]
+        x, y = glfw.get_cursor_pos(window)
+        ww, wh = glfw.get_window_size(window)
+        fw, fh = glfw.get_framebuffer_size(window)
+        return x * fw / max(ww, 1), fh - y * fh / max(wh, 1)
+
+    def mouse_callback(_window: Any, button: int, pressed: int, _mods: int) -> None:
+        x, y = cursor_pixels()
+        ui["cursor"] = (x, y)
+        if pressed == glfw.RELEASE:
+            ui["drag"] = None
+        elif pressed == glfw.PRESS:
+            if x < ui["world_width"]:
+                ui["drag"] = button
+            elif button == glfw.MOUSE_BUTTON_LEFT:
+                for name, rect in ui["buttons"]:
+                    if (
+                        rect.left <= x < rect.left + rect.width
+                        and rect.bottom <= y < rect.bottom + rect.height
+                    ):
+                        action(name)
+                        break
+
+    def motion_callback(_window: Any, _x: float, _y: float) -> None:
+        x, y = cursor_pixels()
+        old_x, old_y = ui["cursor"]
+        ui["cursor"] = (x, y)
+        if ui["drag"] is None or view is None or ui["camera"] == "fpv":
+            return
+        movement = (
+            mujoco.mjtMouse.mjMOUSE_ROTATE_V
+            if ui["drag"] == glfw.MOUSE_BUTTON_LEFT
+            else mujoco.mjtMouse.mjMOUSE_MOVE_V
+        )
+        if movement == mujoco.mjtMouse.mjMOUSE_MOVE_V:
+            ui["follow"] = False
+        mujoco.mjv_moveCamera(
+            view.model, movement, (x - old_x) / 700, -(y - old_y) / 700, view.camera
+        )
+
+    def scroll_callback(_window: Any, _x: float, y: float) -> None:
+        if view is not None and cursor_pixels()[0] < ui["world_width"]:
+            mujoco.mjv_moveCamera(
+                view.model, mujoco.mjtMouse.mjMOUSE_ZOOM, 0, -0.05 * y, view.camera
+            )
+
+    glfw.set_key_callback(window, key_callback)
+    glfw.set_mouse_button_callback(window, mouse_callback)
+    glfw.set_cursor_pos_callback(window, motion_callback)
+    glfw.set_scroll_callback(window, scroll_callback)
+
+    def text(rect: Any, message: str) -> None:
+        mujoco.mjr_overlay(
+            mujoco.mjtFont.mjFONT_NORMAL,
+            mujoco.mjtGridPos.mjGRID_TOPLEFT,
+            rect,
+            message,
+            "",
+            context,
+        )
+
+    def exercise_controls() -> None:
+        """Drive real key callbacks and an actual environment terminal/autoreset transition."""
+        nonlocal terminal_until
+        set_camera("follow")
+        key_callback(window, glfw.KEY_SPACE, 0, glfw.PRESS, 0)
+        assert ui["paused"]
+        before = flight.steps
+        assert flight.steps == before
+        key_callback(window, glfw.KEY_SPACE, 0, glfw.PRESS, 0)
+        assert not ui["paused"]
+        checks.append("pause_resume_keys")
+        initial = flight.episode["positions"][0].copy()
+        key_callback(window, glfw.KEY_R, 0, glfw.PRESS, 0)
+        assert flight.manual_resets == 1
+        assert not np.array_equal(initial, flight.episode["positions"][0])
+        checks.append("new_pose_goal_same_maps")
+        reset_obs = np.asarray(flight.jax.device_get(flight.state.obs)).copy()
+        reset_pos = flight.episode["positions"][0].copy()
+        flight.advance()
+        key_callback(window, glfw.KEY_BACKSPACE, 0, glfw.PRESS, 0)
+        np.testing.assert_array_equal(flight.episode["positions"][0], reset_pos)
+        np.testing.assert_array_equal(flight.jax.device_get(flight.state.obs), reset_obs)
+        checks.append("exact_episode_restart_key")
+        key_callback(window, glfw.KEY_T, 0, glfw.PRESS, 0)
+        assert ui["policy"]
+        key_callback(window, glfw.KEY_T, 0, glfw.PRESS, 0)
+        assert not ui["policy"]
+        checks.append("clean_policy_sensor_toggle")
+        for mode in ("overview", "fpv", "follow"):
+            key_callback(window, glfw.KEY_C, 0, glfw.PRESS, 0)
+            assert ui["camera"] == mode
+        checks.append("three_camera_modes")
+        for button, label in (
+            (glfw.MOUSE_BUTTON_LEFT, "mouse_orbit"),
+            (glfw.MOUSE_BUTTON_RIGHT, "mouse_pan"),
+        ):
+            before_camera = np.r_[view.camera.azimuth, view.camera.elevation, view.camera.lookat]
+            ui["test_cursor"] = (200.0, 300.0)
+            mouse_callback(window, button, glfw.PRESS, 0)
+            ui["test_cursor"] = (245.0, 325.0)
+            motion_callback(window, 0, 0)
+            mouse_callback(window, button, glfw.RELEASE, 0)
+            after_camera = np.r_[view.camera.azimuth, view.camera.elevation, view.camera.lookat]
+            assert not np.allclose(before_camera, after_camera), label
+            checks.append(label)
+        assert not ui["follow"]
+        panned_target = view.camera.lookat.copy()
+        view.set_frame(len(flight.episode["positions"]) - 1)
+        view.camera.lookat[:] = panned_target
+        np.testing.assert_array_equal(view.camera.lookat, panned_target)
+        checks.append("pan_target_preserved_after_pose_update")
+        distance = view.camera.distance
+        scroll_callback(window, 0, 1)
+        assert view.camera.distance != distance
+        checks.append("mouse_wheel_zoom")
+        pause_rect = next(rect for name, rect in ui["buttons"] if name == "pause")
+        ui["test_cursor"] = (pause_rect.left + 5, pause_rect.bottom + 5)
+        for expected in (True, False):
+            mouse_callback(window, glfw.MOUSE_BUTTON_LEFT, glfw.PRESS, 0)
+            mouse_callback(window, glfw.MOUSE_BUTTON_LEFT, glfw.RELEASE, 0)
+            assert ui["paused"] == expected
+        checks.append("clickable_pause_resume")
+        ui["test_cursor"] = None
+        key_callback(window, glfw.KEY_F, 0, glfw.PRESS, 0)
+        # Only this explicit diagnostic moves the episode counter to its final
+        # tick. Physics, actor, random streams and termination/autoreset are real.
+        flight.state = flight.state.replace(
+            steps=flight.state.steps * 0 + flight.env.config.max_episode_steps - 1
+        )
+        flight.advance()
+        assert flight.pending_episode
+        np.testing.assert_array_equal(
+            flight.packet["clean_front"].reshape(-1), flight.episode["front_depth_m"][-1]
+        )
+        reset_position = np.asarray(flight.jax.device_get(flight.state.sim.states.pos[0, 0]))
+        assert not np.array_equal(flight.episode["positions"][-1], reset_position)
+        checks.append("terminal_pose_and_packet_before_autoreset")
+        completed = flight.completed
+        flight.continue_episode()
+        np.testing.assert_array_equal(flight.episode["positions"][0], reset_position)
+        assert flight.completed == completed and not flight.pending_episode
+        checks.append("continue_real_environment_autoreset")
+        terminal_until = 0.0
+
+    try:
+        while not glfw.window_should_close(window):
+            now = time.monotonic()
+            if not ui["paused"] and now >= next_tick:
+                if flight.pending_episode:
+                    if now >= terminal_until:
+                        flight.continue_episode()
+                else:
+                    flight.advance()
+                    if flight.pending_episode:
+                        terminal_until = time.monotonic() + 0.8
+                next_tick = now + flight.env.config.dt / ui["speed"]
+            if generation != flight.generation:
+                if context is not None:
+                    context.free()
+                if view is not None:
+                    view.close()
+                view = TrajectoryViewer(
+                    flight.episode, max(width, 960), max(height, 720), ui["camera"]
+                )
+                context = mujoco.MjrContext(view.model, mujoco.mjtFontScale.mjFONTSCALE_100)
+                scene = mujoco.MjvScene(view.model, maxgeom=4000)
+                generation = flight.generation
+                set_camera(ui["camera"])
+            view.episode = flight.episode
+            lookat_before = view.camera.lookat.copy()
+            view.set_frame(len(flight.episode["positions"]) - 1)
+            if ui["camera"] == "follow" and not ui["follow"]:
+                # set_frame normally follows; preserve a user's explicit pan.
+                view.camera.lookat[:] = lookat_before
+            w, h = glfw.get_framebuffer_size(window)
+            if w < 640 or h < 480:
+                glfw.poll_events()
+                time.sleep(0.02)
+                continue
+            panel_width = 340
+            ui["world_width"] = w - panel_width
+            world = mujoco.MjrRect(0, 0, w - panel_width, h)
+            mujoco.mjv_updateScene(
+                view.model, view.data, options, None, view.camera, mujoco.mjtCatBit.mjCAT_ALL, scene
+            )
+            view._decorate(scene)
+            mujoco.mjr_render(world, scene, context)
+            mujoco.mjr_rectangle(
+                mujoco.MjrRect(w - panel_width, 0, panel_width, h), 0.07, 0.10, 0.14, 1
+            )
+            x = w - panel_width + 12
+            title = "ACTOR INPUT (noisy)" if ui["policy"] else "CLEAN SENSOR RANGES"
+            text(
+                mujoco.MjrRect(x, h - 64, 320, 52),
+                f"LIVE {flight.status.upper()} | seed {flight.seed} map {flight.map_id}\n"
+                f"t {flight.elapsed:.2f}s ret {flight.episode_return:.1f} "
+                f"done {flight.completed} | {ui['speed']:g}x",
+            )
+            ui["buttons"] = []
+            for index, (name, label) in enumerate(
+                (
+                    ("pause", "Resume" if ui["paused"] else "Pause"),
+                    ("reset", "Reset [R]"),
+                    ("camera", "Camera [C]"),
+                )
+            ):
+                rect = mujoco.MjrRect(x + 106 * index, h - 100, 100, 30)
+                mujoco.mjr_rectangle(rect, 0.15, 0.24, 0.32, 1)
+                text(rect, label)
+                ui["buttons"].append((name, rect))
+            prefix = "policy" if ui["policy"] else "clean"
+            front, aux = flight.packet[prefix + "_front"], flight.packet[prefix + "_auxiliary"]
+            text(
+                mujoco.MjrRect(x, h - 160, 320, 52),
+                f"{title} [T]\nFront +X 8x8 [m] | up=top, left=+Y",
+            )
+            cell = 34
+            grid_top = h - 166
+            for row in range(8):
+                for col in range(8):
+                    value = float(front[row, col])
+                    normalized = np.clip(value / flight.env.config.camera_max_distance, 0, 1)
+                    rect = mujoco.MjrRect(
+                        x + col * cell, grid_top - (row + 1) * cell, cell - 1, cell - 1
+                    )
+                    mujoco.mjr_rectangle(
+                        rect,
+                        0.55 * (1 - normalized) + 0.08,
+                        0.15 + 0.35 * normalized,
+                        0.15 + 0.5 * normalized,
+                        1,
+                    )
+                    text(rect, f"{value:.1f}" if abs(value) >= 1 else f"{value:.2f}")
+            minimum, maximum = float(np.min(front)), float(np.max(front))
+            center = float(np.mean(front[3:5, 3:5]))
+            grid_bottom = grid_top - 8 * cell
+            text(
+                mujoco.MjrRect(x, grid_bottom - 62, 320, 52),
+                f"Front min / center 2x2 mean / max [m]\n"
+                f"{minimum:.2f} / {center:.2f} / {maximum:.2f}",
+            )
+            text(
+                mujoco.MjrRect(x, grid_bottom - 170, 320, 100),
+                f"LEFT  +Y   {aux[0]:6.2f} m\nRIGHT -Y   {aux[1]:6.2f} m\n"
+                f"BACK  -X   {aux[2]:6.2f} m\nDOWN  -Z   {aux[3]:6.2f} m",
+            )
+            text(
+                mujoco.MjrRect(x, 5, 320, 100),
+                "Space pause | R reset | Backspace restart\n"
+                "C camera | F follow | T clean/noisy\n"
+                "+/- speed | Esc close\n"
+                "Mouse: left orbit / right pan / wheel",
+            )
+            text(
+                mujoco.MjrRect(12, h - 64, max(w - panel_width - 24, 1), 52),
+                "LIVE closed loop | "
+                + ui["camera"]
+                + (" | PAUSED" if ui["paused"] else "")
+                + f" | last {flight.last_outcome}"
+                + "\nClean rays: cyan front | green/red/purple/yellow L/R/back/down",
+            )
+            if self_test and self_test_stage < 3:
+                if self_test_stage == 0:
+                    key_callback(window, glfw.KEY_SPACE, 0, glfw.PRESS, 0)
+                    paused_state = flight.state
+                else:
+                    assert flight.state is paused_state
+                    if self_test_stage == 2:
+                        key_callback(window, glfw.KEY_SPACE, 0, glfw.PRESS, 0)
+                        checks.append("physics_held_across_paused_gui_frames")
+                        exercise_controls()
+                # Make the next loop's physics deadline due, so these frames
+                # verify pause rather than merely falling between policy ticks.
+                next_tick = time.monotonic() - 1
+                self_test_stage += 1
+            frames += 1
+            finished = max_frames is not None and frames >= max_frames
+            if screenshot is not None and finished:
+                import imageio.v2 as imageio
+
+                rgb = np.empty((h, w, 3), dtype=np.uint8)
+                mujoco.mjr_readPixels(rgb, None, mujoco.MjrRect(0, 0, w, h), context)
+                screenshot.parent.mkdir(parents=True, exist_ok=True)
+                imageio.imwrite(screenshot, np.flipud(rgb))
+            glfw.swap_buffers(window)
+            glfw.poll_events()
+            if finished:
+                break
+            time.sleep(0.005)
+    finally:
+        if context is not None:
+            context.free()
+        if view is not None:
+            view.close()
+        glfw.destroy_window(window)
+        glfw.terminate()
+    report = {
+        "mode": "live_closed_loop",
+        "flight_backend": "crazyflow",
+        "visualizer": "mujoco",
+        "frames": frames,
+        "seed": flight.seed,
+        "map_id": flight.map_id,
+        "steps_current_episode": flight.steps,
+        "completed_episodes": flight.completed,
+        "manual_resets": flight.manual_resets,
+        "exact_restarts": flight.restarts,
+        "last_outcome": flight.last_outcome,
+        "camera": ui["camera"],
+        "sensor_display": "policy_noisy_before_normalization" if ui["policy"] else "clean_ranges",
+        "sensor_packet": {name: value.tolist() for name, value in flight.packet.items()},
+        "control_checks": checks,
+        "self_test_forced_final_episode_tick": self_test,
+        "physical_config": flight.env.config.to_dict(),
+    }
+    if report_path is None and screenshot is not None:
+        report_path = screenshot.with_suffix(".json")
+    if report_path is not None:
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+    print(
+        json.dumps(
+            {k: v for k, v in report.items() if k not in ("sensor_packet", "physical_config")}
+        )
+    )
+    return report
+
+
 def main() -> None:
-    """Load a policy or saved rollout and visualize the exact Crazyflow flight."""
+    """Run live checkpoint flight, replay saved flight, or export a frozen rollout."""
     from crazyflow.tof.evaluate import build_parser, load_actor_environment, rollout
 
     parser = build_parser()
@@ -492,8 +1105,8 @@ def main() -> None:
     parser.add_argument("--trajectory", type=Path, help="Saved evaluation trajectories.npz")
     parser.add_argument("--episode", type=int, default=0)
     parser.add_argument("--camera", choices=("follow", "overview", "fpv"), default="follow")
-    parser.add_argument("--width", type=int, default=960)
-    parser.add_argument("--height", type=int, default=720)
+    parser.add_argument("--width", type=int, help="Width (live GUI 1280; file export 960)")
+    parser.add_argument("--height", type=int, help="Height (live GUI 800; file export 720)")
     parser.add_argument("--fps", type=float)
     parser.add_argument("--headless", action="store_true", help="Render without a display")
     parser.add_argument("--record", type=Path, dest="output", help="Alias for --output")
@@ -502,6 +1115,13 @@ def main() -> None:
     )
     parser.add_argument("--loop", action="store_true", help="Loop interactive playback")
     parser.add_argument("--speed", type=float, default=1.0, help="Interactive playback speed")
+    parser.add_argument("--screenshot", type=Path, help="Save final live GUI framebuffer as PNG")
+    parser.add_argument(
+        "--gui-report", type=Path, help="Save live GUI state/control checks as JSON"
+    )
+    parser.add_argument(
+        "--self-test", action="store_true", help="Exercise live GUI input and autoreset"
+    )
     args = parser.parse_args()
     if (args.trajectory is None) == (args.checkpoint is None):
         parser.error("provide exactly one of --checkpoint and --trajectory")
@@ -509,11 +1129,42 @@ def main() -> None:
         parser.error("--map-seed applies to a new rollout from --checkpoint")
     if args.headless and args.output is None:
         args.output = Path("/outputs/tof-preview.png")
+    live = args.checkpoint is not None and args.output is None
+    args.width = args.width if args.width is not None else (1280 if live else 960)
+    args.height = args.height if args.height is not None else (800 if live else 720)
+    if live and args.max_steps is not None:
+        parser.error("--max-steps applies to file export; live GUI continues until closed")
+    if args.self_test and (not live or args.gui_frames is None or args.gui_frames < 12):
+        parser.error("--self-test requires live --checkpoint and --gui-frames 12 or greater")
+    if (args.screenshot or args.gui_report) and not live:
+        parser.error("--screenshot and --gui-report apply to live checkpoint GUI")
+    if args.screenshot and (args.screenshot.suffix.lower() != ".png" or not args.gui_frames):
+        parser.error("--screenshot requires a .png path and positive --gui-frames")
+    if args.gui_frames is not None and args.gui_frames < 1:
+        parser.error("--gui-frames must be positive")
+    if args.speed <= 0:
+        parser.error("--speed must be positive")
     if args.output:
         # Must happen before Crazyflow imports MuJoCo while creating the environment.
         os.environ.setdefault("MUJOCO_GL", "egl" if args.device == "gpu" else "osmesa")
     else:
         os.environ["MUJOCO_GL"] = "glfw"
+    if live:
+        if args.episodes != 1 or args.episode != 0:
+            parser.error("live GUI uses --episodes 1 and --episode 0")
+        actor, env, _ = load_actor_environment(args)
+        interactive_live(
+            LiveFlight(actor, env, args.seed),
+            camera=args.camera,
+            speed=args.speed,
+            max_frames=args.gui_frames,
+            width=args.width,
+            height=args.height,
+            screenshot=args.screenshot,
+            report_path=args.gui_report,
+            self_test=args.self_test,
+        )
+        return
     if args.trajectory:
         with np.load(args.trajectory, allow_pickle=False) as archive:
             trajectories = dict(archive)

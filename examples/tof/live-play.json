@@ -1,0 +1,106 @@
+{
+  "passed": true,
+  "recorded_at_utc": "2026-11-27T10:23:12.961648+00:00",
+  "live_source_sha256": "eb19fd005e1363d80c71047f967255d643de6d5b810caea366766a4493a358d5",
+  "policy_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "native_gpu": {
+    "command": "./crazyrl play --example --device gpu --self-test --gui-frames 20 --screenshot outputs/tof-live-acceptance/native.png --gui-report outputs/tof-live-acceptance/native.json",
+    "exit_code": 0,
+    "window_pixels": [
+      1280,
+      800
+    ],
+    "screenshot": "examples/tof/live-play.png",
+    "mode": "live_closed_loop",
+    "frames": 20,
+    "completed_episodes": 1,
+    "steps_current_episode": 5,
+    "manual_resets": 1,
+    "exact_restarts": 1,
+    "last_outcome": "timeout",
+    "control_checks": [
+      "physics_held_across_paused_gui_frames",
+      "pause_resume_keys",
+      "new_pose_goal_same_maps",
+      "exact_episode_restart_key",
+      "clean_policy_sensor_toggle",
+      "three_camera_modes",
+      "mouse_orbit",
+      "mouse_pan",
+      "pan_target_preserved_after_pose_update",
+      "mouse_wheel_zoom",
+      "clickable_pause_resume",
+      "terminal_pose_and_packet_before_autoreset",
+      "continue_real_environment_autoreset"
+    ],
+    "self_test_forced_final_episode_tick": true
+  },
+  "cpu_xvfb": {
+    "command": "source scripts/common.sh\ncf_container_cpu xvfb-run -a env MUJOCO_GL=glfw python -m crazyflow.tof.play --checkpoint examples/tof/policy.npz --device cpu --camera overview --height 720 --self-test --gui-frames 20 --screenshot /outputs/tof-live-acceptance/cpu720.png --gui-report /outputs/tof-live-acceptance/cpu720.json",
+    "exit_code": 0,
+    "window_pixels": [
+      1280,
+      720
+    ],
+    "mode": "live_closed_loop",
+    "frames": 20,
+    "completed_episodes": 1,
+    "steps_current_episode": 9,
+    "manual_resets": 1,
+    "exact_restarts": 1,
+    "last_outcome": "timeout",
+    "control_checks": [
+      "physics_held_across_paused_gui_frames",
+      "pause_resume_keys",
+      "new_pose_goal_same_maps",
+      "exact_episode_restart_key",
+      "clean_policy_sensor_toggle",
+      "three_camera_modes",
+      "mouse_orbit",
+      "mouse_pan",
+      "pan_target_preserved_after_pose_update",
+      "mouse_wheel_zoom",
+      "clickable_pause_resume",
+      "terminal_pose_and_packet_before_autoreset",
+      "continue_real_environment_autoreset"
+    ],
+    "self_test_forced_final_episode_tick": true
+  },
+  "natural_continuation_gpu": {
+    "command": "./crazyrl play --example --device gpu --speed 4 --gui-frames 600 --screenshot outputs/tof-live-acceptance/continuous.png --gui-report outputs/tof-live-acceptance/continuous.json",
+    "exit_code": 0,
+    "note": "Recorded before the final HUD spacing adjustment; flight/control implementation is the same. No diagnostic termination, reset or restart was triggered.",
+    "mode": "live_closed_loop",
+    "frames": 600,
+    "completed_episodes": 2,
+    "steps_current_episode": 106,
+    "manual_resets": 0,
+    "exact_restarts": 0,
+    "last_outcome": "success",
+    "control_checks": [],
+    "self_test_forced_final_episode_tick": false
+  },
+  "headless_cpu_regression": {
+    "command": "./crazyrl play --example --device cpu --headless --max-steps 12 --output outputs/tof-live-acceptance/headless.png",
+    "exit_code": 0,
+    "image_pixels": [
+      960,
+      720
+    ],
+    "debug_horizon_steps": 12,
+    "note": "Deliberately truncated export; not a policy success benchmark."
+  },
+  "focused_cpu_tests": {
+    "files": [
+      "tests/test_tof_play.py",
+      "tests/test_tof_evaluation.py",
+      "tests/test_tof_observation_contract.py",
+      "tests/test_tof_policy.py"
+    ],
+    "passed": 17,
+    "ruff_check_and_format": "passed"
+  },
+  "model_io_audit": "sim2sim/results/contract-20261127/checkpoint-io-audit.json",
+  "raw_reports_directory_ignored": "outputs/tof-live-acceptance",
+  "optional_warp_notice": "MuJoCo 4 optional Warp import prints are present; native rendering and Crazyflow/JAX physics pass without Warp."
+}

@@ -11,7 +11,7 @@ while [[ $# -gt 0 ]]; do
     --example) example=true; shift ;;
     --checkpoint) cf_require_value "$@"; checkpoint=$(cf_to_container "$2"); shift 2 ;;
     --headless) headless=true; args+=(--headless); shift ;;
-    --output|--record|--trajectory|--evaluation)
+    --output|--record|--trajectory|--evaluation|--screenshot|--gui-report)
       cf_require_value "$@"; flag=$1; path=$2
       if [[ "$flag" == --evaluation ]]; then flag=--trajectory; path="${path%/}/trajectories.npz"; fi
       args+=("$flag" "$(cf_to_container "$path")"); shift 2 ;;
