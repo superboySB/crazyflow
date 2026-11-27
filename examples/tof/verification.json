@@ -1,0 +1,340 @@
+{
+  "date": "2026-11-27",
+  "branch": "dani-crazyrl",
+  "tests": {
+    "passed": 790,
+    "skipped": 45,
+    "deselected": 16,
+    "seconds": 222.01,
+    "command": "docker run [CPU source mount] crazyflow:dani-crazyrl python -m pytest -q -p no:cacheprovider",
+    "log": "outputs/tof-all-tests-corrected.log",
+    "scope": "Full suite after sensor and map seed fixes; later one-line resolved-batch CLI normalization separately verified below."
+  },
+  "source": {
+    "final_training_and_capacity_sha256": "e66ee71cf173748ead4560a8ad8a445a4025e09886ea2de2d0f3df855f0536e3",
+    "release_sha256": "306090dd92c6d20436ffa1593c0454898575c64ef607aa0bbad5feff146cdbee",
+    "post_training_start_change": "Only persist resolved integer num_envs after selecting GPU/CPU mapping. Formal training used explicit integer 12288 already; task, sensor, dynamics and PPO equations unchanged."
+  },
+  "proofs": {
+    "checkpoint_physics_portability": {
+      "local_artifact": "outputs/tof-workflow-portable-20261127/acceptance.json",
+      "evidence": {
+        "passed": true,
+        "device": "cpu",
+        "integrator": "rk4",
+        "num_envs": 32,
+        "num_steps": 16,
+        "seed": 1701,
+        "differences": [],
+        "sections": {
+          "agent": {
+            "array_leaves": 73,
+            "array_values": 1243254,
+            "scalar_leaves": 0
+          },
+          "env_state": {
+            "array_leaves": 47,
+            "array_values": 50275,
+            "scalar_leaves": 4
+          },
+          "env_runtime": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 107
+          },
+          "env_config": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 55
+          },
+          "training_config": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 17
+          },
+          "iteration": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 1
+          },
+          "policy_npz": {
+            "array_leaves": 14,
+            "array_values": 196217,
+            "scalar_leaves": 247
+          }
+        },
+        "map_generation_after_first_update": 1,
+        "map_generation_after_second_update": 1,
+        "metadata_integrator": "rk4",
+        "source_sha256": "bbaa4f5d7c592b26dabf7bc3975dbb51b17df3bd14dd43a8c00a09c171b7b13d",
+        "frozen_mass_kg": 0.045,
+        "edited_toml_mass_kg": 0.06,
+        "physical_file_was_modified_after_first_update": true
+      }
+    },
+    "jit_parameter_types": {
+      "local_artifact": "outputs/tof-jit-aval-probe-20261127/acceptance.json",
+      "evidence": {
+        "passed": true,
+        "source_file": "/opt/crazyflow/crazyflow/tof/train.py",
+        "cache_sizes": [
+          0,
+          1,
+          1,
+          1
+        ],
+        "update_seconds": [
+          2.2986819689976983,
+          0.018636027991306037,
+          0.01683059800416231
+        ],
+        "changed_avals": [
+          {},
+          {},
+          {}
+        ],
+        "cpu_cli_smoke_updates": 3,
+        "cpu_cli_smoke_update_seconds": [
+          2.741006399039179,
+          0.09007576701696962,
+          0.08616253099171445
+        ],
+        "policy_tests_passed": 3,
+        "minimal_fix": "explicit dtype=jnp.float32 for initial logstd; Adam inherits strong type",
+        "original_weak_paths": [
+          "agent.train.params['logstd']",
+          "agent.train.opt_state[1].mu['logstd']",
+          "agent.train.opt_state[1].nu['logstd']"
+        ]
+      }
+    },
+    "resolved_batch_resume": {
+      "local_artifact": "outputs/tof-resume-num-envs-20261127/acceptance.json",
+      "evidence": {
+        "passed": true,
+        "device": "cpu",
+        "configured_num_envs": {
+          "gpu": 12288,
+          "cpu": 4
+        },
+        "resumed_explicit_num_envs": 4,
+        "num_steps": 8,
+        "seed": 2701,
+        "differences": [],
+        "sections": {
+          "agent": {
+            "array_leaves": 49,
+            "array_values": 39966,
+            "scalar_leaves": 0
+          },
+          "env_state": {
+            "array_leaves": 47,
+            "array_values": 6427,
+            "scalar_leaves": 4
+          },
+          "env_runtime": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 110
+          },
+          "env_config": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 55
+          },
+          "training_config": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 9
+          },
+          "iteration": {
+            "array_leaves": 0,
+            "array_values": 0,
+            "scalar_leaves": 1
+          },
+          "policy_npz": {
+            "array_leaves": 10,
+            "array_values": 6385,
+            "scalar_leaves": 240
+          }
+        },
+        "first_checkpoint_num_envs": 4,
+        "first_config_json_num_envs": 4,
+        "map_generation_after_first_update": 1,
+        "map_generation_after_second_update": 2,
+        "source_sha256": "306090dd92c6d20436ffa1593c0454898575c64ef607aa0bbad5feff146cdbee",
+        "different_actual_num_envs_rejected": true
+      }
+    },
+    "corrected_sensor_warm_start": {
+      "local_artifact": "outputs/tof-corrected-sensor-diagnostic.json",
+      "evidence": {
+        "checkpoint": "/outputs/tof-ppo-rk4/policies/policy_001000.npz",
+        "actor_down_columns": [
+          27,
+          55,
+          83,
+          111,
+          139,
+          167,
+          195,
+          223,
+          251,
+          279
+        ],
+        "actor_down_mean": [
+          27.753204345703125,
+          28.0474910736084,
+          28.3422908782959,
+          28.634979248046875,
+          28.924354553222656,
+          29.209383010864258,
+          29.488630294799805,
+          29.760284423828125,
+          30.020200729370117,
+          30.257328033447266
+        ],
+        "actor_down_var": [
+          192.5027313232422,
+          185.30206298828125,
+          177.99472045898438,
+          170.73963928222656,
+          163.67477416992188,
+          156.99061584472656,
+          150.8953399658203,
+          145.57666015625,
+          141.20404052734375,
+          138.03436279296875
+        ],
+        "critic_down_mean": [
+          27.753360748291016,
+          28.047632217407227,
+          28.34231185913086,
+          28.634950637817383,
+          28.924272537231445,
+          29.20928192138672,
+          29.488441467285156,
+          29.760089874267578,
+          30.020036697387695,
+          30.25713539123535
+        ],
+        "critic_down_var": [
+          182.97315979003906,
+          175.67990112304688,
+          168.27793884277344,
+          160.92703247070312,
+          153.7662353515625,
+          146.98312377929688,
+          140.78125,
+          135.35943603515625,
+          130.8748779296875,
+          127.59174346923828
+        ],
+        "normalization": "(x-mean)/(sqrt(var)+.01)",
+        "corrected_auxiliary_down_m": [
+          0.4577631950378418,
+          0.6700000166893005,
+          0.8700000047683716,
+          1.070000171661377,
+          1.2700001001358032
+        ],
+        "initial_down_normalized_percentiles": [
+          -1.6618062257766724,
+          -0.9737486839294434,
+          -0.4092056602239609,
+          0.2146688885986805,
+          1.2342000007629395
+        ],
+        "initial_max_abs_normalized_all_features": 7.660797595977783,
+        "initial_raw_action_min": [
+          -0.3341248035430908,
+          0.09873241186141968,
+          -0.7360134720802307,
+          1.4610224962234497
+        ],
+        "initial_raw_action_max": [
+          0.11834941059350967,
+          0.6085476279258728,
+          0.40269723534584045,
+          3.2476186752319336
+        ],
+        "initial_raw_action_abs_percentiles": [
+          0.0017030559247359633,
+          0.30486226081848145,
+          2.43050274848938,
+          2.797428967952728,
+          3.2476186752319336
+        ],
+        "initial_squashed_action_min": [
+          -0.3222222328186035,
+          0.09841284155845642,
+          -0.6267305612564087,
+          0.8978510499000549
+        ],
+        "initial_squashed_action_max": [
+          0.11779993027448654,
+          0.5431039333343506,
+          0.3822544515132904,
+          0.9969833493232727
+        ],
+        "zero_down_counterfactual_raw_action_min": [
+          -0.3348608613014221,
+          0.09815943241119385,
+          -0.8408581018447876,
+          1.655228853225708
+        ],
+        "zero_down_counterfactual_raw_action_max": [
+          0.1786963939666748,
+          0.5936981439590454,
+          0.41017672419548035,
+          3.253674030303955
+        ],
+        "down_fix_raw_action_difference_abs_percentiles": [
+          1.6301870346069336e-05,
+          0.01726137101650238,
+          0.08047627210617067,
+          0.21112013816833494,
+          0.34180212020874023
+        ],
+        "all_actor_outputs_finite": true
+      }
+    },
+    "new_map_cli": {
+      "local_artifact": "outputs/tof-map-seed-cli-smoke/verification.json",
+      "evidence": {
+        "purpose": "CLI option smoke; not a policy-performance evaluation",
+        "map_seed": 81,
+        "seed": 42,
+        "episodes": 2,
+        "max_steps": 1,
+        "only_configuration_difference": {
+          "map_seed": {
+            "checkpoint": 42,
+            "evaluated": 81
+          }
+        },
+        "unseen_seed_14001_used": false,
+        "unit_tests_passed": 7,
+        "ruff": "pass",
+        "play_png": "outputs/tof-map-seed-cli-smoke/play.png"
+      }
+    }
+  },
+  "native_mujoco_launcher": {
+    "policy_stage": "corrected continuation iteration25",
+    "evaluation_seed": 17001,
+    "map_seed": 17001,
+    "cpu_example_episodes": 8,
+    "cpu_example_successes": 8,
+    "native_display": ":0",
+    "gui_frames": 3,
+    "gui_exit_code": 0,
+    "gui_command": "./crazyrl play --device cpu --example --gui-frames 3 --seed 17001 --map-seed 17001",
+    "gui_log": "outputs/tof-example-launcher-gui.log",
+    "replay_overview_png": "outputs/tof-example-launcher-overview.png",
+    "scope": "Functional workflow smoke check, separate from model selection and final held-out test."
+  },
+  "frozen_reference_verification": "../../sim2sim/results/local-20261127/provenance-verification.json",
+  "intermediate_outputs_ignored": true,
+  "required_baseline_and_usd_tracked": true
+}

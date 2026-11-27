@@ -182,7 +182,6 @@ def test_synthetic_full_export_is_explicitly_marked_and_not_auto_confirmed(tmp_p
     import json
     import tomllib
 
-    from crazyflow.balloon.config import Config
     from crazyflow.identify_physics import synthetic_fixtures
 
     synthetic_fixtures(tmp_path)
@@ -206,4 +205,6 @@ def test_synthetic_full_export_is_explicitly_marked_and_not_auto_confirmed(tmp_p
     report = json.loads(output.with_suffix(".json").read_text())
     assert report["synthetic"] is True and "SYNTHETIC" in output.read_text()
     assert all("SYNTHETIC" in value for value in report["provenance"].values())
-    Config(model_params=tomllib.loads(output.read_text())["cf21B_500"])
+    physical = tomllib.loads(output.read_text())["cf21B_500"]
+    assert physical["mass"] > 0
+    assert np.all(np.linalg.eigvalsh(physical["J"]) > 0)

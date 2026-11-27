@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "policy": "examples/tof/policy.npz",
+  "policy_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "baseline_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+  "jax_torch_parity": true,
+  "paired_environment_and_runtime_audit": true,
+  "paired_evaluation_episodes_per_policy": 160,
+  "baseline_success_count": 155,
+  "crazyflow_success_count": 132,
+  "sim2sim_success_rate_gap_percentage_points": -14.375000000000004,
+  "delivered_npz_gui_steps": 450,
+  "original_pt_gui_steps": 450,
+  "both_videos_first_middle_last_frames_decoded": true,
+  "native_video_frames_each": 449,
+  "native_video_fps": 15,
+  "all_intermediate_videos_and_logs_ignored": true,
+  "reports": [
+    "summary.json",
+    "runtime-audit.json",
+    "jax-torch-policy-parity.json",
+    "gui-playback.json",
+    "baseline-gui-playback.json",
+    "artifact-ignore-audit.json"
+  ],
+  "qualification": "Passed means the documented workflows and comparison audits executed successfully; the Crazyflow policy retains a measured sim2sim performance gap.",
+  "intermediate_artifact_ignore_audit": true
+}

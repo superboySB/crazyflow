@@ -1,0 +1,73 @@
+{
+  "training_image": {
+    "tag": "crazyflow:dani-crazyrl",
+    "image_id": "sha256:bc7e1381ac97d041e9949a523926c3a30e31423cef4bab053e6773bc62e75ce5",
+    "formal_training_container_image_id": "sha256:910a8f35a9a7e8a4010f65ec211eb66a718293f7bde2a252f07cdf2d6358893d",
+    "installed_source_and_policy": {
+      "source_file": "/usr/local/lib/python3.12/site-packages/crazyflow/tof/train.py",
+      "release_source_sha256": "306090dd92c6d20436ffa1593c0454898575c64ef607aa0bbad5feff146cdbee",
+      "bundled_policy_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206"
+    },
+    "cpu_installed_training_smoke": {
+      "exit_code": 0,
+      "updates": 3,
+      "log": "outputs/tof-release-installed-smoke.log",
+      "source_mount": false
+    },
+    "gpu_installed_training_smoke": {
+      "exit_code": 0,
+      "updates": 3,
+      "source_mount": false,
+      "source_sha256": "306090dd92c6d20436ffa1593c0454898575c64ef607aa0bbad5feff146cdbee",
+      "gpu_memory": {
+        "sampled_compute_peak_mib": 794.0,
+        "memory_limit_mib": 9728,
+        "poll_seconds": 0.25,
+        "watchdog_stopped": false,
+        "command": [
+          "docker",
+          "run",
+          "--rm",
+          "--init",
+          "--name",
+          "crazyflow-release-installed-gpu-check",
+          "--gpus",
+          "all",
+          "--user",
+          "1000:1000",
+          "-e",
+          "JAX_PLATFORMS=cuda",
+          "-e",
+          "MPLCONFIGDIR=/tmp/matplotlib",
+          "-v",
+          "/home/dzp/projects/crazyflow/outputs:/outputs",
+          "-w",
+          "/tmp",
+          "crazyflow:dani-crazyrl",
+          "python",
+          "-m",
+          "crazyflow.tof.train",
+          "--smoke",
+          "--config",
+          "/opt/crazyflow/config/training.yaml",
+          "--output",
+          "/outputs/tof-release-installed-gpu-smoke"
+        ]
+      },
+      "log": "outputs/tof-release-installed-gpu-smoke.log"
+    },
+    "installed_policy_evaluation": {
+      "episodes": 8,
+      "successes": 8,
+      "collisions": 0,
+      "timeouts": 0,
+      "other_failures": 0,
+      "checkpoint_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206"
+    }
+  },
+  "evaluation_image": {
+    "tag": "crazyflow:dani-crazyrl-eval",
+    "image_id": "sha256:b24de653e360bf51cb378de1d1425da917c4089a33f7a37d93ad664590bcb369"
+  },
+  "notes": "Dedicated image tags for this branch. Both installed source/model hashes verified without mounting the repository. Earlier formal training used the same pinned dependencies with read-only source binding; the subsequent one-line resolved-batch configuration fix does not change its explicit batch inputs."
+}

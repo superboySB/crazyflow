@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "crazyflow"
 dynamic = ["version"]
-description = "Bounding-box balloon contact with pure BPTT and Crazyflow dynamics."
+description = "JAX PPO ToF obstacle avoidance with native Crazyflow GPU dynamics."
 authors = [{ name = "Martin Schuck" }, { name = "Marcel Rath" }]
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -62,9 +62,11 @@ version = { attr = "crazyflow.__version__" }
 "share/crazyflow/docs" = ["docs/*.md", "docs/*.pdf"]
 "share/crazyflow/docs/crazyflow_experiments_sysid" = ["docs/crazyflow_experiments_sysid/README.md", "docs/crazyflow_experiments_sysid/LICENSE", "docs/crazyflow_experiments_sysid/provenance.json"]
 "share/crazyflow/examples/identification" = ["examples/identification/*.md", "examples/identification/*.csv", "examples/identification/*.json"]
-"share/crazyflow/examples/balloon" = ["examples/balloon/*.md", "examples/balloon/*.npz", "examples/balloon/*.json", "examples/balloon/*.jsonl", "examples/balloon/*.png", "examples/balloon/*.gif"]
+
+"share/crazyflow/examples/tof" = ["examples/tof/*.md", "examples/tof/*.npz", "examples/tof/*.json", "examples/tof/*.png", "examples/tof/*.csv"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 markers = ["unit", "integration", "render"]
 addopts = "-m 'not render'"
 

@@ -370,6 +370,49 @@ def measured_values(path: Path, allow_synthetic: bool = False) -> dict[str, Any]
     return values
 
 
+def validate_physical_params(params: dict) -> None:
+    """Validate the reusable native first-principles physical parameter contract."""
+    from crazyflow.drones import Drone
+    from crazyflow.dynamics import Dynamics, load_params
+
+    reference = load_params(Dynamics.first_principles, Drone.cf21B_500)
+    for key, value in params.items():
+        if key not in reference or key == "J_inv" or not np.isfinite(value).all():
+            raise ValueError(f"Invalid first_principles parameter {key}")
+        shapes = {np.shape(reference[key])}
+        if key in ("rpm2thrust", "rpm2torque"):
+            shapes |= {(1, 3), (4, 3)}
+        if key == "rotor_dyn_coef":
+            shapes |= {(1, 4), (4, 4)}
+        if key in ("L", "prop_inertia"):
+            shapes |= {(1,), (4,)}
+        if np.shape(value) not in shapes:
+            raise ValueError(f"Wrong shape for {key}: {np.shape(value)}")
+        array = np.asarray(value)
+        if key in ("mass", "L", "prop_inertia", "thrust_max") and np.any(array <= 0):
+            raise ValueError(f"{key} must be positive")
+        if key in ("thrust_min", "rotor_dyn_coef") and np.any(array < 0):
+            raise ValueError(f"{key} must be nonnegative")
+        if key == "J" and (not np.allclose(array, array.T) or np.linalg.eigvalsh(array).min() <= 0):
+            raise ValueError("J must be symmetric positive definite")
+        if key == "drag_matrix" and (
+            not np.allclose(array, array.T) or np.linalg.eigvalsh(array).max() > 1e-8
+        ):
+            raise ValueError("drag_matrix must be symmetric negative semidefinite")
+    effective = reference | params
+    if effective["thrust_min"] >= effective["thrust_max"]:
+        raise ValueError("thrust_min must be below thrust_max")
+    curve = np.atleast_2d(effective["rpm2thrust"])
+    c, b, a = curve[:, 0], curve[:, 1], curve[:, 2]
+    forces = np.array([0.0, effective["thrust_max"]])
+    discriminant = b[:, None] ** 2 - 4 * a[:, None] * (c[:, None] - forces)
+    if np.any(a <= 0) or np.any(discriminant < 0):
+        raise ValueError("rpm2thrust must have a real quadratic inverse from zero to max thrust")
+    rpm = (-b[:, None] + np.sqrt(discriminant)) / (2 * a[:, None])
+    if not np.isfinite(rpm).all() or np.any(rpm < 0):
+        raise ValueError("rpm2thrust inverse must produce finite nonnegative RPM")
+
+
 def write_bundle(args: argparse.Namespace) -> None:
     """Export a physical table with per-key provenance and unchanged controller settings."""
     params = {
@@ -403,9 +446,7 @@ def write_bundle(args: argparse.Namespace) -> None:
         )
     if params["thrust_min"] < 0 or params["thrust_min"] >= params["thrust_max"]:
         raise ValueError("Invalid measured thrust limits")
-    from crazyflow.balloon.config import Config
-
-    Config(model_params=params)  # Same complete physical contract that training consumes.
+    validate_physical_params(params)
     _check_thrust_inverse(params["rpm2thrust"], params["thrust_max"])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     lines = [

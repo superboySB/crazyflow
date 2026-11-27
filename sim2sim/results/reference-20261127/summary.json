@@ -1,0 +1,491 @@
+{
+  "num_episodes": 1280,
+  "success_count": 1265,
+  "success_rate": 0.98828125,
+  "collision_count": 15,
+  "collision_rate": 0.01171875,
+  "numerical_instability_count": 0,
+  "numerical_instability_rate": 0.0,
+  "timeout_count": 0,
+  "timeout_rate": 0.0,
+  "outcome_counts": {
+    "success": 1265,
+    "collision": 15,
+    "numerical_instability": 0,
+    "timeout": 0,
+    "other_death": 0
+  },
+  "speed_m_s": {
+    "time_weighted_mean": 0.8058425653723946,
+    "max": 1.638877034187317
+  },
+  "episode_mean_speed_m_s": {
+    "mean": 0.8326394750431876,
+    "median": 0.8345959071178862,
+    "p10": 0.5142617178590674,
+    "p90": 1.1667956103346109,
+    "min": 0.05314007867127657,
+    "max": 1.3577040873075787,
+    "total": 1065.77852805528
+  },
+  "duration_s": {
+    "mean": 9.1096875,
+    "median": 8.466666666666667,
+    "p10": 3.3333333333333335,
+    "p90": 16.066666666666666,
+    "min": 0.13333333333333333,
+    "max": 29.733333333333334,
+    "total": 11660.4
+  },
+  "path_length_m": {
+    "mean": 7.33121995629117,
+    "median": 7.388880968093872,
+    "p10": 2.471726489067078,
+    "p90": 12.06597118377686,
+    "min": 0.0037395390681922436,
+    "max": 17.83704948425293,
+    "total": 9383.961544052698
+  },
+  "start_goal_distance_m": {
+    "mean": 7.382116813072935,
+    "median": 7.4426493644714355,
+    "p10": 2.6347284793853762,
+    "p90": 12.079514598846439,
+    "min": 0.19981485605239868,
+    "max": 17.812807083129883,
+    "total": 9449.109520733356
+  },
+  "commanded_speed_m_s": {
+    "mean": 0.9947321334853768,
+    "median": 0.9885015189647675,
+    "p10": 0.600613534450531,
+    "p90": 1.3984092235565186,
+    "min": 0.5002140402793884,
+    "max": 1.4997045993804932,
+    "total": 1273.2571308612823
+  },
+  "schema": "navigation_metrics_pooled_v1",
+  "task": "baseline",
+  "checkpoint_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+  "num_seeds": 5,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "sampling_frequency_hz": 15.0,
+  "contact_force_threshold_n": 0.01,
+  "simulation_steps_total": 7759,
+  "evaluation_wall_time_s_total": 225.62776017189026,
+  "per_seed": [
+    {
+      "seed": 42,
+      "num_envs": 32,
+      "episodes_per_env": 8,
+      "simulation_steps": 1407,
+      "evaluation_wall_time_s": 41.63561034202576,
+      "num_episodes": 256,
+      "success_count": 253,
+      "success_rate": 0.98828125,
+      "collision_count": 3,
+      "collision_rate": 0.01171875,
+      "numerical_instability_count": 0,
+      "numerical_instability_rate": 0.0,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "outcome_counts": {
+        "success": 253,
+        "collision": 3,
+        "numerical_instability": 0,
+        "timeout": 0,
+        "other_death": 0
+      },
+      "speed_m_s": {
+        "time_weighted_mean": 0.808572907128853,
+        "max": 1.6154557466506958
+      },
+      "episode_mean_speed_m_s": {
+        "mean": 0.843273304908718,
+        "median": 0.8620422340574718,
+        "p10": 0.5534091681694913,
+        "p90": 1.1514820570389628,
+        "min": 0.0855338922701776,
+        "max": 1.3577040873075787,
+        "total": 215.8779660566318
+      },
+      "duration_s": {
+        "mean": 9.05,
+        "median": 8.366666666666667,
+        "p10": 3.2333333333333334,
+        "p90": 16.03333333333333,
+        "min": 0.13333333333333333,
+        "max": 24.8,
+        "total": 2316.8
+      },
+      "path_length_m": {
+        "mean": 7.3077234136653715,
+        "median": 7.267774820327759,
+        "p10": 2.629958152770996,
+        "p90": 12.006061553955078,
+        "min": 0.0058059412986040115,
+        "max": 15.342126846313477,
+        "total": 1870.777193898335
+      },
+      "start_goal_distance_m": {
+        "mean": 7.3269366864115,
+        "median": 7.4143617153167725,
+        "p10": 2.7951714992523193,
+        "p90": 11.999287605285645,
+        "min": 0.3793866038322449,
+        "max": 15.200909614562988,
+        "total": 1875.695791721344
+      },
+      "commanded_speed_m_s": {
+        "mean": 1.0063352268189192,
+        "median": 0.9975208640098572,
+        "p10": 0.6190764307975769,
+        "p90": 1.3883683681488037,
+        "min": 0.5027589201927185,
+        "max": 1.4997045993804932,
+        "total": 257.6218180656433
+      },
+      "source_summary": "seed_42/model_36825.summary.json",
+      "cruising_speed_m_s": {
+        "samples": 31089,
+        "time_weighted_mean": 0.8311259813669782,
+        "max": 1.6154557466506958
+      }
+    },
+    {
+      "seed": 43,
+      "num_envs": 32,
+      "episodes_per_env": 8,
+      "simulation_steps": 1754,
+      "evaluation_wall_time_s": 50.88203501701355,
+      "num_episodes": 256,
+      "success_count": 255,
+      "success_rate": 0.99609375,
+      "collision_count": 1,
+      "collision_rate": 0.00390625,
+      "numerical_instability_count": 0,
+      "numerical_instability_rate": 0.0,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "outcome_counts": {
+        "success": 255,
+        "collision": 1,
+        "numerical_instability": 0,
+        "timeout": 0,
+        "other_death": 0
+      },
+      "speed_m_s": {
+        "time_weighted_mean": 0.8141683532962044,
+        "max": 1.5629178285598755
+      },
+      "episode_mean_speed_m_s": {
+        "mean": 0.8292101408271768,
+        "median": 0.8339002934889722,
+        "p10": 0.5169633809257956,
+        "p90": 1.1433556583517306,
+        "min": 0.22566202689300885,
+        "max": 1.3257404442491203,
+        "total": 212.27779605175726
+      },
+      "duration_s": {
+        "mean": 8.887239583333333,
+        "median": 8.066666666666666,
+        "p10": 3.2666666666666666,
+        "p90": 16.166666666666664,
+        "min": 0.6666666666666666,
+        "max": 25.4,
+        "total": 2275.133333333333
+      },
+      "path_length_m": {
+        "mean": 7.225740968133323,
+        "median": 6.920651435852051,
+        "p10": 2.3510279655456543,
+        "p90": 12.393613338470459,
+        "min": 0.2534754276275635,
+        "max": 16.660425186157227,
+        "total": 1849.7896878421307
+      },
+      "start_goal_distance_m": {
+        "mean": 7.260799400974065,
+        "median": 7.0080273151397705,
+        "p10": 2.4193767309188843,
+        "p90": 12.457704067230225,
+        "min": 0.6089149713516235,
+        "max": 16.763694763183594,
+        "total": 1858.7646466493607
+      },
+      "commanded_speed_m_s": {
+        "mean": 0.9976501248311251,
+        "median": 0.9916330575942993,
+        "p10": 0.6014134585857391,
+        "p90": 1.3906991481781006,
+        "min": 0.5002140402793884,
+        "max": 1.4993846416473389,
+        "total": 255.39843195676804
+      },
+      "source_summary": "seed_43/model_36825.summary.json",
+      "cruising_speed_m_s": {
+        "samples": 30301,
+        "time_weighted_mean": 0.841574856419852,
+        "max": 1.5629178285598755
+      }
+    },
+    {
+      "seed": 44,
+      "num_envs": 32,
+      "episodes_per_env": 8,
+      "simulation_steps": 1452,
+      "evaluation_wall_time_s": 41.770445823669434,
+      "num_episodes": 256,
+      "success_count": 251,
+      "success_rate": 0.98046875,
+      "collision_count": 5,
+      "collision_rate": 0.01953125,
+      "numerical_instability_count": 0,
+      "numerical_instability_rate": 0.0,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "outcome_counts": {
+        "success": 251,
+        "collision": 5,
+        "numerical_instability": 0,
+        "timeout": 0,
+        "other_death": 0
+      },
+      "speed_m_s": {
+        "time_weighted_mean": 0.8021623818690329,
+        "max": 1.6063337326049805
+      },
+      "episode_mean_speed_m_s": {
+        "mean": 0.824671076116995,
+        "median": 0.8039240210205296,
+        "p10": 0.516355828479153,
+        "p90": 1.1780627331602465,
+        "min": 0.07054221583530307,
+        "max": 1.3125799564605063,
+        "total": 211.1157954859507
+      },
+      "duration_s": {
+        "mean": 8.923177083333334,
+        "median": 8.566666666666666,
+        "p10": 3.3,
+        "p90": 15.466666666666667,
+        "min": 0.13333333333333333,
+        "max": 28.333333333333332,
+        "total": 2284.3333333333335
+      },
+      "path_length_m": {
+        "mean": 7.1482910600243486,
+        "median": 7.39109468460083,
+        "p10": 2.4129714965820312,
+        "p90": 11.84151554107666,
+        "min": 0.00630820170044899,
+        "max": 17.83704948425293,
+        "total": 1829.9625113662332
+      },
+      "start_goal_distance_m": {
+        "mean": 7.268749063950963,
+        "median": 7.534627676010132,
+        "p10": 2.6346874237060547,
+        "p90": 11.77423906326294,
+        "min": 0.19981485605239868,
+        "max": 17.812807083129883,
+        "total": 1860.7997603714466
+      },
+      "commanded_speed_m_s": {
+        "mean": 0.9913111263886094,
+        "median": 0.9430980682373047,
+        "p10": 0.6178354322910309,
+        "p90": 1.4097964763641357,
+        "min": 0.5012221336364746,
+        "max": 1.4956450462341309,
+        "total": 253.775648355484
+      },
+      "source_summary": "seed_44/model_36825.summary.json",
+      "cruising_speed_m_s": {
+        "samples": 30529,
+        "time_weighted_mean": 0.8272790719217079,
+        "max": 1.5811537504196167
+      }
+    },
+    {
+      "seed": 45,
+      "num_envs": 32,
+      "episodes_per_env": 8,
+      "simulation_steps": 1579,
+      "evaluation_wall_time_s": 46.178455114364624,
+      "num_episodes": 256,
+      "success_count": 252,
+      "success_rate": 0.984375,
+      "collision_count": 4,
+      "collision_rate": 0.015625,
+      "numerical_instability_count": 0,
+      "numerical_instability_rate": 0.0,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "outcome_counts": {
+        "success": 252,
+        "collision": 4,
+        "numerical_instability": 0,
+        "timeout": 0,
+        "other_death": 0
+      },
+      "speed_m_s": {
+        "time_weighted_mean": 0.8168202319906419,
+        "max": 1.638877034187317
+      },
+      "episode_mean_speed_m_s": {
+        "mean": 0.8419008534053182,
+        "median": 0.8489782918944905,
+        "p10": 0.5196901419514643,
+        "p90": 1.1730716088561661,
+        "min": 0.06345680449157953,
+        "max": 1.3417629126844735,
+        "total": 215.52661847176145
+      },
+      "duration_s": {
+        "mean": 9.445833333333333,
+        "median": 9.333333333333334,
+        "p10": 3.4333333333333336,
+        "p90": 15.266666666666666,
+        "min": 0.13333333333333333,
+        "max": 27.266666666666666,
+        "total": 2418.133333333333
+      },
+      "path_length_m": {
+        "mean": 7.705735828740217,
+        "median": 7.971719264984131,
+        "p10": 2.3811625242233276,
+        "p90": 12.372262954711914,
+        "min": 0.0037395390681922436,
+        "max": 15.901814460754395,
+        "total": 1972.6683721574955
+      },
+      "start_goal_distance_m": {
+        "mean": 7.764579323702492,
+        "median": 7.912631988525391,
+        "p10": 2.581814169883728,
+        "p90": 12.380768299102783,
+        "min": 0.4798639118671417,
+        "max": 16.22311782836914,
+        "total": 1987.732306867838
+      },
+      "commanded_speed_m_s": {
+        "mean": 1.0024093515239656,
+        "median": 1.001068353652954,
+        "p10": 0.5937672555446625,
+        "p90": 1.4144203066825867,
+        "min": 0.5017210245132446,
+        "max": 1.499348521232605,
+        "total": 256.6167939901352
+      },
+      "source_summary": "seed_45/model_36825.summary.json",
+      "cruising_speed_m_s": {
+        "samples": 32449,
+        "time_weighted_mean": 0.8428438675935191,
+        "max": 1.638877034187317
+      }
+    },
+    {
+      "seed": 46,
+      "num_envs": 32,
+      "episodes_per_env": 8,
+      "simulation_steps": 1567,
+      "evaluation_wall_time_s": 45.161213874816895,
+      "num_episodes": 256,
+      "success_count": 254,
+      "success_rate": 0.9921875,
+      "collision_count": 2,
+      "collision_rate": 0.0078125,
+      "numerical_instability_count": 0,
+      "numerical_instability_rate": 0.0,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "outcome_counts": {
+        "success": 254,
+        "collision": 2,
+        "numerical_instability": 0,
+        "timeout": 0,
+        "other_death": 0
+      },
+      "speed_m_s": {
+        "time_weighted_mean": 0.787496568273756,
+        "max": 1.5815818309783936
+      },
+      "episode_mean_speed_m_s": {
+        "mean": 0.8241419999577302,
+        "median": 0.8297099215401844,
+        "p10": 0.5041156209306354,
+        "p90": 1.1685237676656546,
+        "min": 0.05314007867127657,
+        "max": 1.3400214059012276,
+        "total": 210.98035198917893
+      },
+      "duration_s": {
+        "mean": 9.2421875,
+        "median": 7.933333333333334,
+        "p10": 3.833333333333333,
+        "p90": 17.133333333333333,
+        "min": 0.13333333333333333,
+        "max": 29.733333333333334,
+        "total": 2366.0
+      },
+      "path_length_m": {
+        "mean": 7.268608510892591,
+        "median": 7.390204191207886,
+        "p10": 2.768133759498596,
+        "p90": 11.745443344116211,
+        "min": 0.0045374310575425625,
+        "max": 16.55941390991211,
+        "total": 1860.7637787885033
+      },
+      "start_goal_distance_m": {
+        "mean": 7.2895195903256536,
+        "median": 7.322960138320923,
+        "p10": 2.7053622007369995,
+        "p90": 11.740663051605225,
+        "min": 0.28641319274902344,
+        "max": 16.544919967651367,
+        "total": 1866.1170151233673
+      },
+      "commanded_speed_m_s": {
+        "mean": 0.9759548378642648,
+        "median": 0.9829732775688171,
+        "p10": 0.5760076344013214,
+        "p90": 1.3825591206550598,
+        "min": 0.5014452338218689,
+        "max": 1.4953458309173584,
+        "total": 249.8444384932518
+      },
+      "source_summary": "seed_46/model_36825.summary.json",
+      "cruising_speed_m_s": {
+        "samples": 31645,
+        "time_weighted_mean": 0.8117117046183283,
+        "max": 1.5815818309783936
+      }
+    }
+  ],
+  "definitions": {
+    "rates": "Raw flagged episode counts divided by all accepted episodes; collision can overlap success.",
+    "outcome": "Exclusive priority: success, collision, numerical instability, timeout, other death.",
+    "speed": "3D linear speed sampled before reset; pooled mean weights each episode mean by its duration.",
+    "episode_mean_speed": "Distribution of episode mean speeds, with each completed episode weighted equally.",
+    "instantaneous_speed_percentiles": "Not pooled: instantaneous samples are not stored in episode CSV files.",
+    "path_length": "3D displacement summed at 15 Hz; reset teleports excluded.",
+    "collision": "Any task-detected body contact above 0.01 N, including simultaneous success.",
+    "sampling": "Completed episodes within each environment quota. Episodes share maps; no independence or confidence interval is assumed.",
+    "evaluation_wall_time_s_total": "Sum of individual evaluation wall times, excluding startup and loading.",
+    "cruising_speed": "Speed samples with more than 1 m remaining to the goal; pooled mean weights seed means by sample count. Sampling frequencies match; instantaneous percentiles are not pooled."
+  },
+  "cruising_speed_m_s": {
+    "samples": 156013,
+    "time_weighted_mean": 0.830901884445417,
+    "max": 1.638877034187317
+  }
+}

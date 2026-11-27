@@ -1,0 +1,35 @@
+{
+  "format": "crazyflow-crazyrl-actor-v1",
+  "container": "NumPy .npz, allow_pickle=False",
+  "metadata": {
+    "type": "scalar JSON string",
+    "required": {
+      "obs_dim": 344,
+      "critic_obs_dim": 434,
+      "hidden_dims": [256, 256, 128, 64],
+      "activation": "elu",
+      "normalization": "sqrt_var_plus_epsilon",
+      "normalization_epsilon": 0.01
+    }
+  },
+  "arrays": {
+    "obs_mean": [344],
+    "obs_var": [344],
+    "actor_0_kernel": [344, 256],
+    "actor_0_bias": [256],
+    "actor_1_kernel": [256, 256],
+    "actor_1_bias": [256],
+    "actor_2_kernel": [256, 128],
+    "actor_2_bias": [128],
+    "actor_3_kernel": [128, 64],
+    "actor_3_bias": [64],
+    "actor_4_kernel": [64, 4],
+    "actor_4_bias": [4]
+  },
+  "dtype": "float32",
+  "inference": "Normalize by (obs-obs_mean)/(sqrt(obs_var)+0.01), ELU after hidden layers, raw linear actor mean at output",
+  "action_order": ["roll", "pitch", "yaw_rate", "thrust"],
+  "task_squash": "Frozen CrazyRL task applies tanh once; actor export must not apply tanh",
+  "policy_frequency_hz": 15,
+  "physics_frequency_hz": 150
+}

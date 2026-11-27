@@ -1,0 +1,88 @@
+{
+  "num_episodes": 256,
+  "num_envs": 32,
+  "episodes_per_env": 8,
+  "outcome_counts": {
+    "success": 254,
+    "collision": 2,
+    "numerical_instability": 0,
+    "timeout": 0,
+    "other_death": 0
+  },
+  "sampling_frequency_hz": 15.0,
+  "success_count": 254,
+  "success_rate": 0.9921875,
+  "collision_count": 2,
+  "collision_rate": 0.0078125,
+  "numerical_instability_count": 0,
+  "numerical_instability_rate": 0.0,
+  "timeout_count": 0,
+  "timeout_rate": 0.0,
+  "speed_m_s": {
+    "samples": 35490,
+    "time_weighted_mean": 0.7874965236807506,
+    "median": 0.7240341007709503,
+    "p95": 1.3368500113487236,
+    "max": 1.5815818309783936
+  },
+  "cruising_speed_m_s": {
+    "samples": 31645,
+    "time_weighted_mean": 0.8117117046183283,
+    "median": 0.7506893277168274,
+    "p95": 1.3457948684692382,
+    "max": 1.5815818309783936
+  },
+  "path_length_m": {
+    "mean": 7.268608510892591,
+    "median": 7.390204191207886,
+    "p10": 2.768133759498596,
+    "p90": 11.745443344116211,
+    "min": 0.0045374310575425625,
+    "max": 16.55941390991211,
+    "total": 1860.7637787885033
+  },
+  "duration_s": {
+    "mean": 9.2421875,
+    "median": 7.933333333333334,
+    "p10": 3.833333333333333,
+    "p90": 17.133333333333333,
+    "min": 0.13333333333333333,
+    "max": 29.733333333333334,
+    "total": 2365.9999999999995
+  },
+  "start_goal_distance_m": {
+    "mean": 7.2895195903256536,
+    "median": 7.322960138320923,
+    "p10": 2.7053622007369995,
+    "p90": 11.740663051605225,
+    "min": 0.28641319274902344,
+    "max": 16.544919967651367,
+    "total": 1866.1170151233673
+  },
+  "commanded_speed_m_s": {
+    "mean": 0.9759548378642648,
+    "median": 0.9829732775688171,
+    "p10": 0.5760076344013214,
+    "p90": 1.3825591206550598,
+    "min": 0.5014452338218689,
+    "max": 1.4953458309173584,
+    "total": 249.8444384932518
+  },
+  "definitions": {
+    "accepted_episodes": "Completed episodes within each environment's quota; unfinished episodes are excluded.",
+    "speed": "3D linear speed sampled before reset; time-weighted over accepted episode steps.",
+    "cruising_speed": "Speed samples with more than 1 m remaining to the current goal.",
+    "path_length": "3D displacement summed at the control frequency; reset teleports excluded.",
+    "collision": "Any task-detected body contact; raw collision rate includes simultaneous success.",
+    "outcome": "Exclusive priority: success, collision, numerical instability, timeout, other death.",
+    "episode_index": "One-based episode number within each environment."
+  },
+  "checkpoint": "/workspace/CrazyRL/assets/replementation/rl/model_36825.pt",
+  "checkpoint_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+  "task": "baseline",
+  "seed": 46,
+  "headless": true,
+  "simulation_steps": 1567,
+  "evaluation_wall_time_s": 45.161213874816895,
+  "evaluator_success_rate": 0.9921875
+}

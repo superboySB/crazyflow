@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "all_documented_intermediate_paths_ignored": true,
+  "checked_paths": [
+    "outputs/sim2sim/native-final-play.log",
+    "outputs/sim2sim/native-baseline-play.log",
+    "examples/tof/videos/play/rl-video-step-0.mp4",
+    "sim2sim/artifacts/assets/replementation/rl/videos/play/rl-video-step-0.mp4",
+    "sim2sim/artifacts/assets/replementation/rl/events.out.tfevents.1768936229.dcj.32.0",
+    "sim2sim/artifacts/baseline-actor.npz",
+    "outputs/tof-final-sim2sim/seed_42/baseline/console.log"
+  ],
+  "all_local_evaluator_entrypoints_compile": true
+}

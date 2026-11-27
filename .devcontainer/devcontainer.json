@@ -1,5 +1,5 @@
 {
-  "name": "Crazyflow dani",
+  "name": "Crazyflow dani-crazyrl",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."

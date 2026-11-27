@@ -1,132 +1,79 @@
-# 训练入口：./dani train；命令行 iterations/batch-size/steps/seed/lr 优先于本文件。
-# 相机、机体和控制器分别在 camera.json、vehicle.toml、controller.toml 中配置。
-# 下文简写模块路径均位于 crazyflow/balloon/；函数名用于直接查找实际公式。
+# JAX PPO, CrazyRL state/action/reward contract; no differentiation through physics.
+# Both training and evaluation use crazyflow.tof.config.load_config.
 training:
-  # BPTT 更新次数；每次重新采样一批完整飞行。增大增加优化时间，不增加单段时长。
-  # 实现：crazyflow/balloon/train.py:main/update。
-  iterations: 1500
-  # 每次更新的并行世界数；按实际 JAX 设备选择。增大降低采样波动，也增加显存/内存。
-  # 实现：crazyflow/balloon/settings.py:resolve_batch_size；train.py:main。
-  batch_size:
-    gpu: 1024  # GPU 默认容量；不是所有显卡都能容纳该并行数。
-    cpu: 32  # CPU 默认容量；自动回退 CPU 后读取此值。
-  seed: 42  # 整数种子；控制网络初始化、任务/噪声采样和固定验证批次，不代表硬件随机性。
-  lr: 0.001  # Adam 学习率；增大更新更激进，也可能震荡。train.py:main 中另有梯度范数裁剪。
+  iterations: 1000
+  num_envs:
+    gpu: 12288
+    cpu: 32
+  num_steps: 120
+  num_minibatches: 32
+  update_epochs: 5
+  learning_rate: 0.0005
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_coef: 0.2
+  entropy_coef: 0.005
+  value_coef: 1.0
+  max_grad_norm: 1.0
+  desired_kl: 0.01
+  seed: 42
+  save_interval: 25
 
-task:
-  # 周期/展开：crazyflow/balloon/model.py:advance；rollout.py:rollout。
-  dt: 0.02  # 策略周期 s（50 Hz）；增大使每条指令保持更久，也延长一拍 FIFO 的时间。
-  substeps: 10  # 每拍物理/控制子步；必须保持 substeps/dt=500 Hz，不能单独减少以加速。
-  steps: 150  # 整段 BPTT 的策略拍数；默认 3 s。增大看得更远，也延长梯度链和计算时间。
-  # 历史仅存实收 bbox 和已下发动作，不存位置/速度；observations.py:actor_features。
-  history: 5  # 历史帧数（至少 3）；增大提供更长时序线索，也增加输入维数与计算量。
-  hidden: 64  # 两层 MLP 的隐藏宽度；增大增加表达能力和参数/计算量。policy.py:init_policy。
-  # 接触球几何，m，机体系 FLU=[前,左,上]；与相机光心偏置是两个独立量。
-  # 影响 rollout.py:trajectory_loss 和 evaluate.py:summarize_trajectories 的接触球心/间隙。
-  collision_offset: [0.0, 0.0, 0.02]
-  drone_radius: 0.086  # 机体碰撞球半径 m；增大会更早触球，须按真实/官方几何核对。
-  # 初始任务分布：model.py:sample_batch；标称直径×尺度，不是 0.1..2 m 直径。
-  target_diameter_m: 0.3  # 标称气球直径 m；实际球半径=本值×尺度/2。
-  target_scale_range: [0.1, 2.0]  # 尺度按 log-uniform 采样，得到半径 0.015..0.3 m。
-  # 任意世界系 3D 方向匀速直线，速度模长均匀采样；速度不是策略输入。
-  target_speed_min: 0.0  # 非静止子集的速度模长下限 m/s。
-  target_speed_max: 1.5  # 非静止子集的速度模长上限 m/s。
-  target_stationary_prob: 0.2  # 每回合 20% 保持静止；其余采样上述速度及独立球面方向。
-  # 向下轨迹不反弹/不裁剪方向；按全段最低球面给飞机和球初态相同向上偏置，保持初始相对视觉。
-  target_spawn_margin: 0.05  # 球面高于 min_altitude 的额外合法出生裕量 m；不是运动边界。
-  distance_min: 1.5  # 初始世界 +X 前距下限 m（不是完整三维距离）；降低增加近场框裁剪情况。
-  distance_max: 3.0  # 初始世界 +X 前距上限 m；提高需飞得更远，初始 bbox 也更小。
-  # 超速阈值 m/s：训练用质心相对目标速度施软罚；评测用含偏置旋转的碰撞球心相对目标速度。
-  # 超过阈值标为 too_fast_contact，但实际接触仍计成功；提高阈值会减弱超速约束。
-  max_impact_speed: 2.5
-  min_altitude: 0.12  # 质心最低高度 m；提高使评测更早判低空失败，也抬高训练地面软罚起点。
-  max_range: 12.0  # 相对起点的三维活动半径 m；仅评测越界判断，提高会允许更远偏航迹。
-  max_unseen_seconds: 0.5  # 连续实收框无效的缓冲 s；增大允许更久无视觉飞行，也更晚判失视失败。
-  # 上述硬结局在 evaluate.py:summarize_trajectories 判断；训练 rollout 仍完整展开，不提前重置。
-  # 归一化动作到期望姿态：model.py:command；这是指令限幅，不是实际姿态的硬边界。
-  max_tilt: 0.5  # roll/pitch 各自 ±此角度 rad；增大机动余量，也更容易倾斜过大或失视。
-  max_yaw: 0.8  # yaw 目标角 ±此值 rad，不是 yaw rate；增大转向范围，yaw 始终参与学习。
-
-objective:
-  # 全部权重用于 crazyflow/balloon/rollout.py:trajectory_loss 的可微代价，不是 RL 奖励。
-  # 真值目标/位置/速度仅用于仿真生成测量、损失和评测；actor 只接 bbox、姿态、body gyro、动作历史。
-  # 代价按代码取时间/批次均值或平滑加权；改权重不会改 evaluate.py 的硬接触成功定义。
-  # 权重是相对代价乘数；下面注明被加权项的公式/单位，不能按不同项的数字直接比较重要性。
-  loss_weights:
-    # 全程策略端点的机体碰撞球心到气球中心距离均值，m；增大催促接近，过强可能更急。
-    distance: 1.0
-    # 最佳表面间隙的平滑接触罚，m；间隙=球心距-两球半径和。增大重视触球，过强可压过稳态项。
-    contact: 5.0
-    # 全程质心世界速度平方均值，m²/s²；增大更慢，过强可能只悬停而不接近。
-    speed: 0.04
-    # 按接近程度加权 relu(质心相对目标速度²-max_impact_speed²)²，m⁴/s⁴；增大抑制相对冲撞。
-    impact: 0.15
-    # observations.py:soft_fov_cost + camera.py:intrinsics，使用同一 K/外参的目标中心视锥软罚。
-    # 无量纲；罚越过内侧 0.9 边界或前向分量不足，不是全图居中误差。
-    fov: 0.8  # 增大更重视保持可见；过强可能妨碍接触机动。
-    # 每个物理子步 relu(min_altitude+ground_margin-质心高度)²，m²；增大避地更强，也更保守。
-    ground: 12.0
-    # 每个物理子步 roll/pitch 超过 tilt_soft_limit 的平方罚，rad²；增大更稳，但限制敏捷机动。
-    tilt: 3.0
-    # 策略端点 Euler 角导数平方均值，rad²/s²（state_vector 的后三维，不是直接惩罚 body gyro）。
-    angular_rate: 0.015  # 增大抑制姿态角快速变化；过强降低转向响应。
-    # 已下发归一化四通道动作平方均值，无量纲；零动作对应水平、yaw=0、标称悬停推力。
-    action: 0.025  # 增大减少控制幅值；过强会妨碍倾斜接近/偏航，不是姿态跟踪误差权重。
-    # 相邻已下发归一化动作差的平方均值，无量纲，首拍与零动作比较；用 FIFO 前动作，不除以 dt。
-    smoothness: 0.08  # 增大更平滑；过强会使看到新框后的修正滞后。
-  # 三个温度的单位均为表面间隙 m；实现仍为 rollout.py:trajectory_loss。
-  softmin_temperature: 0.08  # 增大让“最佳间隙”更趋向整段均值；减小更像硬最小值，梯度更集中。
-  impact_temperature: 0.15  # 接近时刻的 softmax 温度；增大让超速罚覆盖更多时刻，减小集中于最近处。
-  contact_temperature: 0.12  # softplus 接触过渡宽度；增大后接触附近/已接触仍有较大代价，减小更像正间隙罚。
-  ground_margin: 0.15  # 地面软罚比 min_altitude 提前多少 m；增大更早避地，不改变评测最低高度。
-  tilt_soft_limit: 0.85  # 实际 roll/pitch 的软罚起点 rad；增大放松倾角软罚，不改变 max_tilt 指令限幅。
-
-noise:
-  # 开发训练先验，可直接训练并后续按实测调整；幅度更大训练更难，不保证鲁棒性随之提高。
-  # model.py:sample_batch/initialize 管物理；hardware.py 管新版观测/链路；rollout.py:observe 管旧 FIFO。
-  # noisy 使用本节值；perturbed 将三个 fraction、gyro_bias_std、wind_std 放大 1.5 倍，其它观测项不变。
-  # --nominal 关闭本节扰动，任务初态采样仍存在；同次 rollout 的采样固定，BPTT 对该轨迹反传。
-  # 每个 50 Hz bbox 的 cx/cy/w/h 独立加 N(0,std²)，以图像半宽/半高归一化，随后按边缘裁剪。
-  bbox_noise_std: 0.006
-  gyro_noise_std: 0.015  # 每样本、每轴 gyro 白噪声 std，rad/s；新版 500 Hz、旧版 50 Hz，非谱密度。
-  gyro_bias_std: 0.005  # 每回合、每轴 N(0,std²) 的固定 gyro 零偏，rad/s；回合内不漂移。
-  attitude_noise_std: 0.005  # 每样本旋转向量高斯 std，rad；新版 500 Hz；R_obs=R_true·Exp(δφ)。
-  dropout_prob: 0.015  # 每个视觉包独立漏检概率；无效框入 FIFO，不用真值或上一框替补。
-  # 以下旧整数 FIFO 仅 hardware.enabled=false 时生效；与硬件管线互斥，不串联重复延迟。
-  max_delay_steps: 2  # 旧视觉 FIFO：每回合均匀整数采样 0..此值，最长 40 ms。
-  action_delay_steps: 1  # 旧动作 FIFO：每回合均匀整数采样 0..此值，四通道共同最长 20 ms。
-  # FIFO 是额外链路等待，电机自身响应另由 rotor_dyn_coef 推进；增大延迟更难及时修正。
-  # 三个 fraction 均为无量纲半宽，要求 0<=f<2/3，以保持 perturbed 的物理倍率为正。
-  mass_fraction: 0.05  # 每回合物理质量乘 U[1-f,1+f]；不同时缩放 J 或控制器参数，f 为无量纲半宽。
-  thrust_fraction: 0.08  # 每回合两条物理 RPM→推力/反扭矩曲线同乘 U[1-f,1+f]，所有电机共用。
-  # 物理曲线变化时，控制器分配仍用标称参数；增大 fraction 增加执行失配，不重调控制器。
-  response_fraction: 0.1  # 四个升/降速系数同乘每回合 U[1-f,1+f]；倍率越大响应越快，不是乘时间常数。
-  # 每回合固定世界系外扰加速度的每轴高斯 std，m/s²；施加 F=m_random·a，不是风速或时变阵风。
-  wind_std: 0.12
-  hardware:
-    # 硬件链路管线；此处范围只沿用本项目旧 40 ms 视觉/20 ms 指令先验，不是实测结论。
-    # 旧 checkpoint 没有本节时默认关闭；新 YAML 开启后不叠加上述两个旧 FIFO。
-    enabled: true
-    camera_delay_ms: [0.0, 40.0]
-    camera_packet_loss_prob: 0.0  # 传输丢包，独立于上方视觉漏检；未知，测量后开启。
-    camera_stale_ms: 100.0  # 最近收到相机包的失效年龄 ms，至少覆盖最大相机延迟。
-    bbox_bias_std: 0.0  # 回合内相关框偏置，归一化单位；未知，测量后开启。
-    gyro_delay_ms: [0.0, 0.0]  # IMU gyro 包链路延迟 ms；未知，测量后开启。
-    attitude_delay_ms: [0.0, 0.0]  # 姿态包链路延迟 ms；未知，测量后开启。
-    gyro_packet_loss_prob: 0.0  # 未知，测量后开启；不是 gyro 白噪声。
-    attitude_packet_loss_prob: 0.0  # 未知，测量后开启。
-    gyro_drift_std: 0.0  # gyro 相关漂移的稳态 std，rad/s；未知，测量后开启。
-    # 按用户选择直接采用 CrazyRL 的 gyro 乘性噪声作为训练先验，非 cf21B 实测标定。
-    gyro_scale_std: 0.1  # 每个 500 Hz 样本、每轴独立乘 N(1,0.1²)；无量纲，保留原加性噪声/零偏。
-    attitude_bias_std: 0.0  # 旋转向量相关偏置的稳态 std，rad；未知，测量后开启。
-    bias_tau_s: 30.0  # 相关偏置的时间常数 s；零幅度时不制造漂移，须实测。
-    attitude_command_delay_ms: [0.0, 20.0]  # RPY 指令链路范围 ms，来自本项目旧 FIFO 先验。
-    thrust_command_delay_ms: [0.0, 20.0]  # 总推力指令链路范围 ms，同一旧先验边界。
-    command_jitter_std_ms: 0.0  # 相关指令延迟抖动 std，ms；未知，测量后开启。
-    command_jitter_tau_s: 0.1  # 抖动时间常数 s，须实测；零幅度不增加抖动。
-    inertia_fraction: 0.0  # 整体正惯量倍率半宽；未知，测量后开启，同时重算 J_inv。
-    drag_fraction: 0.0  # 阻力矩阵正倍率半宽；未知，测量后开启，保留原阻尼符号。
-    motor_thrust_fraction: 0.0  # 各电机独立推力/反扭矩倍率半宽；未知，测量后开启。
-    motor_response_fraction: 0.0  # 各电机独立升/降速倍率半宽；未知，实测后开启，同方向两系数共倍率。
-    gust_std: 0.0  # 世界系相关阵风加速度稳态 std，m/s²；未知，测量后开启。
-    gust_tau_s: 0.5  # 阵风时间常数 s，须实测；零幅度不产生阵风。
+environment:
+  drone: cf21B_500
+  # Optional identified physical TOML inside outputs; null retains official defaults.
+  model_params_path: null
+  integrator: rk4
+  policy_hz: 15
+  physics_hz: 150
+  action_delay_steps: 4
+  history_length: 10
+  episode_seconds: 80.0
+  # 8x8 front depth plus left/right/back/down single pixel cameras.
+  camera_max_distance: 4.0
+  camera_focal_length: 20.0
+  camera_aperture: 20.955
+  depth_invalid_rate_max: 0.15
+  observation_noise: true
+  domain_randomization: true
+  mass_randomization_percent: 0.2
+  wind_tau: 1.0
+  wind_sigma: 0.5
+  thrust_initial_min: 0.85
+  thrust_initial_max: 1.0
+  thrust_degradation_min: 0.10
+  thrust_degradation_max: 0.15
+  thrust_min_effectiveness: 0.7
+  desired_speed_min: 0.5
+  desired_speed_max: 1.5
+  goal_noise: 0.15
+  map_seed: 42
+  num_maps: 2
+  enable_difficulty_curriculum: true
+  map_generation_reset_batches: 3000
+  obstacle_min_distance_min: 0.4
+  hover_hold_max_seconds: 2.0
+  hover_hold_increment_seconds: 0.1
+  map_size: 16.0
+  obstacle_min_distance: 1.5
+  obstacle_size_min: 0.4
+  obstacle_size_max: 0.8
+  floater_size_min: 0.4
+  floater_size_max: 0.8
+  spawn_clearance: 0.20
+  drone_radius: 0.055
+  hover_hold_seconds: 0.0
+  hover_distance: 0.5
+  hover_speed: 0.5
+  # CrazyRL static_goals coefficients, per policy step (not multiplied by dt).
+  reward_distance: 8.0
+  reward_yaw: 0.3
+  reward_action: 0.3
+  reward_action_change: 0.5
+  reward_velocity_direction: 0.15
+  reward_speed_excess: 0.5
+  reward_speed_match: 0.0
+  reward_height: 0.25
+  reward_collision: 80.0
+  reward_esdf: 0.1
+  reward_success: 80.0

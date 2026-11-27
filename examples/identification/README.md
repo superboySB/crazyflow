@@ -1,6 +1,6 @@
 # 参数辨识示例数据
 
-这些文件是系统辨识的估计/验证日志，**不是 BPTT 训练数据集**。默认 BPTT 从物理仿真采样，无需读取本目录。
+这些文件是系统辨识的估计/验证日志，**不是 PPO 训练数据集**。默认 PPO 从物理仿真采样，无需读取本目录。
 
 本目录保留两段由官方 `cf21B_500` 的 `so_rpy_rotor_drag` 前向模型生成的合成飞行日志，用于检查已知非零阻力、总推力滞后与闭环姿态响应的拟合。每段 15 s、100 Hz；它们来自仿真，不能作为实机测量或真实飞机的精度报告。
 
@@ -17,11 +17,11 @@ time,pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w,cmd_roll,cmd_pitch,cmd_yaw,cm
 
 时间为 s，世界 ENU 位置为 m；四元数为机体 FLU 到世界的 `xyzw`，姿态指令为 rad，`cmd_f` 为整机总推力指令 N。这些列不含机械 RPM，不能当作第一性原理电机辨识日志。
 
-先在项目根目录执行一次 `./dani setup`。之后无需宿主 Python，也无需保留终端变量：
+先在项目根目录执行一次 `./crazyrl setup`。之后无需宿主 Python，也无需保留终端变量：
 
 ```bash
-./dani identify check
-./dani identify drag-check
+./crazyrl identify check
+./crazyrl identify drag-check
 ```
 
 两个命令各自在 `outputs/measurements/` 下创建唯一目录，保留输入日志、拟合结果与检查输出，不修改已有测量文件。它们是**两套不同观测/模型的检查**：
@@ -33,8 +33,8 @@ time,pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w,cmd_roll,cmd_pitch,cmd_yaw,cm
 
 | 命令 | 合成数据及用途 | 不能据此声称的结果 |
 | --- | --- | --- |
-| `./dani identify check` | 机械 RPM、质心比力/角加速度、旋翼瞬态与可选台架表，检查第一性原理曲线与旋翼拟合链路 | 已完成实机测量、已测得真实 J、阻力或控制增益 |
-| `./dani identify drag-check` | 固定种子 0/1、100 Hz 的 `so_rpy_rotor_drag` 位姿及姿态/总推力指令，含已知非零阻力和总推力滞后，检查同模型拟合与验证 | 已恢复实物阻力、真实电机时常或实飞机体动力学 |
+| `./crazyrl identify check` | 机械 RPM、质心比力/角加速度、旋翼瞬态与可选台架表，检查第一性原理曲线与旋翼拟合链路 | 已完成实机测量、已测得真实 J、阻力或控制增益 |
+| `./crazyrl identify drag-check` | 固定种子 0/1、100 Hz 的 `so_rpy_rotor_drag` 位姿及姿态/总推力指令，含已知非零阻力和总推力滞后，检查同模型拟合与验证 | 已恢复实物阻力、真实电机时常或实飞机体动力学 |
 
 闭环合成 CSV 的同名 JSON 记录 `synthetic=true`、生成模型、种子、采样、积分方法和 `known_parameters`；NPZ 还内嵌合成及来源标记。它们不是机械 RPM 日志。第一性原理合成测量文件保留未确认实测的标记，仅在合成检查路径允许导出。不同随机种子的验证仍是合成验证。即使拟合文件里出现 `measured_mass_kg` 字段，合成检查中的质量也只是假定值，不能解释为经过称量。
 
@@ -45,7 +45,7 @@ time,pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w,cmd_roll,cmd_pitch,cmd_yaw,cm
 ```bash
 mkdir -p outputs/drag-example
 cp examples/identification/synthetic-*-drag.csv examples/identification/synthetic-*-drag.json outputs/drag-example/
-./dani identify drag --directory outputs/drag-example --mass 0.0434 \
+./crazyrl identify drag --directory outputs/drag-example --mass 0.0434 \
   --data outputs/drag-example/synthetic-train-drag.csv \
   --validation outputs/drag-example/synthetic-valid-drag.csv
 ```
@@ -55,8 +55,8 @@ cp examples/identification/synthetic-*-drag.csv examples/identification/syntheti
 准备真实日志时先生成空表头：
 
 ```bash
-./dani identify init
-./dani identify drag-init
+./crazyrl identify init
+./crazyrl identify drag-init
 ```
 
 `init` 对应机械 RPM/IMU/台架物理日志，`drag-init` 对应参考位置/姿态及姿态/总推力指令。两套字段不能混用；模板只有列名和未确认的默认示例，不是实测数据。独立采集训练与验证飞行，并一同保留飞机与载荷清单、采集时间、固件/控制器、电压、坐标系、时间对齐及单位说明。

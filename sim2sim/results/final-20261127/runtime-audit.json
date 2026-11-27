@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "evaluations": 10,
+  "all_exit_codes_zero": true,
+  "paired_environment_configurations_exactly_equal": true,
+  "only_environment_seed_changes_across_seeds": true,
+  "environment_config_sha256": {
+    "42": "9e323970b75e384cee17f5ad47450ae1239600d99a57ee14d1dfe9aa62e9c92d",
+    "43": "3e86c31f3a885df40db94d431fce6956754f31cea407825bd7f94585628b7036",
+    "44": "83ead11b92c8dca5b5c8114c1453b642723aa890970e0229db737107a0e0a64e",
+    "45": "e36a393d051b755e30836a0b957261b8df0458d44094d6c305d4e92b96043b6a",
+    "46": "3629a6a6c133ffa7f3e579bd2393d5bce7b608d28cb41ef9f25b37da61aa2e01"
+  },
+  "evaluation_image_id": "sha256:b24de653e360bf51cb378de1d1425da917c4089a33f7a37d93ad664590bcb369",
+  "evaluation_source_sha256": "59c99b2eab5213a8bd4ccc0b413d360fadd37afc834dddc95f5acd8875a49458",
+  "gpu_memory": {
+    "metric": "nvidia-smi total device used memory, includes desktop/other processes",
+    "sample_period_s": 0.5,
+    "samples": 599,
+    "peak_used_mib": 5716,
+    "raw_logs": [
+      "outputs/sim2sim/final-evaluation-gpu-initial.json",
+      "outputs/sim2sim/final-evaluation-gpu.json"
+    ]
+  }
+}

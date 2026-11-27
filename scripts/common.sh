@@ -6,13 +6,13 @@ if [[ ${CF_COMMON_LOADED:-0} == 1 ]]; then return 0; fi
 CF_COMMON_LOADED=1
 CF_ROOT=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 CF_OUTPUTS=$(realpath -m -- "$CF_ROOT/outputs")
-CF_IMAGE=${CRAZYFLOW_IMAGE:-crazyflow:dani}
+CF_IMAGE=${CRAZYFLOW_IMAGE:-crazyflow:dani-crazyrl}
 CF_DEVICE_REQUEST=${CF_DEVICE_REQUEST:-auto}
 
 cf_die() { printf '错误：%s\n' "$*" >&2; exit 1; }
 cf_require_value() { [[ $# -gt 1 && -n $2 && $2 != --* ]] || cf_die "$1 需要一个值。"; }
 cf_docker() {
-  command -v docker >/dev/null || cf_die '请先安装并启动 Docker Engine，然后重新运行 ./dani setup。'
+  command -v docker >/dev/null || cf_die '请先安装并启动 Docker Engine，然后重新运行 ./crazyrl setup。'
   docker info >/dev/null 2>&1 || cf_die 'Docker 不可用；请启动 Docker 并检查当前用户的访问权限。'
   mkdir -p "$CF_OUTPUTS"
 }
@@ -54,7 +54,7 @@ cf_select_device() {
       >"$probe_log" 2>&1; then
     cat "$probe_log" >&2
     rm -f "$probe_log"
-    cf_die '容器 CPU/JAX 检查失败。请重新运行 ./dani setup。'
+    cf_die '容器 CPU/JAX 检查失败。请重新运行 ./crazyrl setup。'
   fi
   CF_DEVICE=cpu
   printf '使用 CPU。\n'
@@ -68,7 +68,9 @@ cf_run_args() {
   CF_RUN_ARGS=(--rm --init --user "$(id -u):$(id -g)" --shm-size=2g
     -v "$CF_OUTPUTS:/outputs" --workdir /opt/crazyflow
     -e "JAX_COMPILATION_CACHE_DIR=/outputs/.cache/jax-$(id -u)"
-    -e JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0)
+    -e JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0
+    -e XLA_PYTHON_CLIENT_PREALLOCATE=false -e XLA_PYTHON_CLIENT_MEM_FRACTION=0.55
+    -v "$CF_ROOT:/opt/crazyflow:ro")
 }
 cf_container() {
   cf_run_args
@@ -77,14 +79,21 @@ cf_container() {
   else
     CF_RUN_ARGS+=(-e JAX_PLATFORMS=cpu -e MUJOCO_GL=osmesa)
   fi
-  docker run "${CF_RUN_ARGS[@]}" "$CF_IMAGE" "$@"
+  if [[ ${CF_GUARD_GPU:-0} == 1 && $CF_DEVICE == gpu ]]; then
+    local container_name="crazyflow-tof-${BASHPID}-${RANDOM}"
+    python3 "$CF_ROOT/scripts/guard_gpu.py" --name "$container_name" \
+      --output "$CF_MEMORY_LOG" -- docker run --name "$container_name" \
+      "${CF_RUN_ARGS[@]}" "$CF_IMAGE" "$@"
+  else
+    docker run "${CF_RUN_ARGS[@]}" "$CF_IMAGE" "$@"
+  fi
 }
 cf_container_cpu() {
   cf_run_args
   docker run "${CF_RUN_ARGS[@]}" -e JAX_PLATFORMS=cpu -e MUJOCO_GL=osmesa "$CF_IMAGE" "$@"
 }
 cf_container_gui() {
-  [[ -n ${DISPLAY:-} ]] || cf_die '没有 DISPLAY；在 Linux/X11 桌面运行，或使用 ./dani play --headless。'
+  [[ -n ${DISPLAY:-} ]] || cf_die '没有 DISPLAY；在 Linux/X11 桌面运行，或使用 ./crazyrl play --headless。'
   cf_run_args
   CF_RUN_ARGS+=(--hostname "$(hostname)" -e "DISPLAY=$DISPLAY" -e MUJOCO_GL=glfw
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro)
@@ -124,14 +133,11 @@ cf_new_directory() {
   mkdir -p "$CF_OUTPUTS"
   mktemp -d "$CF_OUTPUTS/${1:-run}-$(date +%Y%m%d-%H%M%S)-XXXXXX"
 }
-# Stage the bundled checkpoint inside the sole runtime mount. Example runs never
-# replace the user's latest successful training pointer.
 cf_stage_example_policy() {
-  local source="$CF_ROOT/examples/balloon/policy.npz" directory
-  [[ -f $source && -r $source && -s $source ]] || \
-    cf_die "缺少或无法读取示例策略：$source。请保留 examples/balloon/policy.npz，或先运行 ./dani train。"
-  directory=$(cf_new_directory example-policy) || return
-  cp -- "$source" "$directory/policy.npz" || return
+  local source="$CF_ROOT/examples/tof/policy.npz" directory
+  [[ -s $source ]] || cf_die "缺少示例模型：$source。请保留 examples/tof/policy.npz。"
+  directory=$(cf_new_directory tof-example)
+  cp -- "$source" "$directory/policy.npz"
   printf '%s\n' "$directory/policy.npz"
 }
 cf_record_latest() {
@@ -161,6 +167,6 @@ cf_latest_policy() {
 cf_latest_evaluation() {
   local path
   path=$(cf_latest_directory latest-evaluation) || return
-  [[ -s $path/metrics.json ]] || cf_die "缺少评测文件：$path/metrics.json"
+  [[ -s $path/summary.json ]] || cf_die "缺少评测文件：$path/summary.json"
   printf '%s\n' "$path"
 }

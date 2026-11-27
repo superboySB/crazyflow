@@ -1,153 +1,158 @@
-# Dani：cf21B_500 气球接触，纯 BPTT
+# dani-crazyrl：Crazyflow / JAX PPO 的 ToF 避障
 
-按下面四步完成 Docker 配置、实物辨识、训练和评测。策略使用 bbox、姿态、机体角速度和历史信息，yaw 参与控制，不读取位置或线速度。训练通过 Crazyflow 的可微物理做 BPTT，使用官方 `cf21B_500` 完整动力学和姿态控制器。
+本分支在 Crazyflow 上训练 CrazyRL `baseline/static_goals` 避障任务。训练、物理推进、ToF 测距、rollout、GAE 和 PPO 更新均在同一 JAX 设备上批量执行，使用 Flax + Optax；训练器沿用 `research` 分支验证过的官方 [crazyflow_experiments](https://github.com/learnsyslab/crazyflow_experiments/tree/203ad4e31b9380fec985f17008bb7a68ad5cf768) 的 functional/JIT/scan 方式，适配 CrazyRL 的网络与任务接口。梯度只来自 PPO 的网络损失。气球任务及其专用训练代码已删除。
 
-在项目根目录运行 `./dani`；无需激活 Python 环境或设置终端变量。先跑默认仿真时，只需 `setup → train → evaluate → play`；所有结果保存到 `outputs/`。
+Isaac Sim 仅用于最后的 sim2sim 对比，使用现成的 CrazyRL 权重，不在 Isaac 中重新训练。MuJoCo 用于显示 Crazyflow 实际闭环飞行轨迹和 ToF。所有入口在项目根目录运行，宿主只需 Docker；GPU 需要 NVIDIA 驱动和 NVIDIA Container Toolkit；宿主调度器使用 Python 3 标准库。
 
-## 先看配置放在哪里
-
-| 要调整什么 | 编辑文件 | 默认内容 |
-| --- | --- | --- |
-| 训练次数、并行数、学习率、随机种子 | [config/training.yaml](config/training.yaml) 的 `training` | 1500 次；GPU 1024 / CPU 32 个并行世界 |
-| 轨迹时长、历史长度、气球尺寸/距离、控制与终止界限 | 同文件的 `task` | 50 Hz 策略、500 Hz 物理/控制器，yaw 不锁定 |
-| 接触、视野、安全、速度与动作平滑等优化权重 | 同文件的 `objective` | 可微目标；实际成功仍以接触判定 |
-| 质量/推力/电机响应随机化，bbox/IMU 噪声、丢帧和延迟 | 同文件的 `noise` | 默认开启，属于训练假设，可按实测调整 |
-| 质量、惯量、力臂、推力/反扭矩曲线、旋翼动态和阻力 | [config/vehicle.toml](config/vehicle.toml) | 官方 `cf21B_500` 完整物理参数 |
-| 姿态控制器增益、混控、分配端推力映射 | [config/controller.toml](config/controller.toml) | 官方姿态与力矩分配参数 |
-| 图像分辨率、水平视场、相机内参与安装外参 | [config/camera.json](config/camera.json) | 640×480、水平 120°、向前偏置 3 cm |
-| 无人机外观、网格与基础场景 | [assets/](assets/) | 官方机体 XML、网格与场景；相机标定仍由 `camera.json` 控制 |
-
-通常只修改上面四份配置。底层各模型的默认表也已移到 `config/dynamics/`、`config/control/`；`crazyflow/` 保留 BPTT、仿真、控制和辨识逻辑。详细字段、单位和坐标轴见 [config/README.md](config/README.md)。
-
-两份技术资料已放到本地：[Crazyflie/BPTT 与辨识说明](docs/Crazyflie与Crazyflow_BPTT关键问题与辨识方案.pdf)、[视觉可微仿真与实机控制说明](docs/苏黎世穿缝_可微分仿真与实机控制.pdf)。具体操作和当前默认值以本项目手册、配置为准。
-
-## 1. 一键配置 Docker
+## 1. 安装、独立 Docker 与检查
 
 ```bash
-./dani setup
+./crazyrl setup --device gpu
+./crazyrl train --smoke --device gpu
 ```
 
-宿主先装好 Docker。脚本构建统一镜像，在容器内实际执行 JAX 计算，**优先 GPU，不可用时自动使用 CPU**。GPU 需要宿主已有 NVIDIA 驱动与 Container Toolkit；Python、JAX、CUDA 用户态库和 MuJoCo 都在镜像中。[配置脚本](scripts/setup.sh)和[设备检测](scripts/common.sh)中有说明。
+训练镜像是 **`crazyflow:dani-crazyrl`**，评测镜像是 **`crazyflow:dani-crazyrl-eval`**，均独立于 `dani` 的镜像。依赖固定在 `requirements-{cpu,gpu}.lock`；`setup` 运行真实 JAX GPU 运算。省略 `--device` 时自动选择 GPU，失败则使用 CPU；强制 GPU 失败会退出。首次 JIT 编译较慢，`training.jsonl` 分别记录首轮和后续耗时。
 
-后续命令会自动选择设备；镜像不存在时自动构建。修改代码或依赖后重新运行 `./dani setup`。修改四份用户配置后可直接训练，启动器会读取当前文件，无需重新构建镜像。
-
-## 2. 实物测量与辨识（先跑仿真可跳过）
-
-直接使用默认飞机时，进入第 3 步。增加 RGB 模组、更换电机/桨后，先建立测量模板：
+训练源码和配置只读挂载进容器，实验写入 `outputs/`。改代码后可直接重跑；依赖变更后需重新 `setup`。训练默认关闭 JAX 显存预分配，分配器限制为整卡的 55%，并提供独立的多环境容量测量。`--smoke` 只检查完整训练/导出流程，不更新“最近正式模型”指针。
 
 ```bash
-./dani identify init
+./crazyrl identify init
+./crazyrl identify check
+./crazyrl identify drag-check
 ```
 
-打开 `outputs/measurements/`，按[测量与日志采集手册](docs/identification.md)测量最终装机总重、质心、力臂与惯量，整理独立的训练和验证日志。核实真实测量后，才设置 `confirmed_measurements=true`。
+`check/drag-check` 是带真值的合成软件检查，输出不会冒充实测参数。验收记录及训练结果见文末。
 
-| 已准备的数据 | 一键入口 | 结果与覆盖范围 |
-| --- | --- | --- |
-| 机械 RPM、质心 IMU、已测质量/J | `./dani identify flight --negligible-drag` | `physical.toml`：拟合公共推力、yaw 反扭矩曲线，合并测量值和明确标记的继承项 |
-| 上述日志，加目标/实际 RPM 瞬态 | `./dani identify rotor --negligible-drag` | 重新联合导出 `physical.toml`，补充旋翼升降速系数 |
-| **可选**的推力/扭矩台数据 | `./dani identify static` | `static-check.toml`：单独交叉检查，不覆盖飞行拟合 |
-| 带参考位置/姿态的闭环飞行日志 | [辨识手册中的阻力步骤](docs/identification.md) | 官方简化闭环模型的推力延迟与阻力；不能直接替换第一性原理表 |
+## 2. 参数辨识：复用 dani，默认无需实测
 
-**没有推力/扭矩台也可走飞行日志路线**，但仍需可信机械 RPM、IMU、质量与惯量；只有姿态和角速度不足以辨识全部参数。`--negligible-drag` 表示确认所选片段中阻力与其它外力可忽略。离线辨识可使用参考位置/速度，它们不会成为策略输入。
+默认使用 Crazyflow 官方 `first_principles / cf21B_500`：质量 **0.0434 kg**，惯量、四电机 RPM 推力/反扭矩曲线、转子惯量、旋翼动态和阻力均来自 [`config/dynamics/first_principles/params.toml`](config/dynamics/first_principles/params.toml)。不把辨识示例或 CrazyRL 的 Isaac 机体数值自动覆盖为本机参数。
 
-没有硬件时，先用明确标记的[合成示例日志](examples/identification/README.md)检查流程：
+更换机体或载荷后，按[辨识手册](docs/identification.md)独立采集训练/验证 CSV，再使用原有工具：
 
 ```bash
-./dani identify check
-./dani identify drag-check
+./crazyrl identify init --directory outputs/measurements
+./crazyrl identify inertia --suspended-mass 0.0434 --spacing 0.08 --length 0.4 --period 1.0
+./crazyrl identify flight --negligible-drag
+./crazyrl identify rotor --negligible-drag
+./crazyrl identify static
+# 另一种简化闭环诊断，质量需填写真实称量值：
+./crazyrl identify drag-init
+./crazyrl identify drag --mass 0.0434
 ```
 
-辨识结果与用户配置的关系：
+`flight/rotor` 导出 `physical.toml`。需要采用真实辨识结果时，在训练 YAML 的 `environment.model_params_path` 填 **`/outputs/measurements/physical.toml`**。本次训练保持默认值。简化模型的 `closed-loop-so-rpy-rotor-drag.toml` 不能作为该物理表。CrazyRL 的 PD 控制器与 Crazyflow 的物理模型分别配置；`config/controller.toml` 是保留的 Mellinger 辨识模板，并非本任务的 PD 参数入口。
 
-- `physical.toml` 可作为本次训练的机体参数覆盖，命令见下一步；JSON 报告说明哪些量经过测量、拟合或继承。
-- 姿态增益、分配端映射与真实固件的 N→驱动映射需另行核对；物理辨识不会自动调整 `controller.toml`。
-- 闭环阻力示例输出的是另一种模型，不能直接作为 `--model-params`。完整第一性原理阻力仍需按手册核对力、速度与坐标约定。
+## 3. state、action、reward 与随机化
 
-示例保留独立的 train/valid 两段日志；官方底层拟合允许不提供验证日志，这里保留验证用于检查拟合之外的飞行。示例日志是合成数据，不是改装实机参数。
+任务实现是 [`crazyflow/tof/env.py`](crazyflow/tof/env.py)，全部参数见 [`config/training.yaml`](config/training.yaml)。参考版本和文件哈希保存在 [`sim2sim/provenance.json`](sim2sim/provenance.json)。
 
-## 3. 一键训练 BPTT
+| 项目 | 与 CrazyRL baseline 相同的接口 |
+| --- | --- |
+| Actor | 每帧 28 维 × 10 帧历史 + 当前 8×8 前向深度，共 **344** 维 |
+| 每帧内容 | body 线速度、旋转矩阵、gyro、目标方向、高度差、期望速度、上一动作、左/右/后/下单点 ToF；顺序、倍率和噪声按参考实现 |
+| Critic | 每帧 37 维 × 10 + 64 深度，共 **434** 维；增加特权信息，actor 不可访问 |
+| 深度 | 8×8 针孔 image-plane depth，focal=20、aperture=20.955，最大 4 m；ToF 作为深度相机变体 |
+| 策略 | 15 Hz；物理 150 Hz，decimation=10；动作延迟 4 个物理 tick |
+| Actor/Critic 网络 | ELU MLP `[256,256,128,64]`；独立经验归一化 |
+| 动作 | 原始 4D Gaussian；环境 `tanh` 后 roll/pitch ±π/6，yaw rate ±π/1.5，推力映射到参考总推力上限 |
+| 回合 | 最长 80 s；接触、成功或数值失稳终止；超时单独记录并正确 bootstrap |
+| 成功 | 目标距离 <0.5 m 且速度 <0.5 m/s，持续时间按配置；评测不把超时剔除 |
+
+原始 reward 逐项重写，保留单位和限幅，不额外乘 dt：距离进展（上限 0.01）×8、yaw 方向×0.3、动作模长×0.3、动作差×0.5、速度方向 Huber×0.15、超速指数罚×0.5、高度 Huber×0.25、碰撞 −80、ESDF 安全距离指数罚×0.1、到达 +80。速度匹配系数默认 0。精确公式和参考的非直观处理在代码及[环境对应说明](docs/tof-parity.md)中列明。
+
+保留参考的观测乘性噪声、深度无效点、OU 风、质量/惯量控制模型随机化、推力初始效率 `[0.85,1]`、退化率 `[0.10,0.15]`、最低效率 0.7、速度 `[0.5,1.5]`、目标采样噪声和障碍尺寸随机化。训练与最终对比使用各自冻结的配置。Crazyflow 继续使用自己的 RPM 电机/刚体模型，使用官方 RK4 积分以避免 150 Hz Euler 引入的数值振荡；其解析几何碰撞与 Isaac PhysX 碰撞不是逐步相同的物理结果，最终迁移效果由独立 Isaac 评测衡量。
+
+## 4. GPU 并行容量与正式 PPO 训练
 
 ```bash
-./dani train
+./crazyrl capacity
+# 也可限定测试范围；每档执行完整 rollout 和 PPO，而非仅分配环境：
+./crazyrl capacity --envs 1024 4096 8192 12288 14336 --output outputs/my-capacity
 ```
 
-默认读取 `config/` 下的训练 YAML、机体 TOML、控制器 TOML 和相机 JSON，自动选择设备与对应并行数，并创建新结果目录。训练前不需要运行其它项目。
-
-调整训练时，先编辑 `training.yaml` 对应部分：`training` 管优化器，`task` 管任务与控制界限，`objective` 管可微目标，`noise` 管扰动。不确定时保留默认；质量和推力曲线等真实机体数值在 `vehicle.toml` 中设置。
-
-链路等待、丢包、gyro 乘性噪声与相关扰动在 `noise.hardware` 配置；gyro 现在默认采用 CrazyRL 的每轴 `N(1,0.1²)` 乘性随机误差，并保留加性白噪声和固定零偏，其它新增未知扰动幅度仍为 0。含义见[配置说明](config/README.md#硬件链路与额外扰动)；旧策略仍使用冻结配置，修改 YAML 后需重新训练。
-
-使用已测量验证的物理辨识结果：
+容量脚本每 0.25 s 采样 NVIDIA 计算进程显存，超过 9.5 GiB 即停止；JAX 分配器另有 55% 整卡限制。请先结束其它 CUDA 计算。结果包括每档环境数、显存采样峰值、完整更新耗时、实际命令和源码哈希，保存在 `outputs/tof-capacity/capacity.json`。首轮编译不作为稳态吞吐。
 
 ```bash
-./dani train --model-params outputs/measurements/physical.toml
+./crazyrl train --device gpu
+# 修改总更新数、并行环境数或独立配置：
+./crazyrl train --device gpu --iterations 1000 --num-envs 12288 --output outputs/my-tof
+./crazyrl train --device gpu --config config/training.yaml
+# 延续同一批环境、随机状态和 Adam 状态；iterations 是目标总次数：
+./crazyrl train --device gpu --resume outputs/my-tof/checkpoint.msgpack \
+  --iterations 2000 --num-envs 12288 --output outputs/my-tof-continued
+# 增加并行数时沿用策略、优化器与归一化，但重新创建环境：
+./crazyrl train --device gpu --warm-start outputs/my-tof/checkpoint.msgpack \
+  --iterations 100 --num-envs 12288 --output outputs/my-tof-large
 ```
 
-核对并更新实机控制器后，可另加 `--controller-params outputs/measurements/controller.toml`。一次性覆盖训练次数/并行数可用 `--iterations`、`--batch-size`；完整选项见 `./dani train --help`。
+本机已测得 12,288 环境可运行；默认使用此并行数。14,336 环境触发显存保护。容量和每秒交互数是两个指标，详见[本机结果](examples/tof/README.md)。
 
-相机按 OV5647 广角的假定配置使用水平 **120°**。直接编辑 `camera.json` 的分辨率、内参与外参；真实广角图像需先去畸变，并在校正图上 track bbox，再填对应 K。修改标定后重新训练。
+PPO 默认每环境收集 120 步，5 个 epoch、32 个 minibatch；学习率 `5e-4` 按 KL 自适应，γ=0.99、λ=0.95、clip=0.2、entropy=0.005、value=1、梯度范数上限 1。用 `num_envs×120` 计算每次更新的 transitions；改变并行数不等于增加训练更新数。最初使用随机 rollout 校准观测归一化，之后只做 PPO。
 
-气球按标称直径 30 cm 的 **0.1–2 倍**对数均匀采样，即直径 **3–60 cm**；20% 静止，其余以 **0–1.5 m/s、三维任意方向匀速直线**移动。在 `training.yaml` 的 `task.target_*` 修改这些范围；真实尺寸和目标速度只用于仿真、损失与评测，不进入策略。
+`--resume` 的 `iterations` 是该运行的总更新目标；`--warm-start` 从 0 重新计数，执行额外的指定次数，并记录父检查点的训练量。
 
-每次训练会保存 `config/` 副本和 `policy.npz`。策略文件冻结有效的物理、控制器和相机参数，后续修改本地配置不会改变已有策略。`./dani train --smoke` 只做小规模流程检查，不替换最近一次正式训练。
+每次运行保存 `config.json`、`training.jsonl`、`training.png`、可独立推理的 `policy.npz` 和含优化器/RNG/环境状态的 `checkpoint.msgpack`。`policy.npz` 内包含网络、归一化、有效环境配置和源码哈希，不依赖后来修改的本地配置。GPU 正式训练全程由同样的显存 watchdog 监测，采样峰值写入 `gpu-memory.json`；超过限制会停止并保留此前成功 checkpoint。正式成功结束才更新 `outputs/.latest-policy`。日志的训练成功率来自带探索的在线回合，不能替代下面的确定性留出评测。
 
-训练标量保存在 `training.jsonl`，结束后自动生成 `training.png`（损失、验证损失、梯度和耗时），无需 TensorBoard 服务。已有一份验证有效的[示例权重与曲线](examples/balloon/README.md)，与辨识示例并列保存在 `examples/balloon/`。
-
-显存参考：RTX 4070 Ti SUPER 16GB，当前默认配置、150×10 步展开、关闭预分配，每档 3 次完整 BPTT 更新，**1024 / 4096 / 8192 / 16384** 个环境的进程采样峰值约 **1.0 / 3.0 / 5.5 / 10.9 GiB**；另留桌面等进程的余量。修改 YAML 的 `batch_size.gpu` 调整并行数，[实测记录](examples/balloon/gpu-capacity.json)不代表其它显卡的容量上限。
-
-默认保留 **1024** 环境：此前静态任务同种子、同 1500 次更新的单次对照中，8192 环境耗时多约 28%，接触数未增加；该结论尚未针对新的移动/宽尺寸任务重测。
-
-## 4. 一键 MuJoCo 评测与 GUI
-
-想先看已训练模型在训练噪声下的表现，直接打开示例 GUI：
+## 5. 留出评测与 MuJoCo 小飞机可视化
 
 ```bash
-./dani play --example --suite noisy
+./crazyrl evaluate --episodes 256 --seed 9001
+./crazyrl evaluate --checkpoint outputs/my-tof/policy.npz \
+  --episodes 256 --seed 9001 --output outputs/my-evaluation
+# 独立新障碍地图：训练模型的物理及其余任务参数保持冻结
+./crazyrl evaluate --example --episodes 256 --seed 14001 --map-seed 14001 \
+  --output outputs/my-unseen-map-test
+./crazyrl play
+# 仓库中保留本次选出的最终模型，可直接看示例：
+./crazyrl play --example
+./crazyrl play --checkpoint outputs/my-tof/policy.npz --seed 9001
+./crazyrl play --headless --checkpoint outputs/my-tof/policy.npz \
+  --output outputs/avoidance.mp4
+# 精确回放已评测的某条飞行：
+./crazyrl play --evaluation outputs/my-evaluation --episode 0
 ```
 
-省略 `--suite` 时默认打开无额外噪声的 `nominal`；`noisy` 使用训练噪声，`perturbed` 进一步加强动力学扰动与初态范围，窗口内可按 `1/2/3` 切换。
+`evaluate/play --example` 使用 `examples/tof/policy.npz`，不改最近正式训练指针。`--seed` 只改变初态与观测随机数；默认保留模型中的地图。检查泛化时另外指定 `--map-seed` 生成新地图。评测使用确定性动作均值，每个并行世界只统计首个完整回合，保存 `summary.json`、`episodes.csv` 和 `trajectories.npz`；成功、碰撞、超时、数值失稳均保留在分母。`--max-steps` 是调试截短，剩余回合按超时计，不能用来制造成功率。
 
-也可先用 `./dani evaluate --example` 重新评测示例。新版移动/宽尺寸策略在 MuJoCo 的 nominal / noisy / perturbed 三组各 256 次中，实际接触 **253、249、245** 次；剩余失败均在直径 3–10 cm 子集，详见[示例说明](examples/balloon/README.md)。
+MuJoCo 画面显示官方 CF21B 网格、随机障碍、目标、轨迹和仿真 ToF 射线；支持 follow/overview/fpv 视角及 PNG/GIF/MP4。GUI 用鼠标控制 MuJoCo 相机、空格暂停；`--headless` 使用 EGL，CPU 使用 OSMesa。这里显示的是 **Crazyflow 闭环产生的轨迹**，不是第二套 MuJoCo 动力学控制实验；独立物理迁移评测在 Isaac 进行。
+
+## 6. 独立 Isaac Sim：同场景对比新模型和现成 baseline
+
+本目录的 `sim2sim/reference/` 仅保留 baseline 任务、必要控制/动力学/传感器/地图与评测源码；必要 USD 随 `sim2sim/reference/assets/` 保存，原始 baseline 权重与参数随 `sim2sim/artifacts/assets/replementation/rl/` 保存；TensorBoard 历史事件也已复制到本机同目录，作为训练产物由 git 忽略。没有搬入 CrazyRL 的训练器和其它任务。导入器记录逐文件 SHA256，当前工作目录已包含运行所需文件，baseline 权重、USD 与参数随分支保留；重新导入历史 TensorBoard 或刷新副本时才需要参考项目：
 
 ```bash
-./dani evaluate
+python3 sim2sim/stage_reference.py --source ~/projects/CrazyRL
+./crazyrl sim2sim build
+./crazyrl sim2sim evaluate --policy baseline --num-envs 8 --seed 20261127 \
+  --output outputs/sim2sim/baseline-new
+./crazyrl sim2sim compare --policy outputs/my-tof/policy.npz --num-envs 32 \
+  --seed 42 --output outputs/sim2sim/paired-seed42
 ```
 
-自动读取最近一次成功训练，默认用原生 MuJoCo 实际推进三组飞行：无噪声、训练噪声、更强扰动。以无人机与气球实际接触判定成功，保存 `metrics.json`、轨迹和视频。
-
-训练时由 Crazyflow 几何生成理想 bbox；测试时由 MuJoCo 当前位姿生成同样的理想 bbox，再按场景叠加噪声、裁剪、丢帧和延迟。无需先训练图像检测器。两端共用策略中冻结的相机标定和观测处理，MuJoCo 同时提供对应的相机画面。
-
-MuJoCo 刚体积分运行在 CPU，策略、官方控制器和旋翼力模型使用自动选定的 JAX 设备；BPTT 训练的可微物理与优化则全部使用所选 JAX 设备，支持 GPU 并行。GUI 首次启动需编译并生成三组完整飞行，随后播放；需要对照训练物理时，可用 `./dani evaluate --plant crazyflow`。
-
-GPU 桌面 GUI 使用硬件 OpenGL，评测视频使用 EGL 离屏渲染；启动时输出实际设备。JAX 编译缓存自动保存在 `outputs/.cache/`，供后续启动和随机重置复用。
-
-打开最近一次评测：
+`compare` 依次加载同一个 Isaac 环境中的现成 `model_36825.pt` 和新 NPZ，使用相同种子、地图、初始位姿、目标和速度，**校验初始场景哈希相同才接受比较**；每环境各一个回合，避免策略结束时间不同使后续随机重置失去配对。更充分的比较应对 42–46 等多个种子重复运行，报告全部回合。评测保留源项目动力学、资产和 reward；没有在评测时调参帮助候选模型。这里比较两个已有策略的迁移表现，训练物理与训练预算不同，新模型的实际预算在结果中完整记录。
 
 ```bash
-./dani play
+./crazyrl sim2sim play --policy baseline --gui --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy outputs/my-tof/policy.npz --gui --num-envs 8 --max-steps 450
+./crazyrl sim2sim play --policy baseline --video --num-envs 8 --max-steps 450
+./crazyrl sim2sim tensorboard --port 6006
 ```
 
-窗口回放策略闭环仿真得到的轨迹，每次随机重置都重新运行仿真。Linux/X11 中默认跟随飞机与气球；鼠标左拖旋转、右拖平移进入自由视角、滚轮缩放，`F` 恢复跟随。绿色实线是理想 bbox，琥珀虚线是策略收到的框。`R` / **Random reset** 在后台重新采样气球位置、尺寸、速度、飞机初态和噪声，完成后开始新轨迹；`Backspace` / **Replay** 重播同一条轨迹。`Space` 暂停，左右键逐帧，`1/2/3` 切换场景（`2` 包含 gyro 噪声），`T` 查看相机标定。
+TensorBoard 打开 `http://127.0.0.1:6006`，展示复制的 CrazyRL 历史训练日志。新 Crazyflow 模型的训练曲线直接用 `training.png/jsonl`。Isaac 的 shader/cache、运行日志、视频和评测中间产物均在忽略目录。Isaac 容器需要本机支持的 NVIDIA GPU；不与正在训练的 JAX 进程同时争用显存。
 
-左下 XY map 按米等比例显示飞机和气球的已飞轨迹，目标虚线表示匀速直线路径，箭头表示 **1 秒的水平位移**；同时列出 `vx/vy/vz`、总速度和双方高度。地图使用仿真真值辅助观察，不进入策略输入；纯竖直移动会单独标明。
+## 7. 验收与版本边界
 
-![预训练策略的 MuJoCo GUI 动图](examples/balloon/gui.gif)
+本次完成两阶段 PPO 训练，共 270,336,000 次交互；交付第 75 次续训检查点，累计 233,472,000 次交互。12,288 环境的完整 100 次续训采样峰值为 **9,310 MiB**，经过三次课程换图。新模型与 baseline 的结果如下：
 
-预训练策略的 MuJoCo GUI 实录，依次展示 `noisy`、`perturbed` 各两个回合，均使用带噪声的实收观测，展示到各自首次结局；机体标称动力学使用官方 `cf21B_500` 默认参数，实机改装后按第 2 步重新辨识。
+| 环境 / 模型 | 成功 | 碰撞 |
+| --- | ---: | ---: |
+| Crazyflow 固定地图、新初态 / 新模型 | 255/256（99.609%） | 1 |
+| Crazyflow 全新地图 / 新模型 | 255/256（99.609%） | 1 |
+| Isaac 同场景 / 原 baseline | 155/160（96.875%） | 5 |
+| Isaac 同场景 / 新模型 | 132/160（82.5%） | 28 |
 
-没有显示设备时，使用 Xvfb 软件窗口检查 GUI 并保存截图：
+Isaac 比较为 seeds 42–46、每种子 32 环境各一个回合；无超时或数值失稳，所有初始场景与随机化审计通过。新模型迁移成功率仍低于 baseline **14.375 个百分点**。完整 320 回合和场景记录见 [`sim2sim/results/final-20261127/`](sim2sim/results/final-20261127/)，模型选择在这些测试之前完成。
 
-```bash
-./dani play --headless
-```
+原项目 2026-11-27 的留存验收为 seeds 42–46、32 环境×8 回合，共 **1265/1280 成功、15 次接触**，原始协议与每回合结果原样保存在 [`sim2sim/results/reference-20261127/`](sim2sim/results/reference-20261127/)。这是既有 baseline 的结果，不能充当新策略的成绩。
 
-各命令支持 `--help`，需要强制 CPU 时加 `--device cpu`。重复训练或评测会创建新目录；失败时保留已有成功结果，不覆盖最近成功指针。
-
-| 命令 | 常用参数（默认值） | 示例 |
-| --- | --- | --- |
-| `setup` | `--device auto/cpu/gpu`（auto） | `./dani setup --device cpu` |
-| `identify` | `--directory`（outputs/measurements）；其它量见辨识手册 | `./dani identify init --directory outputs/my-drone` |
-| `train` | `--batch-size`、`--iterations`、`--lr`（读取 YAML）；`--smoke` | `./dani train --batch-size 4096 --iterations 1500` |
-| `evaluate` | `--example` 或 `--checkpoint`；`--episodes`（256）、`--no-video`、`--plant`（mujoco） | `./dani evaluate --example --episodes 32 --no-video` |
-| `play` | `--example`、`--checkpoint` 或 `--evaluation`；`--seed`、`--headless` | `./dani play --example --seed 7` |
-| `play` 录制 | `--record`、`--fps`（20）、`--suite`（nominal）、`--episode`（0） | `./dani play --headless --record outputs/gui.gif` |
+本目录重新运行的独立镜像验收、NPZ 与原始 Torch 权重的数值一致性、配对场景一致性保存在 [`sim2sim/results/local-20261127/`](sim2sim/results/local-20261127/)。完整本次训练、容量、留出与迁移结果见 [`examples/tof/README.md`](examples/tof/README.md)。中间 checkpoint、缓存、TensorBoard 事件及视频均由 `.gitignore` 排除；仓库保留必要的原始 baseline、一份最终 Crazyflow NPZ，以及实现、配置、说明和可核验的精简结果。

@@ -7,3 +7,12 @@
 *.png binary
 # Preserve whitespace in the byte-identical upstream README.
 docs/crazyflow_experiments_sysid/README.md whitespace=-blank-at-eol
+
+# Python's CSV writer uses standard CRLF record endings.
+*.csv whitespace=cr-at-eol
+
+# Preserve the frozen upstream files byte-for-byte for provenance verification.
+sim2sim/reference/** -text -whitespace
+sim2sim/results/reference-20261127/** -text -whitespace
+sim2sim/docker/isaac45.dockerfile -text -whitespace
+sim2sim/artifacts/assets/replementation/rl/params/*.yaml -text -whitespace

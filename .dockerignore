@@ -14,7 +14,12 @@ outputs
 checkpoints
 *.mp4
 *.npz
-!examples/balloon/*.npz
+!examples/tof/*.npz
 *.pdf
 !docs/*.pdf
 references
+
+sim2sim/artifacts
+sim2sim/results
+examples/tof/videos
+*.msgpack

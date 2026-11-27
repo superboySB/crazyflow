@@ -1,0 +1,16 @@
+[
+  {
+    "outcome": "success",
+    "mp4_frames": 140,
+    "gif_frames": 140,
+    "mp4_fps": 15.0,
+    "decoded_first_middle_last": true
+  },
+  {
+    "outcome": "collision",
+    "mp4_frames": 23,
+    "gif_frames": 23,
+    "mp4_fps": 15.0,
+    "decoded_first_middle_last": true
+  }
+]

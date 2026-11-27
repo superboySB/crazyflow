@@ -1,0 +1,20 @@
+{
+  "selected_checkpoint_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "validation_seed": 9001,
+  "test_seed": 14001,
+  "only_env_config_differences": {
+    "map_seed": {
+      "validation": 42,
+      "test": 14001
+    }
+  },
+  "geometry_sha256_format": "concatenated NPY entry payloads: scene_centers, scene_half_sizes, scene_rotations, scene_kinds",
+  "validation_geometry_sha256": "02843f45895d9cdf9258565276c26e839a229a8bc35a2e187310a00d92ec5189",
+  "test_geometry_sha256": "cb15220bcf0827584dbe297539608dfdd331d2fa5c40ae130701b2fcb7fbac66",
+  "new_map_geometry_verified": true,
+  "first_episode_protocol": "first_episode_per_world_no_replacement",
+  "full_horizon_steps": 1200,
+  "episodes": 256,
+  "device": "cpu",
+  "selection_frozen_before_test": true
+}

@@ -20,3 +20,4 @@ saves/
 .github/
 references/
 MUJOCO_LOG.TXT
+/examples/tof/videos/

@@ -1,0 +1,121 @@
+{
+  "seed": 14001,
+  "map_seed": 14001,
+  "flight_backend": "crazyflow",
+  "visualizer": "mujoco",
+  "checkpoint_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "episodes": [
+    {
+      "selection_rule": "median duration within this outcome; ties by episode index",
+      "episode_record": {
+        "episode": 3,
+        "seed": 14001,
+        "map_id": 1,
+        "outcome": "success",
+        "return": 32.808492824435234,
+        "steps": 139,
+        "duration_s": 9.266666666666666,
+        "path_length_m": 8.46278977021575,
+        "initial_distance_m": 8.52020263671875,
+        "final_distance_m": 0.45333871245384216
+      },
+      "replay_command": "./crazyrl play --evaluation outputs/tof-final-test --episode 3",
+      "rendered": [
+        {
+          "output": "/outputs/tof-final-test/success.png",
+          "frames": 1,
+          "width": 960,
+          "height": 720,
+          "fps": 15.0,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco",
+          "camera": "follow",
+          "trajectory_duration_s": 9.266666666666666
+        },
+        {
+          "output": "/outputs/tof-final-test/success.mp4",
+          "frames": 140,
+          "width": 960,
+          "height": 720,
+          "fps": 15.0,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco",
+          "camera": "follow",
+          "trajectory_duration_s": 9.266666666666666
+        },
+        {
+          "output": "/outputs/tof-final-test/success.gif",
+          "frames": 140,
+          "width": 480,
+          "height": 360,
+          "fps": 15.0,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco",
+          "camera": "follow",
+          "trajectory_duration_s": 9.266666666666666
+        }
+      ]
+    },
+    {
+      "selection_rule": "median duration within this outcome; ties by episode index",
+      "episode_record": {
+        "episode": 60,
+        "seed": 14001,
+        "map_id": 1,
+        "outcome": "collision",
+        "return": -97.43569830060005,
+        "steps": 22,
+        "duration_s": 1.4666666666666666,
+        "path_length_m": 1.209910100325942,
+        "initial_distance_m": 10.539525032043457,
+        "final_distance_m": 9.709646224975586
+      },
+      "replay_command": "./crazyrl play --evaluation outputs/tof-final-test --episode 60",
+      "rendered": [
+        {
+          "output": "/outputs/tof-final-test/collision.png",
+          "frames": 1,
+          "width": 960,
+          "height": 720,
+          "fps": 15.0,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco",
+          "camera": "follow",
+          "trajectory_duration_s": 1.4666666666666666
+        },
+        {
+          "output": "/outputs/tof-final-test/collision.mp4",
+          "frames": 23,
+          "width": 960,
+          "height": 720,
+          "fps": 15.0,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco",
+          "camera": "follow",
+          "trajectory_duration_s": 1.4666666666666666
+        },
+        {
+          "output": "/outputs/tof-final-test/collision.gif",
+          "frames": 23,
+          "width": 480,
+          "height": 360,
+          "fps": 15.0,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco",
+          "camera": "follow",
+          "trajectory_duration_s": 1.4666666666666666
+        },
+        {
+          "output": "/outputs/tof-final-test/collision-angle315.png",
+          "frames": 1,
+          "width": 960,
+          "height": 720,
+          "camera": "follow",
+          "camera_azimuth_degrees": 315,
+          "flight_backend": "crazyflow",
+          "visualizer": "mujoco"
+        }
+      ]
+    }
+  ]
+}

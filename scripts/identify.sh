@@ -8,7 +8,7 @@ source "$script_dir/common.sh"
 
 usage() {
   cat <<'HELP'
-用法：./dani identify <init|flight|rotor|static|check|inertia|drag-init|drag|drag-check> [选项]
+用法：./crazyrl identify <init|flight|rotor|static|check|inertia|drag-init|drag|drag-check> [选项]
 
   init      生成测量CSV/物理清单和控制器模板；保留所有已有文件
   flight    用独立flight_train.csv / flight_valid.csv拟合physical.toml
@@ -43,7 +43,7 @@ shift
 case "$mode" in
   -h|--help|help) usage; exit 0 ;;
   init|flight|rotor|static|check|inertia|drag-init|drag|drag-check) ;;
-  *) cf_die "未知辨识命令：$mode；请运行 ./dani identify --help。" ;;
+  *) cf_die "未知辨识命令：$mode；请运行 ./crazyrl identify --help。" ;;
 esac
 
 directory="$CF_OUTPUTS/measurements"
@@ -112,7 +112,7 @@ HELP
         inertia_args+=("$1")
         shift
       else
-        cf_die "无法识别的选项：$1；请运行 ./dani identify --help。"
+        cf_die "无法识别的选项：$1；请运行 ./crazyrl identify --help。"
       fi
       ;;
   esac

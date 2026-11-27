@@ -1,0 +1,11 @@
+{
+  "policy": "outputs/tof-capacity/4096/policy.npz",
+  "backend": "CPU",
+  "samples": 128,
+  "max_abs_error": 5.364418029785156e-07,
+  "rtol": 2e-05,
+  "atol": 2e-05,
+  "pass": true,
+  "policy_sha256": "d5ad57a374e54db1ba3d9d768af0215d1f02de6c970de32ccb99c8462e7772e9",
+  "input_archive_sha256": "863c9a7e16b307216758937dac71b1eced919c41d15928b2c07a6704168789d5"
+}

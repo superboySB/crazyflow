@@ -1,0 +1,97 @@
+{
+  "selection_rule": "highest success count; ties by highest mean_return",
+  "protocol": {
+    "episodes": 256,
+    "seed": 9001,
+    "max_steps": 1200,
+    "policy_mode": "deterministic_raw_gaussian_mean",
+    "evaluation_protocol": "first_episode_per_world_no_replacement"
+  },
+  "unseen_final_test_seed": 14001,
+  "unseen_final_test_map_seed": 14001,
+  "identical_env_config": true,
+  "env_config_sha256": "01981503fcd3729b178ef7bd4b0fb2e4186de8626b0896d9e940bfa1aacb9a35",
+  "identical_initial_fields": [
+    "positions",
+    "quaternions_xyzw",
+    "goals",
+    "map_ids",
+    "scene_centers",
+    "scene_half_sizes",
+    "scene_rotations",
+    "scene_kinds"
+  ],
+  "initial_scene_sha256": "d1b2bc26eda39ac1032b2b73a214e9fd456bc83ccf5c5df3613c8c3fc4a8dc3e",
+  "ranked_candidates": [
+    {
+      "stage": "C",
+      "iteration": 75,
+      "checkpoint": "/outputs/tof-ppo-final/policies/policy_000075.npz",
+      "checkpoint_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+      "episodes": 256,
+      "successes": 255,
+      "success_rate": 0.99609375,
+      "mean_return": 27.03453784401063,
+      "collisions": 1,
+      "timeouts": 0,
+      "other_failures": 0,
+      "report": "/outputs/tof-final-validation75/summary.json"
+    },
+    {
+      "stage": "C",
+      "iteration": 25,
+      "checkpoint": "/outputs/tof-ppo-final/policies/policy_000025.npz",
+      "checkpoint_sha256": "7c771f52634181d27ce6a19f9f60a0704de41c39f969eadaa38f59d267e78eb9",
+      "episodes": 256,
+      "successes": 255,
+      "success_rate": 0.99609375,
+      "mean_return": 24.910286850557895,
+      "collisions": 1,
+      "timeouts": 0,
+      "other_failures": 0,
+      "report": "/outputs/tof-final-validation25/summary.json"
+    },
+    {
+      "stage": "C",
+      "iteration": 100,
+      "checkpoint": "/outputs/tof-ppo-final/policies/policy_000100.npz",
+      "checkpoint_sha256": "94dee93f9d69f5749f90d38e98bd956ef4c59a55807718af800a1b16413eda3e",
+      "episodes": 256,
+      "successes": 254,
+      "success_rate": 0.9921875,
+      "mean_return": 26.844634197157575,
+      "collisions": 2,
+      "timeouts": 0,
+      "other_failures": 0,
+      "report": "/outputs/tof-final-validation100/summary.json"
+    },
+    {
+      "stage": "C",
+      "iteration": 50,
+      "checkpoint": "/outputs/tof-ppo-final/policies/policy_000050.npz",
+      "checkpoint_sha256": "edae94aaa76af14124f764299731b4e3da73f44bffdadc7e172bc442266acea7",
+      "episodes": 256,
+      "successes": 254,
+      "success_rate": 0.9921875,
+      "mean_return": 25.125161039060913,
+      "collisions": 2,
+      "timeouts": 0,
+      "other_failures": 0,
+      "report": "/outputs/tof-final-validation50/summary.json"
+    }
+  ],
+  "selected": {
+    "stage": "C",
+    "iteration": 75,
+    "checkpoint": "/outputs/tof-ppo-final/policies/policy_000075.npz",
+    "checkpoint_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+    "episodes": 256,
+    "successes": 255,
+    "success_rate": 0.99609375,
+    "mean_return": 27.03453784401063,
+    "collisions": 1,
+    "timeouts": 0,
+    "other_failures": 0,
+    "report": "/outputs/tof-final-validation75/summary.json"
+  }
+}

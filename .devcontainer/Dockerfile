@@ -36,7 +36,7 @@ COPY docs ./docs
 COPY config ./config
 COPY examples ./examples
 COPY assets ./assets
-COPY dani ./dani
+COPY crazyrl ./crazyrl
 COPY scripts ./scripts
 COPY crazyflow ./crazyflow
 COPY tests ./tests
@@ -49,4 +49,4 @@ RUN mkdir /outputs && chmod 777 /outputs
 COPY .devcontainer/entrypoint.sh /usr/local/bin/crazyflow-entrypoint
 RUN chmod +x /usr/local/bin/crazyflow-entrypoint
 ENTRYPOINT ["/usr/local/bin/crazyflow-entrypoint"]
-CMD ["python", "-m", "crazyflow.balloon.train", "--help"]
+CMD ["python", "-m", "crazyflow.tof.train", "--help"]
