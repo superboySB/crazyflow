@@ -2,7 +2,7 @@
 
 `model_36825.pt` 来自上游 CrazyRL 的 `assets/replementation/rl/model_36825.pt`，导入时的仓库修订为 `9333442c18fa15799adac7e02988a978aeaf97b9`。本项目保留原文件，SHA256 为 `7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3`，没有重新训练 baseline。该修订标识来源快照；资产未记录原训练启动时的代码 commit。
 
-来源目录的 **10 个文件、91,684,204 bytes** 均已在本地归档，逐文件大小、哈希及位置见 [manifest.json](evidence/manifest.json)。Git 保存检查点、可读配置、截图和精简证据；原始事件、视频、pickle、ONNX 与重复导出位于忽略目录 `outputs/sim2sim/baseline-reference/`。
+历史原始归档共 **10 个文件、91,684,204 bytes**，逐文件大小、哈希及归档位置见 [manifest.json](evidence/manifest.json)。Git 保存检查点、可读配置、截图和精简证据；原始事件、视频、pickle、ONNX 与重复导出不随 Git 分发，已有归档位于忽略目录 `outputs/sim2sim/baseline-reference/`。
 
 | 内容 | 本地位置 |
 | --- | --- |
@@ -66,7 +66,7 @@
 
 ## TensorBoard 与原始归档迁移
 
-当前本地归档含所有原始文件；**新克隆只包含 Git 中的模型、配置、截图和摘要，不包含原始事件、视频等忽略文件**。保留原始文件时，可在已有完整本地工作目录打包：
+**新克隆包含模型、配置、截图和摘要，不包含原始事件、视频等忽略文件**。从已有完整归档迁移时，在原工作目录打包：
 
 ```bash
 tar -czf outputs/baseline-reference.tar.gz outputs/sim2sim/baseline-reference outputs/sim2sim/tensorboard

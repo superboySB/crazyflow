@@ -13,6 +13,10 @@ outputs/
 checkpoints/
 logs/
 saves/
+# Generated training logs, TensorBoard events and videos.
+*.log
+events.out.tfevents.*
+*.mp4
 .env
 *.secret
 .vscode/

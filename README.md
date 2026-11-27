@@ -4,7 +4,7 @@
 
 以下命令从项目根目录运行。宿主需要 Docker；GPU 运行另需 NVIDIA 驱动与 NVIDIA Container Toolkit。训练与 Isaac 镜像分别为 `crazyflow:dani-crazyrl`、`crazyflow:dani-crazyrl-eval`，对应 `docker/crazyflow.Dockerfile`、`docker/sim2sim.Dockerfile`。
 
-仓库保存此前选定的 **legacy actor-only 策略 NPZ/PT** 和官方 baseline PT。新 `rsl_aligned` 训练与预算续训均未通过替换门槛，因此保留原权重。新训练的真实 actor/critic 双导出已验证，未作为交付模型替换。文件与来源见 [模型目录](models/README.md)。
+仓库提供已选 Crazyflow 策略的 NPZ/PT 和官方 baseline PT。保留策略的 PT 为 actor-only 推理导出；新训练同时导出实际 actor/critic 及各自归一化。结构、来源和哈希见 [模型目录](models/README.md)。
 
 ## 1. 配置 Crazyflow 镜像
 
@@ -38,7 +38,7 @@ smoke 执行短 PPO 训练并保存文件，不代表策略已经学会避障。
 ./crazyrl capacity --config config/training.yaml --output outputs/capacity
 ```
 
-每档运行真实 rollout 和 PPO 更新，并采样显存；默认保护线为 9.5 GiB。本机短测 **2,048 环境最快，约 434k transitions/s**；12,288 环境虽能运行，吞吐更低。2,048 环境的完整训练更快，但未观察到策略质量收益，不能按最大容量选默认值。数据与限制见 [训练研究](reports/training-study/README.md)。
+每档运行真实 rollout 和 PPO 更新，并采样显存；默认保护线为 9.5 GiB。RTX 4070 Ti SUPER 短测 **2,048 环境最快，约 434k transitions/s**；12,288 环境虽能运行，吞吐更低。2,048 环境的完整训练更快，但未观察到策略质量收益，不能按最大容量选默认值。数据与限制见 [训练研究](reports/training-study/README.md)。
 
 ## 5. 正式训练
 
@@ -46,7 +46,7 @@ smoke 执行短 PPO 训练并保存文件，不代表策略已经学会避障。
 ./crazyrl train --device gpu --config config/training.yaml --output outputs/my-tof
 ```
 
-当前默认是 `rsl_aligned`、**1,024 环境 / 32 minibatches / 1,000 更新**，对应实际测试过的 A 配方、122.88M PPO transitions。本机完整调用约 **11.24 分钟**，这是探索预算的实测时间，不保证训练结果超过仓库保留策略；配置以 [`training.yaml`](config/training.yaml) 为准。
+当前默认是 `rsl_aligned`、**1,024 环境 / 32 minibatches / 1,000 更新**，对应实际测试过的 A 配方、122.88M PPO transitions。RTX 4070 Ti SUPER 完整调用约 **11.24 分钟**，这是探索预算的实测时间，不保证训练结果超过仓库保留策略；配置以 [`training.yaml`](config/training.yaml) 为准。
 
 每次保存同时生成同一策略的两种导出：
 
@@ -144,10 +144,25 @@ MuJoCo 负责显示，不是另一套评测动力学。已保存的轨迹可用 
 
 最新 Isaac 配对留出（种子 431–435）中，保留策略为 **141/160（88.125%）**，官方 baseline 为 **157/160（98.125%）**。新训练及预算续训均未通过替换门槛，没有证明迁移性能提升，最终保留旧 NPZ/PT。
 
-历史种子 42–46 的成绩为同一保留策略 **132/160**、baseline **155/160**；这是不同种子的评测，不是模型提升。完整训练、选择与未发布原因见 [训练研究](reports/training-study/README.md)。
+完整训练、不同种子的历史结果和模型选择依据见 [训练研究](reports/training-study/README.md)。
 
 - [任务接口、动作单位、奖励、ToF 与随机化](docs/tof-parity.md)
 - [现有 Crazyflow 模型与验收](models/crazyflow/README.md)
 - [官方 baseline 来源、配置、全部历史资产和训练日志](models/baseline/README.md)
 - [GPU 容量、训练研究与模型选择](reports/training-study/README.md)
 - [历史训练与配对评测记录](reports/README.md)
+
+## 项目结构
+
+| 目录 | 内容 |
+| --- | --- |
+| `crazyflow/tof/` | ToF 任务、JAX PPO、导出和可视化 |
+| `config/`、`docker/`、`scripts/` | 配置、两套镜像和命令入口 |
+| `models/` | 保留策略、baseline 和来源说明 |
+| `sim2sim/` | Isaac 评测入口及冻结的参考任务与资产 |
+| `docs/`、`reports/`、`tests/` | 使用手册、可追溯结果和测试 |
+| `outputs/` | 本地运行产物与原始归档，Git 忽略 |
+
+## 许可证与来源
+
+Crazyflow 核心沿用 [MIT 许可证](LICENSE)。打包的 CrazyRL 参考文件保留其 [GPLv3 许可证](sim2sim/reference/LICENSE)，来源和文件哈希见 [provenance.json](sim2sim/provenance.json)。参数辨识参考文档的来源与许可证保留在 [docs/crazyflow_experiments_sysid/](docs/crazyflow_experiments_sysid/)。

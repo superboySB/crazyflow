@@ -5,14 +5,14 @@
 | 路径 | 内容 |
 | --- | --- |
 | [`dual-export.json`](dual-export.json) | 同一策略的 NPZ/PT 双导出、数值一致性、实际 PPO 保存和 Isaac 闭环对照 |
-| [`repository-cleanup.json`](repository-cleanup.json) | 本次目录整理、权重清理、双镜像独立构建、完整 CPU 检查和新旧镜像行为对照 |
+| [`repository-cleanup.json`](repository-cleanup.json) | 历史目录与权重整理、双镜像构建、CPU 验收和镜像行为对照 |
 | [`crazyflow/`](crazyflow/README.md) | 历史 legacy PPO 的两阶段训练、四候选选择、固定地图验证、新地图测试、GPU 容量及实时 GUI 证据 |
 | [`training-study/`](training-study/README.md) | PPO/环境审计、等预算 A/B/C、第一轮留出与未发布结论、另行登记的预算续训 |
 | [`training-study/evaluation/`](training-study/evaluation/manifest.json) | 第一轮 181 份精简 CF/开发/留出证据；最新旧模型 141/160、baseline 157/160 |
 | [`training-study/round2/`](training-study/round2/training.json) | 245.76M 后续预算、连续曲线、开发门槛失败及 14 份精简评测证据；未运行新留出 |
 | [`sim2sim/final/`](sim2sim/final/) | 两个策略的 320 条配对回合、五组相同初始场景、推理一致性和原生 GUI/video 验收 |
 | [`sim2sim/checkpoint-io-audit.json`](sim2sim/checkpoint-io-audit.json) | 实际 NPZ/PT 的输入、历史、物理通道、归一化及动作接口核验 |
-| [`baseline-reference/`](baseline-reference/) | 官方既有 1,280 回合验收的协议、汇总和逐回合 CSV；与本次 160 回合 baseline 单独列出 |
+| [`baseline-reference/`](baseline-reference/) | 官方既有 1,280 回合验收的协议、汇总和逐回合 CSV；与五种子配对评测分别记录 |
 
 上游任务固定到 CrazyRL 修订 `9333442c18fa15799adac7e02988a978aeaf97b9`；文件的上游相对路径、本仓库位置和 SHA256 见 [`sim2sim/provenance.json`](../sim2sim/provenance.json)。运行只读取本仓库保存的任务、模型和 USD 资产。
 

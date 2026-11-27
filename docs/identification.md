@@ -1,20 +1,20 @@
-# cf21B_500 参数辨识：沿用 dani 的离线工具
+# cf21B_500 离线参数辨识
 
-默认直接 `./crazyrl train`，使用官方参数，不需要实飞日志。此处保留 dani 的测量、拟合与独立验证方法。辨识工具不连接飞机、不采集数据、不自动把拟合结果用于训练。
+默认执行 `./crazyrl train` 使用官方参数，不需要实飞日志。本手册说明测量、拟合与独立验证流程。辨识工具不连接飞机、不采集数据、不自动把拟合结果用于训练。
 
 本任务使用 Crazyflow first_principles 的 RPM 电机和刚体模型，以及参考 CrazyRL 的姿态/角速度 PD。物理参数、控制器、传感器噪声是独立的配置；`config/controller.toml` 为原有 Mellinger 模板，不能作为此任务 PD 的参数文件。质量、惯量、推力曲线、转子响应和阻力的默认来源在 `config/dynamics/first_principles/params.toml`。单位为 SI，机械转速为 RPM，机体轴 FLU、世界轴 ENU，四元数 xyzw。
 
-**一份包含所需观测和充分激励的日志可以用于参数拟合；它本身不提供独立验证，也不能识别上表所有量。** 当前官方 `sys_id_translation`、`sys_id_rotation` 的 `data_validation=None`，低层 `crazyflow.identify fit --validation` 可省略。验证数据只在得到拟合参数之后计算预测误差/作图，不参加参数优化。`identify_physics` 的各 `--*-validation` 也可省略。
+**一份包含所需观测和充分激励的日志可以用于参数拟合；它本身不提供独立验证，也不能识别本文涉及的全部物理量。** 当前官方 `sys_id_translation`、`sys_id_rotation` 的 `data_validation=None`，低层 `crazyflow.identify fit --validation` 可省略。验证数据只在得到拟合参数之后计算预测误差/作图，不参加参数优化。`identify_physics` 的各 `--*-validation` 也可省略。
 
 `./crazyrl identify flight/rotor/static/drag` 要求两份文件，是本项目为保留独立检验而采用的**入口工程选择，不是官方算法强制**。推荐另一次飞行作为 valid；复制 train 或换个文件名没有验证意义。程序检查路径和数据格式，不能自动证明采集独立。如果目前只有一段，也可通过低层接口先拟合，明确记录“没有独立验证”，之后再补采。
 
-下面始终区分两套数据：物理曲线日志是机械 RPM/IMU/台架量；闭环诊断日志是位置/姿态/指令。二者的 train/valid 都是辨识用文件，默认 PPO 不读取它们。
+物理曲线日志记录机械 RPM/IMU/台架量；闭环诊断日志记录位置/姿态/指令。二者的 train/valid 都是辨识用文件，默认 PPO 不读取它们。
 
-## 4. 按顺序测量并导出第一性原理物理表
+## 1. 按顺序测量并导出第一性原理物理表
 
 在项目根目录、完成 `./crazyrl setup` 后执行。所有辨识在容器 CPU 运行，不连接飞机或自动采集数据；默认目录 `outputs/measurements`，可用 `--directory outputs/另一目录` 指定，文件必须位于项目 outputs 内。
 
-### 4.1 建模板，测装机与 IMU/相机
+### 1.1 建模板，测装机与 IMU/相机
 
 ```bash
 ./crazyrl identify init
@@ -37,9 +37,9 @@
 
 `f_COM = f_IMU - alpha×r - omega×(omega×r)`。
 
-omega/alpha 是机体 gyro 与滤波求导后的角加速度，分别为 rad/s、rad/s²；欧拉角导数不能替代 gyro。比力单位 m/s²，若原日志用 g 先乘 9.81，水平静止时向上约 +9.81。增加偏心载荷后不能默认为 r=0。另按上表测相机 K/安装姿态、图像尺寸与新质心到光心位置，填 K。
+omega/alpha 是机体 gyro 与滤波求导后的角加速度，分别为 rad/s、rad/s²；欧拉角导数不能替代 gyro。比力单位 m/s²，若原日志用 g 先乘 9.81，水平静止时向上约 +9.81。增加偏心载荷后不能默认为 r=0。另外测量相机内参矩阵、安装姿态、图像尺寸及新质心到光心的位移，并单独记录标定结果。
 
-### 4.2 无推力台：采实际 RPM 与质心 IMU
+### 1.2 无推力台：采实际 RPM 与质心 IMU
 
 保留原始时间戳、四路有效机械 RPM、电池电压、姿态、gyro/IMU、发送与执行指令、飞控/ESC/磁极数配置。PWM/归一化驱动、电气 eRPM 和机械 RPM 不能改列名互换；转速遥测中的 `65535` 是无效值。没有可信实际 RPM 时，当前工具不能仅凭姿态与角速度识别全物理表，应先保留默认值。
 
@@ -59,7 +59,7 @@ time,rpm1,rpm2,rpm3,rpm4,specific_force_z,omega_x,omega_y,omega_z,alpha_x,alpha_
 
 输出 `physical.toml` / `physical.json`。JSON 区分测量、拟合、继承项，报告训练及留出推力/扭矩误差；检查 RPM 范围、条件数和重复采集的一致性。不能把默认继承的 J、转子惯量、阻力或推力上限称作已辨识。
 
-### 4.3 补旋翼升降速
+### 1.3 补旋翼升降速
 
 先测不同电压下的稳定驱动→实际 RPM 映射，得到可信目标机械 RPM，再同步采瞬态并整理 `rotor_train.csv` / `rotor_valid.csv`：
 
@@ -91,7 +91,7 @@ motor,rpm,thrust_n,torque_nm
 
 单独输出 `static-check.toml` / `.json`，不覆盖 flight/rotor 的 `physical.toml`。它可以交叉检查曲线，不能凭悬停附近样本证明最大推力。
 
-### 4.4 补未自动辨识的量，再接入训练
+### 1.4 补未自动辨识的量，再接入训练
 
 第一性原理 `drag_matrix` 目前没有一键辨识器。可用同步参考位姿平滑得到质心处 `v_world/a_world`，结合可信姿态和实际 RPM 推力曲线，在无风/已知风条件下检查：
 
@@ -99,11 +99,11 @@ motor,rpm,thrust_n,torque_nm
 
 用不同方向/速度及留出飞行验证 D 的耗散符号与预测误差。没有可信速度/风参考时，它仍是继承假设；参考位置/速度只用于离线测量。
 
-再核对控制器 C 的全部字段与真实固件、执行器饱和和姿态阶跃响应。当前工具不自动调姿态增益、不测全部 J、不自动辨识转子惯量/风，也不校准 N→固件驱动。换电机后的曲线、Q/F、力臂和混控应分别核对 V 与 C，不能只改物理质量。
+再核对控制器参数的全部字段与真实固件、执行器饱和和姿态阶跃响应。当前工具不自动调姿态增益、不测全部 J、不自动辨识转子惯量/风，也不校准 N→固件驱动。更换电机后，应分别核对第一性原理物理参数与控制器参数中的曲线、反扭矩与推力的比值、电机力臂和混控，不能只改物理质量。
 
 在 `config/training.yaml` 的 `environment.model_params_path` 填 `/outputs/measurements/physical.toml`，再运行 `./crazyrl train`。默认保持为 null，使用官方 cf21B_500 参数。当前参考 PD 控制器保留 CrazyRL 数值，不读取 Mellinger 模板；物理辨识不会自动重调控制器。
 
-## 5. 闭环阻力/姿态诊断：另一套日志和另一种输出
+## 2. 闭环阻力/姿态诊断：另一套日志和另一种输出
 
 不具备机械 RPM 时，可用**离线参考位置、姿态、姿态角/总推力指令与实测质量**拟合 `so_rpy_rotor_drag` 简化闭环模型。它拟合总推力比例、总推力一阶响应、两项机体系线性阻力，以及二阶姿态响应；不测电机 RPM 曲线或 Mellinger 增益。
 
@@ -125,7 +125,11 @@ time,pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w,cmd_roll,cmd_pitch,cmd_yaw,cm
 
 ```bash
 ./crazyrl identify drag --mass 0.0434
-# 其它目录或NPZ可显式提供：
+```
+
+使用其它测量目录或 NPZ 时，显式提供数据路径：
+
+```bash
 ./crazyrl identify drag --mass 0.0434 --directory outputs/my-aircraft \
   --data outputs/my-aircraft/closed_loop_train.npz \
   --validation outputs/my-aircraft/closed_loop_valid.npz
@@ -133,7 +137,7 @@ time,pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w,cmd_roll,cmd_pitch,cmd_yaw,cm
 
 两种写法选符合实际文件的一条。输出 `closed-loop-so-rpy-rotor-drag.toml`、同名 JSON 和 `fit.log`。检查两部分优化收敛、留出 RMSE/R²、重复飞行稳定性与阻力符号。D=`diag(d_xy,d_xy,d_z)`，`F_drag_world=R*D*Rᵀ*v_world`，单位 N·s/m，代码用加号所以耗散系数应非正；当前优化未约束其非正，正值不能取绝对值后直接使用。推力滞后是单位 N 的总推力状态，可能吸收执行/通信误差，不是四电机 RPM 动态。
 
-该闭环 TOML **不能填入 `environment.model_params_path`，也不能只抄同名 `drag_matrix`**。它把控制、延迟与气动合并在简化参数中，直接用于显式含这些环节的第一性原理模型可能重复补偿。它保留为离线诊断/对照，V 的阻力仍需 4.4 的物理验证。
+该闭环 TOML **不能填入 `environment.model_params_path`，也不能只抄同名 `drag_matrix`**。它把控制、延迟与气动合并在简化参数中，直接用于显式含这些环节的第一性原理模型可能重复补偿。它保留为离线诊断/对照；第一性原理模型的阻力仍需第 1.4 节的物理验证。
 
 只用一份日志先估计时，可跳过工程包装器，使用同一 Docker 中的低层可选验证接口；以下质量仍需替换为实测值：
 
@@ -145,12 +149,19 @@ docker run --rm --init --user "$(id -u):$(id -g)" -e JAX_PLATFORMS=cpu \
   --output /outputs/measurements/closed-loop-one-log.toml
 ```
 
-这是单日志拟合，不能报告独立验证成绩。低层进程退出 0 不保证优化日志中的 `Training success=True`；`./crazyrl identify drag` 会拒绝未收敛结果。平移求解采用三轴残差展平，平方和目标与逐样本残差范数相同，避免零范数处的 Jacobian 数值问题；没有修改默认物理参数或优化容差。
+这是单日志拟合，不能报告独立验证成绩。低层进程退出 0 不保证优化日志中的 `Training success=True`；`./crazyrl identify drag` 会拒绝未收敛结果。平移求解采用三轴残差展平，平方和目标与逐样本残差范数相同，避免零范数处的 Jacobian 数值问题。
 
-## 6. 没有硬件：运行两套明确标记的合成例子
+## 3. 没有硬件：运行两套明确标记的合成例子
+
+检查第一性原理曲线和旋翼响应导出：
 
 ```bash
 ./crazyrl identify check
+```
+
+检查简化闭环模型的拟合与验证：
+
+```bash
 ./crazyrl identify drag-check
 ```
 
@@ -160,4 +171,4 @@ docker run --rm --init --user "$(id -u):$(id -g)" -e JAX_PLATFORMS=cpu \
 
 [示例目录](../examples/identification/README.md)保留两份闭环 CSV 和来源 JSON，可直接查看列名、单位与真值。默认的低层 `identify synthetic` 仍是无阻力/滞后的 `so_rpy` 数据，不能冒充这份匹配例子。没有任何真实测量时，应保留官方默认来源，不能把合成例子的质量、J 或曲线称为实测。
 
-[官方系统辨识 README 原文](crazyflow_experiments_sysid/README.md)逐字保留固定版本的上游文档，来源版本和 SHA256 见同目录的 [provenance.json](crazyflow_experiments_sysid/provenance.json)。其中的相对路径、安装说明和命令属于上游仓库的独立 ROS2/Pixi 环境，不是本项目 Docker 的直接命令；本项目入口以 `./crazyrl identify --help` 为准。上游 `lol_sysid.py` 的变量 `rpms` 实际来自归一化电机指令，且含 Jzz 比例假设，不能直接改名当作机械 RPM 或独立惯量测量。本手册按当前本地配置、加载函数和辨识函数说明。
+[官方系统辨识 README 原文](crazyflow_experiments_sysid/README.md)逐字保留固定版本的上游文档，来源版本和 SHA256 见同目录的 [provenance.json](crazyflow_experiments_sysid/provenance.json)。其中的相对路径、安装说明和命令属于上游仓库的独立 ROS2/Pixi 环境，不是本项目 Docker 的直接命令；本项目入口以 `./crazyrl identify --help` 为准。上游 `lol_sysid.py` 的变量 `rpms` 实际来自归一化电机指令，且含 Jzz 比例假设，不能直接改名当作机械 RPM 或独立惯量测量。本手册的参数与单位说明对应本项目的加载器和辨识接口。

@@ -1,6 +1,6 @@
 # 当前保留的 Crazyflow 策略
 
-这里最终保留的是历史训练中选出的 **legacy Stage C 第 75 次更新**。`policy.npz` 与 `policy.pt` 包含同一个 actor；PT 由原 NPZ 导出，没有重新训练。新 `rsl_aligned` 训练及预算续训均未通过替换门槛，原权重哈希未变，结论见[训练研究](../../reports/training-study/README.md)。
+这里最终保留的是历史训练中选出的 **legacy Stage C 第 75 次更新**。`policy.npz` 与 `policy.pt` 包含同一个 actor；PT 由原 NPZ 导出，没有重新训练。权重身份由下表 SHA256 固定。
 
 | 文件 | 用途 | SHA256 |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Stage A 早于圆柱轴向射线求交修正，存在下视 ToF 在特定平行�
 
 这条历史链使用 `legacy` PPO：每次更新分 32 个 minibatch、训练 5 个 epoch，按 minibatch 归一化 advantage，以采样的近似 KL 调节学习率，观测归一化统计在整个训练过程中持续更新。它复现了 CrazyRL 的核心状态、动作、奖励和 domain randomization 约定，**不能称为与 RSL 完全相同的 PPO 实现**。Crazyflow 的电机/刚体动力学及解析碰撞判定也与 Isaac Sim 的 PhysX 模型不同，详见[任务与实现差异](../../docs/tof-parity.md)。
 
-新的 `rsl_aligned` A/B/C 对照已完成，各为 122,880,000 PPO transitions、160,000 次 Adam 更新；实验编号与上述历史 Stage A/C 无关。第一轮锁定 A 在独立留出中仅 136/160，低于本目录旧模型的 141/160；其后单列的 245.76M 预算续训 E 在 Isaac 开发中为 25/32，与旧模型打平，未进入新留出。两轮均未替换本目录权重，不声称新算法或增大并行数带来迁移提升。
+新的 `rsl_aligned` 对照及预算续训均未通过替换门槛，本目录权重保持不变。该研究的 A/B/C 实验编号与上述历史 Stage A/C 无关，预算及验收过程见[训练研究](../../reports/training-study/README.md)。
 
 ## 选择与已有成绩
 
