@@ -54,6 +54,69 @@ class Transition(NamedTuple):
     rewards: jax.Array
     done: jax.Array
     next_values: jax.Array
+    means: jax.Array
+
+
+def ppo_variant(cfg: dict[str, Any]) -> str:
+    """Select explicit semantics; old checkpoint configurations remain legacy."""
+    variant = cfg.get("ppo_variant", "legacy")
+    if variant not in ("legacy", "rsl_aligned"):
+        raise ValueError("ppo_variant must be legacy or rsl_aligned")
+    return variant
+
+
+def invariant_training_config(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Canonicalize backwards-compatible defaults before checking a full resume."""
+    values = {
+        key: value
+        for key, value in cfg.items()
+        if key not in ("iterations", "save_interval", "log_interval")
+    }
+    variant = ppo_variant(values)
+    values.setdefault("ppo_variant", variant)
+    values.setdefault("normalization_until", 100_000_000 if variant == "rsl_aligned" else None)
+    return values
+
+
+def gaussian_kl(
+    old_mean: jax.Array, old_logstd: jax.Array, mean: jax.Array, logstd: jax.Array
+) -> jax.Array:
+    """Old-to-new diagonal Gaussian KL, including the pinned RSL log epsilon."""
+    old_std, std = jnp.exp(old_logstd), jnp.exp(logstd)
+    return jnp.mean(
+        jnp.sum(
+            jnp.log(std / old_std + 1e-5)
+            + (old_std**2 + (old_mean - mean) ** 2) / (2 * std**2)
+            - 0.5,
+            axis=-1,
+        )
+    )
+
+
+def normalize_advantages(advantage: jax.Array) -> jax.Array:
+    """Standardize the complete rollout with RSL's sample standard deviation."""
+    return (advantage - advantage.mean()) / (advantage.std(ddof=1) + 1e-8)
+
+
+def adaptive_learning_rate(lr: jax.Array, kl: jax.Array, desired_kl: float) -> jax.Array:
+    """Apply pinned RSL's KL thresholds and learning-rate bounds."""
+    return jnp.where(
+        kl > desired_kl * 2,
+        jnp.maximum(1e-5, lr / 1.5),
+        jnp.where((kl < desired_kl / 2) & (kl > 0), jnp.minimum(1e-2, lr * 1.5), lr),
+    )
+
+
+def update_normalizer(moments: Moments, observations: jax.Array, until: int | None) -> Moments:
+    """Freeze empirical statistics after the configured sample-count threshold."""
+    if until is None:
+        return moments.update(observations)
+    return jax.lax.cond(
+        moments.count < until,
+        lambda _: moments.update(observations),
+        lambda _: moments,
+        operand=None,
+    )
 
 
 def advantages(
@@ -93,7 +156,7 @@ def make_agent(
     # Scaling by the adaptive learning rate happens after Adam, as in RSL's PPO.
     tx = optax.chain(
         optax.clip_by_global_norm(float(cfg.get("max_grad_norm", 1.0))),
-        optax.scale_by_adam(eps=1e-5),
+        optax.scale_by_adam(eps=1e-8 if ppo_variant(cfg) == "rsl_aligned" else 1e-5),
         optax.scale(-1.0),
     )
     train = TrainState.create(apply_fn=actor.apply, params=params, tx=tx)
@@ -114,7 +177,17 @@ def make_agent(
 def make_update(
     env: ToFEnv, actor: MLP, critic: MLP, cfg: dict[str, Any]
 ) -> Callable[[Agent, EnvState], tuple[Agent, EnvState, dict[str, jax.Array]]]:
-    """Build one compiled PPO rollout and gradient update with frozen normalization."""
+    """Build PPO with explicit RSL-aligned or legacy optimization semantics.
+
+    Both variants deliberately freeze normalization throughout each rollout and
+    its gradient epochs. RSL instead updates normalization at every env step.
+    """
+    aligned = ppo_variant(cfg) == "rsl_aligned"
+    normalization_until = cfg.get("normalization_until", 100_000_000 if aligned else None)
+    if normalization_until is not None and (
+        not isinstance(normalization_until, int) or normalization_until <= 0
+    ):
+        raise ValueError("normalization_until must be a positive integer or null")
     horizon = int(cfg.get("num_steps", 120))
     minibatches = int(cfg.get("num_minibatches", 32))
     epochs = int(cfg.get("update_epochs", cfg.get("epochs", 5)))
@@ -126,10 +199,13 @@ def make_update(
     batch_size = env.num_envs * horizon
     if batch_size % minibatches:
         raise ValueError("num_envs × num_steps must be divisible by num_minibatches")
+    if aligned and batch_size < 2:
+        raise ValueError("RSL-aligned advantage normalization requires at least two samples")
 
     def update(agent: Agent, state: EnvState) -> tuple[Agent, EnvState, dict[str, jax.Array]]:
         actor_norm, critic_norm = agent.actor_norm, agent.critic_norm
         params = agent.train.params
+        old_logstd = jnp.clip(params["logstd"], -5, 2)
 
         def collect(
             carry: tuple[EnvState, jax.Array], _
@@ -156,6 +232,7 @@ def make_update(
                 info.reward,
                 info.done,
                 next_value,
+                mean,
             )
             statistics = jnp.array(
                 [
@@ -180,7 +257,9 @@ def make_update(
             gamma,
             lam,
         )
-        data = (*transitions[:5], adv, returns)
+        if aligned:
+            adv = normalize_advantages(adv)
+        data = (*transitions[:5], adv, returns, transitions.means)
         flat = jax.tree.map(lambda x: x.reshape((batch_size, *x.shape[2:])), data)
 
         def epoch(
@@ -194,10 +273,11 @@ def make_update(
                 carry: tuple[TrainState, jax.Array], indices: jax.Array
             ) -> tuple[tuple[TrainState, jax.Array], jax.Array]:
                 train, lr = carry
-                obs, critic_obs, actions, old_logprob, old_value, advantage, target = (
+                obs, critic_obs, actions, old_logprob, old_value, advantage, target, old_mean = (
                     x[indices] for x in flat
                 )
-                advantage = (advantage - advantage.mean()) / (advantage.std() + 1e-8)
+                if not aligned:
+                    advantage = (advantage - advantage.mean()) / (advantage.std() + 1e-8)
 
                 def loss_fn(params: dict[str, Any]) -> tuple[jax.Array, tuple[jax.Array, ...]]:
                     mean = actor.apply(params["actor"], actor_norm.normalize(obs))
@@ -218,20 +298,27 @@ def make_update(
                         jnp.maximum((value - target) ** 2, (clipped_value - target) ** 2)
                     )
                     entropy = jnp.sum(logstd + 0.5 * jnp.log(2 * jnp.pi * jnp.e))
-                    kl = jnp.mean((ratio - 1) - logratio)
+                    kl = (
+                        gaussian_kl(old_mean, old_logstd, mean, logstd)
+                        if aligned
+                        else jnp.mean((ratio - 1) - logratio)
+                    )
                     loss = policy_loss + value_coef * value_loss - entropy_coef * entropy
                     return loss, (policy_loss, value_loss, entropy, kl)
 
                 (_, statistics), gradients = jax.value_and_grad(loss_fn, has_aux=True)(train.params)
+                if aligned:
+                    lr = adaptive_learning_rate(lr, statistics[-1], desired_kl)
                 updates, opt_state = train.tx.update(gradients, train.opt_state, train.params)
                 params = optax.apply_updates(train.params, jax.tree.map(lambda x: x * lr, updates))
                 train = train.replace(step=train.step + 1, params=params, opt_state=opt_state)
-                kl = statistics[-1]
-                lr = jnp.where(
-                    kl > desired_kl * 2,
-                    jnp.maximum(1e-5, lr / 1.5),
-                    jnp.where(kl < desired_kl / 2, jnp.minimum(1e-3, lr * 1.5), lr),
-                )
+                if not aligned:
+                    kl = statistics[-1]
+                    lr = jnp.where(
+                        kl > desired_kl * 2,
+                        jnp.maximum(1e-5, lr / 1.5),
+                        jnp.where(kl < desired_kl / 2, jnp.minimum(1e-3, lr * 1.5), lr),
+                    )
                 return (train, lr), jnp.array(statistics)
 
             (train, lr), losses = jax.lax.scan(minibatch, (train, lr), indices)
@@ -244,8 +331,8 @@ def make_update(
             train=train,
             rng=key,
             lr=lr,
-            actor_norm=actor_norm.update(transitions.obs),
-            critic_norm=critic_norm.update(transitions.critic_obs),
+            actor_norm=update_normalizer(actor_norm, transitions.obs, normalization_until),
+            critic_norm=update_normalizer(critic_norm, transitions.critic_obs, normalization_until),
         )
         return (
             agent,
@@ -295,6 +382,8 @@ def main() -> None:
         parser.error("Choose either --resume or --warm-start")
     raw = load_config(args.config)
     cfg = dict(raw.get("training", {}))
+    cfg.setdefault("ppo_variant", "legacy")
+    ppo_variant(cfg)
     environment = env_config(raw.get("environment", {}))
     for key in ("num_envs", "iterations", "num_steps", "seed"):
         if getattr(args, key) is not None:
@@ -385,16 +474,9 @@ def main() -> None:
         env.restore_runtime(restored["env_runtime"])
         start_iteration = int(restored["iteration"])
 
-        def invariant_cfg(values: dict[str, Any]) -> dict[str, Any]:
-            return {
-                k: v
-                for k, v in values.items()
-                if k not in ("iterations", "save_interval", "log_interval")
-            }
-
-        if restored["env_config"] != environment.to_dict() or invariant_cfg(
+        if restored["env_config"] != environment.to_dict() or invariant_training_config(
             restored["training_config"]
-        ) != invariant_cfg(cfg):
+        ) != invariant_training_config(cfg):
             raise ValueError(
                 "Resume requires identical environment, batch size and PPO configuration"
             )

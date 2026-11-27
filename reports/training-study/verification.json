@@ -1,0 +1,76 @@
+{
+  "cpu_suite": {
+    "passed": 514,
+    "skipped": 53,
+    "deselected": 16,
+    "wall_seconds": 219.97,
+    "scope": "Full CPU suite before parametrizing an existing exact-resume check for both variants. Training implementation unchanged since this suite.",
+    "log": "outputs/tof-training-study/full-tests.log",
+    "log_sha256": "cb3b4af4d4fe65cc682b28483343370e248841d5bd485f57e0dd2908ec68f558"
+  },
+  "additional_exact_resume": {
+    "passed": 2,
+    "deselected": 14,
+    "wall_seconds": 3.29,
+    "scope": "Actual msgpack-restored next update exactly equals uninterrupted update for legacy and rsl_aligned.",
+    "evidence": "reports/training-study/ppo-parity.json"
+  },
+  "export": "reports/training-study/export-parity.json",
+  "sources": {
+    "crazyflow/tof/train.py": "db81112b5a37bcc33a35f1028665953aa630adfe77d093682167a26c83b56d4f",
+    "scripts/capacity.py": "c9cf591409631d4c40efff8b5c90a6f40dec54b9ec4fb8546990c8fbbf1cde18",
+    "tests/test_tof_ppo_alignment.py": "58eae24dd7732861fa2b081440b81dbfed960898618ebe127aa26f505a0348ad",
+    "tests/test_tof_policy.py": "3edcaf7a24600b98b2d23048d5c48eb3146f0f485080a70d254da7bc69c19495"
+  },
+  "ruff": {
+    "passed": true,
+    "command": "python -m ruff check crazyflow/tof/train.py scripts/capacity.py tests/test_tof_ppo_alignment.py",
+    "runtime": "Dedicated training Docker image, CPU, no network"
+  },
+  "gui": {
+    "passed": true,
+    "model": "A-1024-control",
+    "control_checks": 13,
+    "device": "CPU JAX, MuJoCo GLFW through Xvfb",
+    "evidence": "reports/training-study/gui-A.json",
+    "screenshot": "reports/training-study/gui-A.png",
+    "scope": "Interactive controls and sensor/autoreset smoke, not a policy success evaluation."
+  },
+  "final_focused_suite": {
+    "command": "python -m pytest tests/test_tof_ppo_alignment.py tests/test_tof_policy.py tests/test_release_layout.py -q -o addopts= -p no:cacheprovider",
+    "passed": 27,
+    "wall_seconds": 16.34,
+    "runtime": "Dedicated training Docker image, CPU, no network",
+    "log": "outputs/tof-training-study/final-focused-tests.log",
+    "log_sha256": "dc33c1233365f0a67e93161538adae64200fb3aa8917eeac2c262fb8bf482b33"
+  },
+  "round2_export": "reports/training-study/round2/export-parity.json",
+  "final_images": {
+    "images": {
+      "crazyflow:dani-crazyrl": {
+        "id": "sha256:4c8e94c8e84c8577ae898c72b5f0e615f5023d71b0485240f7f0578065cc7204",
+        "created": "2026-11-28T01:11:33.283278482+08:00"
+      },
+      "crazyflow:dani-crazyrl-eval": {
+        "id": "sha256:a83d7dbd0b05af39b811059f3794bfb26f17b6198a02b776b9279b2370f9d3f5",
+        "created": "2026-11-28T01:12:31.10221372+08:00"
+      }
+    },
+    "training_gpu_probe_passed": true,
+    "training_build_log": "outputs/tof-training-study/final-training-image-build.log",
+    "eval_build_log": "outputs/tof-training-study/final-eval-image-build.log",
+    "qualification": "Final cached rebuilds after source changes; study runtime.json retains the separate image IDs actually used for experiments.",
+    "training_build_log_sha256": "c5eb03126824c504219794b626c944a8276cff27b62709942151ece5de82286a",
+    "eval_build_log_sha256": "8eda2e5bb1c0bf0decaa089e5e23848a1a6586b918c56fd60f7529667c8612b5",
+    "installed_source_and_model_match_checkout": true,
+    "checked_without_source_bind_mount": true
+  },
+  "final_document_checks": {
+    "documents": 9,
+    "single_invocation_shell_blocks": 41,
+    "bash_syntax_passed": true,
+    "local_links_checked": 132,
+    "forbidden_example_switch_in_current_docs": false,
+    "external_source_directory_in_current_docs": false
+  }
+}

@@ -28,6 +28,8 @@
 
 最终 actor 输入 `[0:280]` 是 10 个完整帧，最新一帧为 `[252:280]`；`[280:344]` 只有当前前向 8×8 深度，不是 10 帧深度历史。像素按行、再按列展开，索引为 `8×row+column`；图像左上角射线指向 body 的 +y/+z，右下角为 −y/−z。四个辅助 ToF 保留在每个历史帧内部。上一拍动作通道尚未换算为 rad、rad/s 或 N。冻结参考对应 [`quad_baseline_env.py`](../sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env.py) 的 `_get_observations`，本分支对应 [`env.py`](../crazyflow/tof/env.py) 的 `_observe`；[`test_tof_observation_contract.py`](../tests/test_tof_observation_contract.py) 用不同通道/历史/像素的哨兵值检查这些语义。
 
+前向 64 个深度通道同样先把以 m 表示的测量乘 **30**，再使用该模型自己的归一化；actor 在失效点替换和乘性噪声之后缩放，critic 对未加噪深度缩放。GUI 显示的 m 数值不能直接作为未经缩放的网络输入。
+
 critic 每帧在上述真值帧之后加入：目标相对三维位置（模长截到 5 m）×127、最近障碍相对向量（模长截到 1 m）×127、最近 10 个物理子步的平均风加速度 ×30。37×10+64=434 维。参考代码实际上复用了带 XY 噪声的目标方向，critic 也保留这个细节；其余上述通道不加观测噪声。回合开始时历史清零，再写入首帧。
 
 网络输出原始无界 Gaussian 四维动作。环境先 `tanh`，再将推力通道从 [−1,1] 映射到 [0,1]。最终物理目标是 roll/pitch ±π/6 rad、yaw rate ±π/1.5 rad/s、总推力 `throttle × reference_max_thrust`。最大总推力沿用参考控制器的多项式与 1.358 系数，不另用“悬停附近”的动作定义。PPO 的 log probability 始终对应原始 Gaussian 动作。
@@ -45,7 +47,27 @@ NPZ 和原始 `.pt` 的 actor 使用同样的输入物理约定，但分别携�
 
 相同接口并不意味着两个独立训练模型输出相同。[实际 checkpoint I/O 验收](../reports/sim2sim/checkpoint-io-audit.json) 检查了交付 NPZ、原始 `.pt` 和 128 个闭环飞行观测包，交付模型在 JAX 与 Torch 的最大动作差为 `1.43e−6`；多加一次 `tanh` 则会产生最大约 2.07 的原始动作偏差。同一模型的另一组数值一致性验收见 [`jax-torch-policy-parity.json`](../reports/sim2sim/final/jax-torch-policy-parity.json)。
 
-训练在每个保存点同时写出 `policy.npz`（JAX/MuJoCo）与 `policy.pt`（Torch/RSL、Isaac）。PT 使用转置后的同一组 Dense 权重、相同的均值/方差，以及 `std=exp(clip(logstd,−5,2))`；输入仍为 344 维，输出仍为未经 `tanh` 的四维动作。每次导出先验证两种实现的输出一致，并记录源 NPZ 的 SHA256。训练保存点的 PT 包含真实 critic 和 434 维归一化统计；现有最佳 NPZ 只含 actor，其配套 PT 如实标记 `actor_only`，仅用于推理。完整 JAX/Optax 续训仍读取 `checkpoint.msgpack`。验收见 [`dual-export.json`](../reports/dual-export.json)。
+训练在每个保存点同时写出 `policy.npz`（JAX/MuJoCo）与 `policy.pt`（Torch/RSL、Isaac）。PT 使用转置后的同一组 Dense 权重、相同的均值/方差，以及 `std=exp(clip(logstd,−5,2))`；输入仍为 344 维，输出仍为未经 `tanh` 的四维动作。每次导出先验证两种实现的输出一致，并记录源 NPZ 的 SHA256。新训练保存点的 PT 包含真实 critic 和 434 维归一化统计，已用[实际 A 模型](../reports/training-study/export-parity.json)验收；新候选没有通过替换门槛，因此交付仍为原 actor-only 策略，其配套 PT 不补造 critic。完整 JAX/Optax 续训仍读取 `checkpoint.msgpack`。原保留策略的格式验收见 [`dual-export.json`](../reports/dual-export.json)。
+
+## PPO：历史模型与当前对齐实现
+
+当前 [`training.yaml`](../config/training.yaml) 明确选择 `ppo_variant: rsl_aligned`；缺失该字段的历史配置仍按 `legacy` 解释，完整 resume 会检查两者不可混用。现有已发布策略由 legacy 训练得到，代码对齐和 PT 导出没有改变其权重或历史成绩。
+
+| 内容 | 历史 `legacy` | 当前 `rsl_aligned` |
+| --- | --- | --- |
+| Advantage 归一化 | 每个 minibatch，population std | 整个 rollout 一次，sample std（`ddof=1`） |
+| 自适应 KL | 采样近似 `mean(exp(logratio)−1−logratio)` | 解析 `KL(old Gaussian ∥ new Gaussian)`，含参考的 log 内 `1e−5` |
+| 学习率时机和范围 | 当前梯度之后调整，`1e−5…1e−3` | 当前梯度之前调整，`1e−5…1e−2`，仅正 KL 触发增长 |
+| Adam epsilon | `1e−5` | `1e−8` |
+| 观测统计停止条件 | 默认持续更新 | 默认 count 达到 `100,000,000` 后停止后续更新 |
+
+两种 JAX 实现均在**整段 rollout 及随后的所有梯度 epoch 内冻结 actor/critic 归一化统计**，PPO 更新结束后才合并原始观测统计。停止条件检查的是更新前 count，所以到阈值的一批仍完整计入，越过阈值的幅度小于一个 rollout batch；count 也包含初始校准数据。固定 RSL 实现则在每次返回环境观测时更新统计，缓冲区保存当时已归一化的输入。这是仍保留的训练语义差异。
+
+从随机网络开始时，JAX 先做 `num_steps` 拍随机动作 rollout 校准归一化，不计算策略梯度；resume/warm-start 不重复该步骤。当前 120 拍设置下，研究 A 的额外校准为 122,880 个环境步，B/C 各为 245,760 个；这些步不计入报告的 PPO transitions，发生在训练循环计时起点之前。不能把“PPO 预算相同”解释为所有模拟步及总运行时间完全相同。
+
+网络尺寸与 ELU、horizon=120、5 epochs、γ=0.99、λ=0.95、ratio clip=0.2、entropy=0.005、clipped-value coefficient=1、梯度范数上限 1 已对应。仍保留 JAX 的 logstd 参数化及限幅、正交初始化、每个 epoch 重新 shuffle、按硬件选择 minibatch 数，以及重置前 next-state 的 timeout bootstrap；参考使用直接 std 参数、Torch 默认初始化、跨 epoch 复用排列、保存配置中的 200 minibatches 和当前 value 的 timeout 近似。因此 `rsl_aligned` 不表示整个 PPO 算法及全部超参数逐项相同。详细源码审计与独立数值测试见 [`ppo-parity.json`](../reports/training-study/ppo-parity.json)。[训练研究](../reports/training-study/README.md)已完成等预算对照和单独的预算续训；均未证明迁移提升，最终保留旧策略，默认训练代码仍采用显式 rsl_aligned。
+
+## 物理时间与积分
 
 策略 15 Hz，物理 150 Hz，每拍 10 个子步。这里选用 Crazyflow 自带的 `Integrator.rk4`，配置与模型元数据明确保存 `integrator: rk4`；旧 Euler 模型仍可按其 `integrator: euler` 重放。选择理由是：原生电机动态与参考高增益 PD 组合在 Euler/150 Hz 下出现数值振荡。相同初始姿态 `[0.2,−0.1,0]`、悬停转速、无噪声条件下，8 s 测试最后一秒的 roll RMS 为 Euler/150 Hz 0.281 rad、RK4/150 Hz 0.00259 rad；Euler/500 Hz 参考为 0.000274 rad。RK4 保持参考 150 Hz 控制与延迟时间，不修改辨识参数。动作 FIFO 延迟 4 个物理子步，即约 26.7 ms。参考初始 FIFO 的默认命令是 `[0, 0, 0.5, 0]`，这里保留该初始化。本实现逐世界重置 FIFO；参考源码中的共享 deque 未在 `_reset_idx` 清空，可能跨回合保留命令。本实现避免这项回合间状态泄漏。
 
@@ -99,12 +121,18 @@ NPZ 和原始 `.pt` 的 actor 使用同样的输入物理约定，但分别携�
 
 默认使用两个地图槽，所有新回合进入当前 active 槽；旧回合可继续使用旧槽。参考的“3000”计数实际在 `_reset_idx` 批量调用时递增，**不是 3000 个 PPO update，也不是累计 3000 个单独 episode**。设备端按 `any(done)` 维护同样的批量重置计数。训练器在每个 PPO rollout 后调用 `maybe_regenerate`：到阈值且 inactive 槽无人占用时，CPU 生成新的 inactive 地图、交换 active，并重新编译使用新常量的环境函数。它不覆盖正在飞行的旧地图。课程更新先于 inactive 占用检查；因此槽仍被占用时，本次课程变化仍会生效，这是参考实现的调用顺序。
 
-地图维护检查在 rollout 边界发生，默认 120 拍长度带来最多 120 次 reset-batch 的调度偏移；GPU 内的传感器、物理和 PPO rollout 仍全批量执行，地图生成不会把每个物理步搬到 CPU。地图检查前先应用参考课程：最近 100 个结束回合成功率>0.9 时，hover hold 向 `min(2.0,2.0×success_rate)` 每次最多增加 0.1 s，min_distance 每次除以 1.1、下限 0.4 m；已到下限后改超速系数为 0.6、速度匹配系数为 0.2。`runtime_state()` 保存当前课程参数、地图代数、每次生成的 seed/间隔和 active 槽；完整 checkpoint 还保存环形结果窗口与计数，恢复时重建相同地图。
+地图维护检查在 rollout 边界发生，默认 120 拍带来至多一个 rollout 的阈值检查延迟；inactive 槽仍被占用时还会继续等待。GPU 内传感器、物理和 PPO rollout 仍全批量执行，地图生成不会把每个物理步搬到 CPU。
+
+达到维护阈值后，先检查最近最多 100 个结束回合的成功率 `s>0.9`。令初始 hold 为 `h0`、当前值为 `h`、上限为 `H`；在默认有效范围 `0≤h0≤H` 下，目标为 `target=min(H,h0+(H−h0)×s)`，仅在 `target>h` 时应用 `h←h+min(0.1,target−h)`。默认 `h0=0、H=2 s`，所以目标才简化为 `min(2,2×s)`，不是每次直接跳到 2 s。同时，间距大于 0.4 m 时应用 `spacing←max(spacing/1.1,0.4)`；若本次检查前已到下限，则改超速系数为 0.6、速度匹配系数为 0.2。`runtime_state()` 保存当前课程参数、地图代数、每次生成的 seed/间隔和 active 槽；完整 checkpoint 还保存环形结果窗口与计数，恢复时重建相同地图。
 
 ## 有意保留的模拟器差异
 
 这里的训练物理是 Crazyflow，而非把 Isaac 外力动力学换个库名。默认 `cf21B_500` 来自 [`config/dynamics/first_principles/params.toml`](../config/dynamics/first_principles/params.toml)：质量 0.0434 kg、惯量对角 `[25e−6,28e−6,49e−6]` kg·m²，原生 RPM→推力/反扭矩曲线、四电机转速动态、桨惯性和机体阻力。PD 姿态/角速度目标、控制器惯量及其随机化保持参考定义；分配后的电机推力转换到原生 Crazyflow RPM/电机排列，由官方 pipeline 推进。参考 Isaac 评测继续使用原始 USD、PhysX 和外力/力矩控制，不改动力学。
 
-训练对 cuboid、cylinder、cone 使用解析射线与表面距离，支持浮空障碍三维随机姿态；MuJoCo 的 cone 显示为分面网格。无人机训练碰撞用半径 0.055 m 的质心球，与每个物理子步的场景解析距离比较；参考使用缩放 USD collider 的 PhysX contact force 阈值 0.01 N。解析 ESDF 的最近表面与参考对 200000 个采样表面点的 KD-tree 查询也不会逐数相同。这些几何与电机差异正是需要最后 Isaac sim2sim 验证的部分，不应把 Crazyflow 成功率当成 Isaac 成功率。
+相同随机化公式也不代表相同物理响应：名义 controller mass=0.049 kg 时，仅风力除以机体质量这一项，Crazyflow 相对 0.049 kg 参考机体的加速度倍率为 `0.049/0.0434≈1.129`。参考推力效率直接缩放即时命令外力；Crazyflow 则按当前 RPM 推力施加效率修正，保留电机动态与 RK4 的瞬态。没有为了匹配分数改写官方 CF21B 参数或 Isaac 评测动力学。
+
+训练对 cuboid、cylinder、cone 使用解析射线与表面距离，支持浮空障碍三维随机姿态；MuJoCo 的 cone 显示为分面网格。当前默认与保留模型的碰撞半径均为 **0.055 m**，按每个物理子步的质心球距离判断。USD 审计识别到唯一启用的 Cube collider，任务 1.5 倍缩放后尺寸为 **0.15×0.15×0.045 m**，水平角点半径约 0.1061 m；参考以 PhysX contact force>0.01 N 判定碰撞。对照 [`training-clearance.yaml`](../config/training-clearance.yaml) 的 **0.09 m** 球仍不能包住水平角点，又大于盒子的垂直半厚度，不是精确碰撞体对齐；本次 C 对照未带来 Isaac 开发收益，也未被交付选用。运行时 contact offset 未测量，不能仅用盒子尺寸推算实际接触阈值。
+
+解析 ESDF 的最近表面与参考对 200000 个采样表面点的 KD-tree 查询也不会逐数相同。物理与碰撞审计见 [`environment-parity.json`](../reports/training-study/environment-parity.json)。这些差异需要独立 Isaac sim2sim 验证，不应把 Crazyflow 成功率当成 Isaac 成功率。
 
 可选 `model_params_path` 读取参数辨识导出的 TOML；默认不用它。加载时通过共享物理校验，重算惯量逆矩阵和转速限值，不自动改变参考 PD 控制器。导出策略的 `effective_config()` 无论使用官方默认值还是辨识文件，都会把整份实际物理参数嵌入 `model_params` 并清空路径；完整 checkpoint 的 runtime 同样冻结这些值。因此移动或修改原 TOML、更新本地官方参数表都不会悄悄改变已训练模型的评测物理。数值验收比较默认环境与导出配置重建的环境，在零推力、悬停和饱和动作下推进 100 个原生物理子步，要求完整 SimData 逐位相同。训练元数据另记录源码 SHA256，供版本核验。

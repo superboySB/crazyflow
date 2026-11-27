@@ -1,0 +1,9 @@
+{
+  "registered_at_utc": "2026-11-27T16:33:26.364487+00:00",
+  "candidate_selection_lock_sha256": "4b4f1f31c4214ea2e888931e71ca658c34cc4c6e4bf6f6cb00f13da72da16afc",
+  "candidate": "A-1024-control",
+  "timing": "Registered after locking A and starting the heldout runner, before inspecting any heldout outcome for old or A. The baseline431 count alone was visible. This gate was not in the initial A/B/C study plan.",
+  "rule": "Evaluate only the locked A candidate. Publish its paired NPZ/PT as the new deployment model only if completed heldout aggregate success_count is at least the frozen old model count and no numerical failures occur. Otherwise keep the existing deployment model. Do not train further, evaluate B/C on heldout, or select another newly trained checkpoint.",
+  "purpose": "Respect the user requirement to retain the best established deployment model; distinguish release acceptance from the earlier development selection.",
+  "heldout_used_to_tune_training": false
+}

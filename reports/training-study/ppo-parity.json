@@ -1,0 +1,126 @@
+{
+  "date_utc": "2026-11-27T16:02:11.583224+00:00",
+  "status": "PPO core aligned with pinned CrazyRL/RSL semantics; implementation and all hyperparameters are not claimed identical.",
+  "references": {
+    "saved_baseline_agent": "models/baseline/agent.yaml",
+    "saved_baseline_environment": "models/baseline/env.yaml",
+    "jax_ppo": "crazyflow/tof/train.py",
+    "jax_network_and_normalizer": "crazyflow/tof/policy.py",
+    "rsl_commit": "750e84566d91877a8bbabc7971578be24429bca8",
+    "rsl_sources_in_evaluation_image": [
+      "rsl_rl/algorithms/ppo.py",
+      "rsl_rl/storage/rollout_storage.py",
+      "rsl_rl/runners/on_policy_runner.py",
+      "rsl_rl/modules/actor_critic.py",
+      "rsl_rl/modules/normalizer.py"
+    ],
+    "detailed_local_audit": "outputs/tof-improvement-ppo-audit.json"
+  },
+  "aligned_core": [
+    {
+      "item": "Advantage normalization",
+      "before": "Standardize every minibatch with population std.",
+      "now": "rsl_aligned standardizes complete rollout once using sample std(ddof=1), matching normalize_advantage_per_mini_batch=false."
+    },
+    {
+      "item": "Adaptive KL",
+      "before": "Sampled-action approximation mean(exp(logratio)-1-logratio), changes LR after applying gradient, cap1e-3.",
+      "now": "Analytic old-Gaussian||new-Gaussian KL, including pinned RSL log(std_new/std_old+1e-5); changes LR before applying the current gradient, bounds1e-5..1e-2 and positive-KL growth guard."
+    },
+    {
+      "item": "Adam",
+      "before": "epsilon1e-5.",
+      "now": "rsl_aligned epsilon1e-8, beta1=.9/beta2=.999, global gradient-norm cap1, matching saved Torch optimizer defaults."
+    },
+    {
+      "item": "Observation-statistics stopping",
+      "before": "Continue updating forever.",
+      "now": "rsl_aligned default normalization_until100000000; stop later rollout updates once count reaches limit. Threshold crossing can overshoot by one rollout batch."
+    }
+  ],
+  "already_matched": {
+    "networks": "Actor344→256→256→128→64→4 and critic434→256→256→128→64→1, ELU hidden layers and linear outputs.",
+    "rollout_and_loss": "Horizon120; fiveepochs; gamma.99/lambda.95; ratio clip.2; clipped-value loss coefficient1 without extra half; entropy coefficient.005.",
+    "action": "Unbounded four-dimensional Gaussian: roll attitude, pitch attitude, yaw rate, collective thrust. Log probability refers to raw sample; environment applies tanh once. Physics is excluded from gradients.",
+    "normalization_formula": "(obs-mean)/(sqrt(population_variance)+.01), independent actor and asymmetric-critic statistics."
+  },
+  "remaining_explicit_differences": [
+    {
+      "item": "Normalizer timing",
+      "jax": "Random-action horizon calibration; freeze moments throughout rollout and gradient epochs; merge raw observation moments after PPO.",
+      "rsl": "Update moments at each returned env observation and store already normalized observations.",
+      "assessment": "Intentional retained JAX difference. Copying only final moments into old normalized samples would be incorrect; full online alignment needs a separate rollout-buffer design and ablation."
+    },
+    {
+      "item": "Exploration parameter",
+      "jax": "Optimize logstd, clip[-5,2], std=exp(logstd).",
+      "rsl": "Saved scalar mode optimizes direct std vector4 without the logstd transform. Initial std1 in both.",
+      "assessment": "Same distribution contract at equal values, different optimizer geometry. Retained for stability; no evidence it explains transfer gap."
+    },
+    {
+      "item": "Network initialization",
+      "jax": "Orthogonal hidden weights gain sqrt2, actor output gain.01, critic output gain1, zero biases.",
+      "rsl": "Default Torch Linear fan-in uniform weights and biases; optional orthogonal helper is not called.",
+      "assessment": "Retained conventional JAX PPO initialization; separate from architecture compatibility."
+    },
+    {
+      "item": "Permutation and minibatch count",
+      "jax": "New permutation each epoch; batch must divide exactly by minibatch count. Default hardware setting32, study also64.",
+      "rsl": "One permutation reused across epochs; saved baseline200 minibatches; floor division drops remainder.",
+      "assessment": "No strict hyperparameter identity claim. Compare samples/minibatch and optimizer-step budgets, not only minibatch count."
+    },
+    {
+      "item": "Timeout bootstrap",
+      "jax": "Bootstrap actual pre-reset terminal next-state critic value, mask true terminals to0; every reset stops GAE recursion.",
+      "rsl": "Timeout reward augmentation uses current transition value before resetting done recursion.",
+      "assessment": "Keep mathematically correct JAX next-state bootstrap; do not reproduce RSL current-value approximation."
+    },
+    {
+      "item": "Training backend and resume",
+      "jax": "JAX/Flax/Optax functional JIT/scan with batched Crazyflow physics. Full resume uses checkpoint.msgpack.",
+      "rsl": "Torch PPO with Isaac rollout storage and Torch optimizer.",
+      "assessment": "PT is real RSL tensor export for inference, not Torch optimizer resume. Frozen Isaac evaluation physics remain unchanged."
+    }
+  ],
+  "legacy_compatibility": {
+    "missing_ppo_variant": "legacy",
+    "explicit_variants": [
+      "legacy",
+      "rsl_aligned"
+    ],
+    "resume": "Canonicalize missing historical variant/until fields to legacy/None; aligned and legacy configs do not compare equal. Actual msgpack Agent+environment restoration reproduces the next update exactly for both legacy and rsl_aligned.",
+    "old_selected_policy": "Existing selected weights and its historical performance are unchanged by source updates."
+  },
+  "batch_scaling": {
+    "saved_baseline": "26000 envs x120 horizon /200 minibatches =15600 samples/minibatch.",
+    "study": "1024/32 minibatches and2048/64 both3840 samples/minibatch; equal122.88M transitions imply160000 Adam steps at fiveepochs.",
+    "qualification": "More envs do not guarantee higher throughput or more geometry diversity. Map replacement follows reset batches; compare map count/curriculum as well as transitions, wall time and success."
+  },
+  "verification": {
+    "cpu_tests": "23 passed in16.54s:15 alignment checks plus8 existing policy/export/GAE checks.",
+    "test_sources": [
+      "tests/test_tof_ppo_alignment.py",
+      "tests/test_tof_policy.py"
+    ],
+    "coverage": "Closed-form directed KL, global sample std, scheduler bounds/guard, normalizer cap, real first PPO step, exact old-style msgpack next-step reproduction.",
+    "ruff": "Passed.",
+    "improvement_claim": "Unit tests establish semantics, not better speed or success. The completed equal-budget A/B/C study and separately registered245.76M follow-up did not pass replacement gates; original legacy actor-only deployment weights were retained. Full trained actor/critic exports were independently verified without claiming transfer improvement.",
+    "additional_resume_evidence": {
+      "command": "python -m pytest tests/test_tof_ppo_alignment.py -k msgpack_resume -q -o addopts=",
+      "summary": "2 passed,14 deselected in3.29s",
+      "variants": [
+        "legacy",
+        "rsl_aligned"
+      ],
+      "comparison": "Every resumed Agent, tiny-environment state and update-metric leaf equals the uninterrupted next update exactly.",
+      "log": "outputs/tof-improvement-ppo-resume-tests.log",
+      "log_sha256": "1cc57173155f133589bbad57457ed83c673f4ffd0d2a2ea308ef96fc8e9bf017",
+      "gpu_used": false
+    },
+    "completed_study": "reports/training-study/README.md"
+  },
+  "source_sha256": {
+    "crazyflow/tof/train.py": "db81112b5a37bcc33a35f1028665953aa630adfe77d093682167a26c83b56d4f",
+    "models/baseline/agent.yaml": "2415c673e8c194383dd84f57ab76a0d1760a543135a32ead0fc0ee3938a3f9e4"
+  }
+}

@@ -1,0 +1,458 @@
+{
+  "created_at_utc": "2026-11-27T16:48:06.461777+00:00",
+  "round": 1,
+  "scope": "CPU-only descriptive analysis of completed paired first episodes on five layouts431..435. These are now historical observed seeds; this analysis does not retune the fixed-parameter second round.",
+  "source_root": "reports/training-study/evaluation/heldout",
+  "paired_csv_sha256": "715c2527aaf3d38d7810bea6dc49aebb5c83c7fa6fe195c97b070bf4e85fd4ce",
+  "source_manifest_sha256": "dbcbcfc0778557686c852e7e443280dca441384fdde02fa86ea23e5affd97b49",
+  "model_sha256": {
+    "baseline": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+    "old": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+    "A": "5042d233787782f8d4c44cbea9a30f4bfd429a093e970c1363aad67d4e1aef1d"
+  },
+  "pairing_verified": {
+    "all_three_initial_scene_objects_exactly_equal_per_seed": true,
+    "start_goal_distance_and_commanded_speed_equal_per_case": true,
+    "paired_csv_flags_match_source_episode_csvs": true,
+    "keys": "seed:env_id:episode_index"
+  },
+  "outcomes": {
+    "episodes_per_policy": 160,
+    "successes": {
+      "baseline": 157,
+      "old": 141,
+      "A": 136
+    },
+    "collisions": {
+      "baseline": 3,
+      "old": 19,
+      "A": 24
+    },
+    "timeout_or_numerical_instability": 0,
+    "both_old_and_A_success": 131,
+    "both_old_and_A_collision": 14,
+    "A_new_success": 5,
+    "A_new_collision": 10,
+    "A_minus_old_success_percentage_points": -3.125
+  },
+  "per_seed": [
+    {
+      "seed": 431,
+      "episodes": 32,
+      "successes": {
+        "baseline": 30,
+        "old": 26,
+        "selected": 24
+      },
+      "A_new_success": 2,
+      "A_new_collision": 4,
+      "initial_scene_sha256": "d7f2ea4c6a8392681a0c8aa5d86d57a5b3600c15f6585c27881d7ed77902a4fb"
+    },
+    {
+      "seed": 432,
+      "episodes": 32,
+      "successes": {
+        "baseline": 32,
+        "old": 30,
+        "selected": 29
+      },
+      "A_new_success": 0,
+      "A_new_collision": 1,
+      "initial_scene_sha256": "08be599643617f8b387d5834b148c537afc05dcaa70761f389b4a64f9462fe71"
+    },
+    {
+      "seed": 433,
+      "episodes": 32,
+      "successes": {
+        "baseline": 32,
+        "old": 28,
+        "selected": 26
+      },
+      "A_new_success": 1,
+      "A_new_collision": 3,
+      "initial_scene_sha256": "3abfb8e0cf8ef9716de92c54b49687e8b6ac965565d5b5ca755a66eb54b8fe3b"
+    },
+    {
+      "seed": 434,
+      "episodes": 32,
+      "successes": {
+        "baseline": 31,
+        "old": 27,
+        "selected": 28
+      },
+      "A_new_success": 2,
+      "A_new_collision": 1,
+      "initial_scene_sha256": "6d24a50b091eaddb61e78e4e26fcaac47c623f32c5fdc7777a0870bfb850c904"
+    },
+    {
+      "seed": 435,
+      "episodes": 32,
+      "successes": {
+        "baseline": 32,
+        "old": 30,
+        "selected": 29
+      },
+      "A_new_success": 0,
+      "A_new_collision": 1,
+      "initial_scene_sha256": "67531dd1e38a2ed90a3690b1e50f27eccdd294818251d239487a35b61dfe141e"
+    }
+  ],
+  "both_success_paired_comparison": {
+    "count": 131,
+    "old": {
+      "duration_s": 7.59084,
+      "path_length_m": 6.112065,
+      "mean_speed_m_s": 0.807694,
+      "max_speed_m_s": 1.22177
+    },
+    "A": {
+      "duration_s": 8.09771,
+      "path_length_m": 6.246832,
+      "mean_speed_m_s": 0.774845,
+      "max_speed_m_s": 1.19893
+    },
+    "mean_A_minus_old": {
+      "duration_s": 0.50687,
+      "path_length_m": 0.134767,
+      "mean_speed_m_s": -0.032849,
+      "max_speed_m_s": -0.02284
+    },
+    "interpretation": "Same successful tasks: A takes about.507s longer and.135m more path on average with lower mean speed. This does not support a simple global overspeed explanation."
+  },
+  "collision_descriptions": {
+    "old": {
+      "count": 19,
+      "metrics": {
+        "duration_s": {
+          "mean": 12.585965,
+          "median": 14.866667
+        },
+        "path_length_m": {
+          "mean": 7.61554,
+          "median": 8.979298
+        },
+        "mean_speed_m_s": {
+          "mean": 0.613783,
+          "median": 0.564893
+        },
+        "max_speed_m_s": {
+          "mean": 0.995209,
+          "median": 0.921647
+        },
+        "start_goal_distance_m": {
+          "mean": 10.658372,
+          "median": 10.881073
+        },
+        "commanded_speed_m_s": {
+          "mean": 0.844701,
+          "median": 0.694088
+        }
+      },
+      "duration_at_most_1_3_5_seconds": [
+        3,
+        4,
+        5
+      ],
+      "path_at_most_1_2_metres": [
+        3,
+        5
+      ]
+    },
+    "selected": {
+      "count": 24,
+      "metrics": {
+        "duration_s": {
+          "mean": 13.330556,
+          "median": 13.666667
+        },
+        "path_length_m": {
+          "mean": 8.154331,
+          "median": 8.275945
+        },
+        "mean_speed_m_s": {
+          "mean": 0.607412,
+          "median": 0.533726
+        },
+        "max_speed_m_s": {
+          "mean": 1.023958,
+          "median": 0.905049
+        },
+        "start_goal_distance_m": {
+          "mean": 10.30253,
+          "median": 10.441511
+        },
+        "commanded_speed_m_s": {
+          "mean": 0.808491,
+          "median": 0.66342
+        }
+      },
+      "duration_at_most_1_3_5_seconds": [
+        1,
+        2,
+        4
+      ],
+      "path_at_most_1_2_metres": [
+        2,
+        3
+      ]
+    }
+  },
+  "discordant_cases": {
+    "A_new_collision": {
+      "count": 10,
+      "case_keys": [
+        "431:10:1",
+        "431:28:1",
+        "431:29:1",
+        "431:30:1",
+        "432:5:1",
+        "433:6:1",
+        "433:18:1",
+        "433:27:1",
+        "434:21:1",
+        "435:18:1"
+      ],
+      "initial_conditions": {
+        "commanded_speed_m_s": 0.760745,
+        "start_goal_distance_m": 9.352239,
+        "start_z_m": 0.66,
+        "goal_z_m": 0.981211,
+        "goal_minus_start_z_m": 0.321211
+      },
+      "old": {
+        "duration_s": 14.606667,
+        "path_length_m": 9.351974,
+        "mean_speed_m_s": 0.656384,
+        "max_speed_m_s": 1.018946
+      },
+      "A": {
+        "duration_s": 15.326667,
+        "path_length_m": 9.33803,
+        "mean_speed_m_s": 0.60637,
+        "max_speed_m_s": 0.988644
+      },
+      "colliding_policy": "selected",
+      "collisions_at_most_5_seconds": 1
+    },
+    "A_new_success": {
+      "count": 5,
+      "case_keys": [
+        "431:8:1",
+        "431:23:1",
+        "433:24:1",
+        "434:9:1",
+        "434:19:1"
+      ],
+      "initial_conditions": {
+        "commanded_speed_m_s": 0.850594,
+        "start_goal_distance_m": 9.754146,
+        "start_z_m": 0.9,
+        "goal_z_m": 0.711548,
+        "goal_minus_start_z_m": -0.188452
+      },
+      "old": {
+        "duration_s": 11.64,
+        "path_length_m": 7.422152,
+        "mean_speed_m_s": 0.695441,
+        "max_speed_m_s": 1.058869
+      },
+      "A": {
+        "duration_s": 14.64,
+        "path_length_m": 10.268418,
+        "mean_speed_m_s": 0.72547,
+        "max_speed_m_s": 1.085163
+      },
+      "colliding_policy": "old",
+      "collisions_at_most_5_seconds": 2
+    }
+  },
+  "initial_height_strata": {
+    "feature": "initial world z, metres; exact sampled levels",
+    "columns": [
+      "start_z_m",
+      "cases",
+      "baseline_success",
+      "old_success",
+      "A_success",
+      "A_new_success",
+      "A_new_collision"
+    ],
+    "rows": [
+      [
+        0.5,
+        38,
+        37,
+        32,
+        27,
+        1,
+        6
+      ],
+      [
+        0.7,
+        32,
+        31,
+        28,
+        27,
+        1,
+        2
+      ],
+      [
+        0.9,
+        25,
+        24,
+        20,
+        20,
+        1,
+        1
+      ],
+      [
+        1.1,
+        22,
+        22,
+        21,
+        22,
+        1,
+        0
+      ],
+      [
+        1.3,
+        43,
+        43,
+        40,
+        40,
+        1,
+        1
+      ]
+    ]
+  },
+  "commanded_speed_strata": {
+    "feature": "commanded_speed_m_s",
+    "columns": [
+      "range_lower_inclusive_upper_exclusive",
+      "cases",
+      "old_success",
+      "A_success",
+      "A_new_success",
+      "A_new_collision"
+    ],
+    "rows": [
+      [
+        [
+          0.5,
+          0.75
+        ],
+        50,
+        39,
+        36,
+        3,
+        6
+      ],
+      [
+        [
+          0.75,
+          1
+        ],
+        37,
+        33,
+        32,
+        1,
+        2
+      ],
+      [
+        [
+          1,
+          1.25
+        ],
+        34,
+        34,
+        33,
+        0,
+        1
+      ],
+      [
+        [
+          1.25,
+          1.500001
+        ],
+        39,
+        35,
+        35,
+        1,
+        1
+      ]
+    ]
+  },
+  "initial_distance_strata": {
+    "feature": "start_goal_distance_m",
+    "columns": [
+      "range_lower_inclusive_upper_exclusive",
+      "cases",
+      "old_success",
+      "A_success",
+      "A_new_success",
+      "A_new_collision"
+    ],
+    "rows": [
+      [
+        [
+          0,
+          4
+        ],
+        43,
+        43,
+        43,
+        0,
+        0
+      ],
+      [
+        [
+          4,
+          8
+        ],
+        60,
+        58,
+        56,
+        1,
+        3
+      ],
+      [
+        [
+          8,
+          12
+        ],
+        43,
+        32,
+        29,
+        2,
+        5
+      ],
+      [
+        [
+          12,
+          20
+        ],
+        14,
+        8,
+        8,
+        2,
+        2
+      ]
+    ]
+  },
+  "findings": [
+    "A does not improve first-round heldout success: it fixes5 old collisions but introduces10; four layouts regress and one improves.",
+    "The net five-success deficit is concentrated in the initial-z.5m stratum: old32/38 versusA27/38. Across remaining122cases both have109successes. Six of10 A-only collisions start at.5m, versusone of5 A-only successes. This is a correlation in this fixed sample, not proof altitude causes collisions.",
+    "New A failures mostly occur after sustained flight: mean15.33s,9of10 later than5s. There are no timeouts or numerical failures. Thus the main measured failure is collision avoidance/trajectory outcome, rather than crashes from immediate numeric instability.",
+    "Regressions are not explained by faster average flight: A is slower on the131 mutually successful episodes and its10 new collisions have mean commanded speed.761m/s. Six new collisions are in command range[.5,.75). Longer routes are harder for both; all43 cases with initial distance under4m succeed for both.",
+    "Available records contain initial/goal altitude but no collision position, final altitude, minimum clearance or per-step depth/action trajectory. They cannot distinguish ground contact, pillar/floater contact, delayed braking or terminal hovering as the causal mechanism.",
+    "Old selected actor lineage233.472M transitions differs from fresh A122.88M plus prior geometry/curriculum history. This is not an isolated aligned-PPO versus legacy ablation, so lower A success does not establish that semantic alignment caused regression."
+  ],
+  "limits_and_round2_use": {
+    "sampling": "Only five generated layouts,32 paired starts/goals each; episodes share map geometry. Descriptive bins are post-hoc and correlated. No independent-map significance or general causal claim.",
+    "randomness": "Starts, goals, controller parameters, initial wind/thrust and maps match exactly. Subsequent stochastic draws follow the same laws but can diverge after policy-dependent reset progression.",
+    "deployment": "Round1 A was not promoted; frozen old deployment remains.",
+    "phase2": "Existing fixed-parameter exact A resume to twice its original budget is unchanged by this analysis. Seeds431..435 are historical; future441..445 remain blind. Do not select parameters using either observed failure bins or future blind outcomes.",
+    "other_ablations": "Larger-environment/radius development results are already recorded in selection-lock.json; not reinterpreted here."
+  },
+  "source_manifest": "outputs/tof-training-study/round1-failure-source-manifest.json"
+}

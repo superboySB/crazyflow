@@ -1,0 +1,350 @@
+{
+  "mode": "live_closed_loop",
+  "flight_backend": "crazyflow",
+  "visualizer": "mujoco",
+  "frames": 30,
+  "seed": 43,
+  "map_id": 1,
+  "steps_current_episode": 14,
+  "completed_episodes": 1,
+  "manual_resets": 1,
+  "exact_restarts": 1,
+  "last_outcome": "timeout",
+  "camera": "follow",
+  "sensor_display": "clean_ranges",
+  "sensor_packet": {
+    "clean_front": [
+      [
+        1.8594435453414917,
+        1.9419844150543213,
+        2.032193660736084,
+        2.131192207336426,
+        2.2403299808502197,
+        2.3612489700317383,
+        2.4959652423858643,
+        2.6469838619232178
+      ],
+      [
+        2.420987844467163,
+        2.562811851501465,
+        2.7222862243652344,
+        2.9029245376586914,
+        3.109239339828491,
+        3.347123861312866,
+        3.624424457550049,
+        3.9518234729766846
+      ],
+      [
+        3.4684433937072754,
+        3.7671072483062744,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        3.771177291870117
+      ],
+      [
+        4.0,
+        3.971567153930664,
+        3.6174533367156982,
+        3.321317195892334,
+        3.069997787475586,
+        2.854036569595337,
+        2.6664621829986572,
+        2.502023220062256
+      ],
+      [
+        2.7651095390319824,
+        2.5886809825897217,
+        2.4334163665771484,
+        2.295722484588623,
+        2.1727771759033203,
+        2.062330722808838,
+        1.9625695943832397,
+        1.8720145225524902
+      ]
+    ],
+    "clean_auxiliary": [
+      4.0,
+      2.465965509414673,
+      4.0,
+      0.9532470703125
+    ],
+    "policy_front": [
+      [
+        1.8958631753921509,
+        2.1042938232421875,
+        2.2116646766662598,
+        2.281564474105835,
+        2.252457618713379,
+        2.3780856132507324,
+        2.5764009952545166,
+        2.9669582843780518
+      ],
+      [
+        2.5053465366363525,
+        2.739109754562378,
+        2.8876442909240723,
+        2.505953073501587,
+        3.252992868423462,
+        3.709928274154663,
+        3.82840895652771,
+        3.514852285385132
+      ],
+      [
+        3.5928761959075928,
+        3.5702836513519287,
+        4.634648323059082,
+        3.648373603820801,
+        4.518905162811279,
+        4.234297752380371,
+        3.83780574798584,
+        3.6518566608428955
+      ],
+      [
+        3.5563089847564697,
+        3.406412363052368,
+        3.9455666542053223,
+        3.8906872272491455,
+        4.833741664886475,
+        4.108630180358887,
+        4.1089253425598145,
+        3.4989612102508545
+      ],
+      [
+        3.4636247158050537,
+        4.772660255432129,
+        4.086544990539551,
+        4.449281215667725,
+        3.730886220932007,
+        4.829371452331543,
+        3.2543389797210693,
+        3.6956417560577393
+      ],
+      [
+        3.9512012004852295,
+        4.229641437530518,
+        4.350123882293701,
+        4.079916000366211,
+        4.2809882164001465,
+        4.190284252166748,
+        3.9169766902923584,
+        4.111240863800049
+      ],
+      [
+        3.604452610015869,
+        3.979482412338257,
+        3.4003469944000244,
+        3.2570302486419678,
+        3.047003746032715,
+        2.3136792182922363,
+        2.691962957382202,
+        2.379558801651001
+      ],
+      [
+        3.04437518119812,
+        2.355647325515747,
+        2.4446351528167725,
+        2.1144959926605225,
+        2.6945550441741943,
+        2.283426523208618,
+        2.158435106277466,
+        1.8178482055664062
+      ]
+    ],
+    "policy_auxiliary": [
+      3.810053825378418,
+      2.233288049697876,
+      2.7761776447296143,
+      0.9405702948570251
+    ]
+  },
+  "control_checks": [
+    "physics_held_across_paused_gui_frames",
+    "pause_resume_keys",
+    "new_pose_goal_same_maps",
+    "exact_episode_restart_key",
+    "clean_policy_sensor_toggle",
+    "three_camera_modes",
+    "mouse_orbit",
+    "mouse_pan",
+    "pan_target_preserved_after_pose_update",
+    "mouse_wheel_zoom",
+    "clickable_pause_resume",
+    "terminal_pose_and_packet_before_autoreset",
+    "continue_real_environment_autoreset"
+  ],
+  "self_test_forced_final_episode_tick": true,
+  "physical_config": {
+    "drone": "cf21B_500",
+    "integrator": "rk4",
+    "model_params_path": null,
+    "model_params": {
+      "gravity_vec": [
+        0.0,
+        0.0,
+        -9.81
+      ],
+      "mass": 0.0434,
+      "J": [
+        [
+          2.5e-05,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.8e-05,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          4.9e-05
+        ]
+      ],
+      "thrust_min": 0.02136263065537499,
+      "thrust_max": 0.2,
+      "L": 0.035355,
+      "prop_inertia": 3.893e-08,
+      "rpm2thrust": [
+        0.0,
+        -3.133427287299859e-07,
+        4.407354891648379e-10
+      ],
+      "rpm2torque": [
+        0.0,
+        1.65886356219615e-09,
+        2.4693477924534137e-12
+      ],
+      "rotor_dyn_coef": [
+        13.996001897562685,
+        0.00011093207920685363,
+        5.933168530682111,
+        0.00031951312393561264
+      ],
+      "mixing_matrix": [
+        [
+          -1.0,
+          -1.0,
+          1.0,
+          1.0
+        ],
+        [
+          -1.0,
+          1.0,
+          1.0,
+          -1.0
+        ],
+        [
+          -1.0,
+          1.0,
+          -1.0,
+          1.0
+        ]
+      ],
+      "drag_matrix": [
+        [
+          -0.021643637770852733,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.021643637770852733,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -0.02477138502714662
+        ]
+      ]
+    },
+    "policy_hz": 15,
+    "physics_hz": 150,
+    "action_delay_steps": 4,
+    "history_length": 10,
+    "episode_seconds": 80.0,
+    "camera_max_distance": 4.0,
+    "camera_focal_length": 20.0,
+    "camera_aperture": 20.955,
+    "depth_invalid_rate_max": 0.15,
+    "observation_noise": true,
+    "domain_randomization": true,
+    "mass_randomization_percent": 0.2,
+    "wind_tau": 1.0,
+    "wind_sigma": 0.5,
+    "thrust_initial_min": 0.85,
+    "thrust_initial_max": 1.0,
+    "thrust_degradation_min": 0.1,
+    "thrust_degradation_max": 0.15,
+    "thrust_min_effectiveness": 0.7,
+    "desired_speed_min": 0.5,
+    "desired_speed_max": 1.5,
+    "goal_noise": 0.15,
+    "map_seed": 42,
+    "num_maps": 2,
+    "enable_difficulty_curriculum": true,
+    "map_generation_reset_batches": 3000,
+    "obstacle_min_distance_min": 0.4,
+    "hover_hold_max_seconds": 2.0,
+    "hover_hold_increment_seconds": 0.1,
+    "map_size": 16.0,
+    "obstacle_min_distance": 1.5,
+    "obstacle_size_min": 0.4,
+    "obstacle_size_max": 0.8,
+    "floater_size_min": 0.4,
+    "floater_size_max": 0.8,
+    "spawn_clearance": 0.2,
+    "drone_radius": 0.055,
+    "hover_hold_seconds": 0.0,
+    "hover_distance": 0.5,
+    "hover_speed": 0.5,
+    "reward_distance": 8.0,
+    "reward_yaw": 0.3,
+    "reward_action": 0.3,
+    "reward_action_change": 0.5,
+    "reward_velocity_direction": 0.15,
+    "reward_speed_excess": 0.5,
+    "reward_speed_match": 0.0,
+    "reward_height": 0.25,
+    "reward_collision": 80.0,
+    "reward_esdf": 0.1,
+    "reward_success": 80.0
+  },
+  "checkpoint": "outputs/tof-training-study/runs/A-1024-control/policy.npz",
+  "checkpoint_sha256": "2ad8ef63ec22fd8838636bf51106f07917a8f13c25c1fb6b7ab45fc73a097be3",
+  "scope": "CPU JAX and MuJoCo in Xvfb; controls/packet/auto-reset smoke test, not a policy success evaluation. The self-test forces the last episode tick."
+}

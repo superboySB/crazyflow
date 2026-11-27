@@ -1,0 +1,207 @@
+{
+  "path": "outputs/sim2sim/tensorboard/events.out.tfevents.1768936229.dcj.32.0",
+  "sha256": "2f7a310383d85593b93c5aae13390289f6f31e9de23088446b79a93e91ebf6d5",
+  "bytes": 81883824,
+  "scalar_tags": 35,
+  "scalar_samples": 1287560,
+  "scalar_step_range": [
+    0,
+    732135
+  ],
+  "first_scalar_wall_time_utc": "2026-01-20T19:10:49.588438+00:00",
+  "last_scalar_wall_time_utc": "2026-01-29T06:57:49.520628+00:00",
+  "observed_log_wall_time_span_seconds": 733619.9321906567,
+  "all_scalar_endpoints_csv": "models/baseline/evidence/tensorboard-scalars.csv",
+  "other_tag_types": {
+    "images": [],
+    "audio": [],
+    "histograms": [],
+    "distributions": [],
+    "tensors": [],
+    "graph": false,
+    "meta_graph": false,
+    "run_metadata": []
+  },
+  "selected_scalar_endpoints": {
+    "Metrics/hover_hold_requirement_s": {
+      "tag": "Metrics/hover_hold_requirement_s",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": 0.0,
+      "last_value": 1.9600001573562622,
+      "min_value": 0.0,
+      "max_value": 1.9600001573562622,
+      "first_wall_time_utc": "2026-01-20T19:10:49.620921+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520094+00:00"
+    },
+    "Metrics/obstacle_min_distance": {
+      "tag": "Metrics/obstacle_min_distance",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": 1.5000001192092896,
+      "last_value": 0.40000003576278687,
+      "min_value": 0.40000003576278687,
+      "max_value": 1.5000001192092896,
+      "first_wall_time_utc": "2026-01-20T19:10:49.618897+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.518052+00:00"
+    },
+    "Metrics/success_rate": {
+      "tag": "Metrics/success_rate",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": 0.7425627708435059,
+      "last_value": 93.4666748046875,
+      "min_value": 0.1666666716337204,
+      "max_value": 95.3416748046875,
+      "first_wall_time_utc": "2026-01-20T19:10:49.597730+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.495791+00:00"
+    },
+    "Perf/learning_time": {
+      "tag": "Perf/learning_time",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": 2.565174102783203,
+      "last_value": 3.146352767944336,
+      "min_value": 2.443952798843384,
+      "max_value": 4.316778182983398,
+      "first_wall_time_utc": "2026-01-20T19:10:49.621178+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520314+00:00"
+    },
+    "Perf/total_fps": {
+      "tag": "Perf/total_fps",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": 157874.0,
+      "last_value": 129140.0,
+      "min_value": 51457.0,
+      "max_value": 196481.0,
+      "first_wall_time_utc": "2026-01-20T19:10:49.621161+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520298+00:00"
+    },
+    "Train/mean_episode_length": {
+      "tag": "Train/mean_episode_length",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": 12.760000228881836,
+      "last_value": 169.77999877929688,
+      "min_value": 12.760000228881836,
+      "max_value": 277.0899963378906,
+      "first_wall_time_utc": "2026-01-20T19:10:49.621395+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520514+00:00"
+    },
+    "Train/mean_episode_length/time": {
+      "tag": "Train/mean_episode_length/time",
+      "samples": 36846,
+      "first_step": 19,
+      "last_step": 732135,
+      "min_step": 19,
+      "max_step": 732135,
+      "first_value": 12.760000228881836,
+      "last_value": 169.77999877929688,
+      "min_value": 12.760000228881836,
+      "max_value": 277.0899963378906,
+      "first_wall_time_utc": "2026-01-20T19:10:49.621502+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520628+00:00"
+    },
+    "Train/mean_reward": {
+      "tag": "Train/mean_reward",
+      "samples": 36846,
+      "first_step": 0,
+      "last_step": 36845,
+      "min_step": 0,
+      "max_step": 36845,
+      "first_value": -119.13143157958984,
+      "last_value": 23.746747970581055,
+      "min_value": -399.6856994628906,
+      "max_value": 38.50629806518555,
+      "first_wall_time_utc": "2026-01-20T19:10:49.621339+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520454+00:00"
+    },
+    "Train/mean_reward/time": {
+      "tag": "Train/mean_reward/time",
+      "samples": 36846,
+      "first_step": 19,
+      "last_step": 732135,
+      "min_step": 19,
+      "max_step": 732135,
+      "first_value": -119.13143157958984,
+      "last_value": 23.746747970581055,
+      "min_value": -399.6856994628906,
+      "max_value": 38.50629806518555,
+      "first_wall_time_utc": "2026-01-20T19:10:49.621460+00:00",
+      "last_wall_time_utc": "2026-01-29T06:57:49.520586+00:00"
+    }
+  },
+  "interpretation": "These are historical logged training metrics, not frozen evaluation success rates. Step numbers and observed log span alone do not establish the complete checkpoint training lineage or number of transitions.",
+  "iteration_axis_step_range": [
+    0,
+    36845
+  ],
+  "time_axis_tags": {
+    "Train/mean_reward/time": {
+      "axis": "logged cumulative training seconds, not PPO iterations",
+      "first": 19,
+      "last": 732135
+    },
+    "Train/mean_episode_length/time": {
+      "axis": "logged cumulative training seconds, not PPO iterations",
+      "first": 19,
+      "last": 732135
+    }
+  },
+  "metrics_at_checkpoint_iteration": {
+    "Metrics/success_rate": {
+      "step": 36825,
+      "value": 92.76667022705078
+    },
+    "Train/mean_reward": {
+      "step": 36825,
+      "value": 7.123902320861816
+    },
+    "Metrics/hover_hold_requirement_s": {
+      "step": 36825,
+      "value": 1.9600001573562622
+    },
+    "Metrics/obstacle_min_distance": {
+      "step": 36825,
+      "value": 0.40000003576278687
+    }
+  },
+  "success_rate_unit": "percent; historical online training metric, not frozen evaluation",
+  "source_checkpoint_iteration": 36825,
+  "log_continues_after_source_checkpoint_iteration": 20,
+  "full_history_plot": {
+    "path": "models/baseline/evidence/training-curves.png",
+    "sha256": "1ef4d1b6119fc64efe2e89d37194b354494e5e950f21d0b011addeb57fc47229",
+    "source_event_sha256": "2f7a310383d85593b93c5aae13390289f6f31e9de23088446b79a93e91ebf6d5",
+    "scalar_tags": [
+      "Metrics/success_rate",
+      "Train/mean_reward",
+      "Loss/value_function",
+      "Policy/mean_noise_std",
+      "Metrics/obstacle_min_distance",
+      "Metrics/hover_hold_requirement_s"
+    ],
+    "smoothing": "none; all recorded points plotted",
+    "checkpoint_iteration": 36825,
+    "interpretation": "Offline visualization of historical training logs. No simulation, optimization or evaluation was performed to create this figure."
+  }
+}

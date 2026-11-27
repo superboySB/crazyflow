@@ -1,0 +1,22 @@
+{
+  "scope": "Only weights created by the current training/capacity study and its duplicate frozen-old pair. Baseline historical archive and unrelated outputs are preserved.",
+  "removed_files": 273,
+  "removed_bytes": 372208503,
+  "removed_suffix_counts": {
+    ".npz": 135,
+    ".pt": 135,
+    ".msgpack": 3
+  },
+  "manifest": "outputs/tof-training-study/removed-weight-manifest.json",
+  "manifest_sha256": "82853d082f530d3eb19d18a40c1fb77b116f7cac8ef7f4d32b2b5e45e61e6d03",
+  "verification": "Final candidate exports and both published evidence manifests were hash-verified before deletion. Historical model paths in reports describe now-removed artifacts; they do not imply those intermediates are shipped.",
+  "retained_ignored_resume": {
+    "path": "outputs/tof-training-study/runs/A-1024-budget245m/checkpoint.msgpack",
+    "sha256": "15ef44a27f936783fab1c83e26d142f40f5958d6e8e4c3c83f9283dc8f2d114d",
+    "bytes": 11399197,
+    "purpose": "Useful final full JAX Agent/Adam/RNG/environment state, not deployed because E failed the development gate."
+  },
+  "latest_policy_pointer_removed": true,
+  "default_policy": "models/crazyflow/policy.npz",
+  "canonical_weights_unchanged": true
+}

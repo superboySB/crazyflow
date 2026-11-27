@@ -1,0 +1,9 @@
+{
+  "training_image": "sha256:61f945fd3dab0db269aa05672b9e873e00c12a16ffbe0f770a7e715e9233690d",
+  "evaluation_image": "sha256:056e23934a88807b855069b55b3dd37aa156a6815232865be4f50d9a28747cd8",
+  "nvidia_gpu": "NVIDIA GeForce RTX 4070 Ti SUPER, 16376 MiB, 580.126.09",
+  "source_loading": "Official launchers bind current repository sources; model metadata records training source hash. Image IDs above identify the actual runtime used for both study rounds before final cached rebuild.",
+  "training_recipe": "docker/crazyflow.Dockerfile",
+  "evaluation_recipe": "docker/sim2sim.Dockerfile",
+  "frozen_reference_manifest": "sim2sim/provenance.json"
+}

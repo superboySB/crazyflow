@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-27",
+  "scope": "CPU source, metadata and USD collider audit; no GPU, training or runtime changes.",
+  "reference": {
+    "project": "CrazyRL",
+    "revision": "9333442c18fa15799adac7e02988a978aeaf97b9",
+    "frozen_sources_sha256": {
+      "sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env.py": "98881a5e75fd753cb4160e0ca63bc19b0f096f69b48384ea47e1b381e107e488",
+      "sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env_cfg.py": "b722ebd1e6c609d855185993443f8e83d46f010f397d5e46767129e4c13bd162",
+      "sim2sim/reference/e2e_drone/utils/controller.py": "efddde7d6cf3d7959143d566784363bec40525bc5bb3afb5556d73e80d468ea9",
+      "sim2sim/reference/e2e_drone/utils/wind_gen.py": "8b3bd77c82cfaf58e953f5465811c9eb173efccfdb81d494219a6062d71ef3e2",
+      "sim2sim/reference/e2e_drone/utils/thrust_uncertainty.py": "db246d4d27d284f9845180d42a848464444482d25a2d53eabd3c300c2bf12a8c",
+      "sim2sim/reference/e2e_drone/utils/map_generator.py": "fda17275a9d9345e3c68e1125e01378aaaced592c5923949611d92007b89e337"
+    },
+    "all_six_sources_byte_identical_to_actual_reference": true,
+    "baseline_saved_config": "models/baseline/env.yaml;only portable USD path differs",
+    "baseline_training_end_runtime": "Unknown: initial env.yaml does not store final curriculum."
+  },
+  "selected_policy": {
+    "path": "models/crazyflow/policy.npz",
+    "sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+    "stage_iteration": 75,
+    "stage_transitions": 110592000,
+    "parent_transitions": 122880000,
+    "observation_noise": true,
+    "domain_randomization": true,
+    "frozen_physics_embedded": true,
+    "physics_parameters_sha256": "10e0db632d6d0925441b7fd42ca39696509f546c01472e19cfb43a3b796c981d",
+    "runtime": {
+      "active_map": 1,
+      "generation": 2,
+      "map_changes": [
+        {
+          "index": 0,
+          "seed": 1051,
+          "obstacle_min_distance": 1.3636363636363635
+        },
+        {
+          "index": 1,
+          "seed": 2060,
+          "obstacle_min_distance": 1.2396694214876032
+        }
+      ],
+      "obstacle_min_distance_m": 1.2396694214876032,
+      "hover_hold_s": 0.2,
+      "drone_radius_m": 0.055
+    },
+    "parent_last_logged_runtime": {
+      "generation": 38,
+      "spacing": 0.6997610703145998,
+      "hover_hold_s": 0.7999999999999999,
+      "note": "Stage C reused weights/statistics but reset curriculum."
+    }
+  },
+  "aligned_contract": {
+    "evidence": [
+      "crazyflow/tof/env.py",
+      "sim2sim/reference/e2e_drone/tasks/baseline/quad_baseline_env.py",
+      "reports/sim2sim/checkpoint-io-audit.json"
+    ],
+    "timing_action": "15Hz policy,150Hz physics,10ticks/action,FIFO delay4ticks(26.7ms). Raw Gaussian -> tanh once; throttle=(u3+1)/2; roll/pitch +/-pi/6rad,yaw-rate +/-pi/1.5rad/s,maxcollective .775313294N.",
+    "history": "Actor10 chronological28-feature frames+current row-major8x8 depth=344;critic10x37+64=434. Oldest first,zero-filled at reset. Last action is processed normalized command,not radians/Newtons.",
+    "scale": "Velocity x25;body-to-world rotation row-major x127;gyro x30;[world XY goal direction,absolute goal z] x127;z error x30;speed x25;last action x127;ToF[left,right,back,down] and forward depth x30.",
+    "noise": "Independent elementwise multiplicative N(1,sigma^2):velocity .3;gyro/z error/auxiliary ToF/forward depth .1;goal XY displacement .2 before normalization. Rotation,speed,last action clean. Fresh each observation;history retains original noise. Critic clean except shared noisy goal direction.",
+    "dropout": "One p~U(0,.15) shared per batch/observation;independent pixel/world Bernoulli(p);invalid forward pixels ->4m BEFORE multiplicative noise. Auxiliary ToF has no dropout. Shared p correlates dropout frequency;noisy depth can exceed4m.",
+    "camera": "8x8 pinhole,pixel centers arange+.5,focal20,aperture20.955,image-plane depth capped4m,mount offsets.02m. Native analytic intersections replace Isaac triangles;numeric samples need not coincide.",
+    "controller_randomization": "Once per world at construction:mass=.049*U(.8,1.2);controller inertia=[21.6e-6,21.6e-6,43.3e-6]*(mass/.049);wind force uses same mass. Neither randomizes physical-body mass/inertia.",
+    "wind": "Each150Hz tick alpha=exp(-dt/1s), w_next=alpha*w+.5*sqrt(1-alpha^2)*N(0,I), independent axes/worlds; reset w=0. World force=controller_mass*w. Critic uses mean over10ticks.",
+    "thrust": "Per reset eta0~U(.85,1), degradation factor~U(.10,.15)/1200. Every PHYSICS tick eta=max(eta*(1-rate),.7). Collective thrust is scaled; controller torque is not.",
+    "spawn_goal_speed": "Free grid xy[-7,7),z[.5,1.5),step.2,clearance.20m;no spawn jitter;yaw U(-pi,pi). Independent goal+axiswise U(-.15,.15)m;speed U(.5,1.5)m/s times clip(goal distance,0,1). Height randomizer off.",
+    "map_curriculum": "Two maps;do not overwrite occupied map;regenerate after3000 nonempty reset batches. Last100 success>.9=>spacing/1.1,floor.4m;hold+.1s toward2s. At floor,overspeed=.6,speed-match=.2. Native rollout-boundary maintenance adds up to120 reset-batch lag.",
+    "map_distribution": "16x16m;Poisson columns w/l U(.4,.8),height U(2.4,2.5);uniform-SO3 floating boxes/cylinders/cones,size U(.4,.8),center z U(.3,1.7).",
+    "hover_curriculum": "Both target initial_hold+(max-initial_hold)*success_rate,capped at max;hold increments at most.1s. Native self.config stays initial;self.cfg stores updates."
+  },
+  "material_plant_and_collision_differences": {
+    "physics": "Plants differ despite aligned interfaces/laws. Native official CF21B:mass.0434kg,Jdiag[25e-6,28e-6,49e-6],RPM curves,motor lag,prop inertia,drag,mixer,RK4. Isaac uses direct controller wrench,USD/PhysX mass attribute.049kg,inertia attributes[1.3615e-5,1.3615e-5,3.257e-5],root scale1.5. Effective inertia requires runtime measurement.",
+    "wind_effect": "Same wind force yields native acceleration .049/.0434=1.129032 times reference nominal acceleration;retain official native defaults.",
+    "thrust_effect": "Isaac eta scales immediate commanded force;native corrects current RPM-derived thrust while retaining motor/RK4 transients.",
+    "collision": {
+      "asset": "sim2sim/reference/assets/Assets/Isaac/4.5/Isaac/Robots/Crazyflie/cf2x.usd",
+      "asset_sha256": "d5e57dcdd28f929b018186aa41c35e8e8685c11ea6582f2eca2b450736ccb5ad",
+      "measurement": "CPU CollisionAPI enumeration plus XformCache cube-corner transforms;exactly one enabled collider,not visual-mesh bounds.",
+      "prim": "/crazyflie/body/body_collision/geometry",
+      "shape": "Cube size1,local scale[.1,.1,.03],task root scale1.5",
+      "box_full_size_m": [
+        0.15,
+        0.15,
+        0.045
+      ],
+      "box_half_extents_m": [
+        0.075,
+        0.075,
+        0.0225
+      ],
+      "native_sphere_radius_m": 0.055,
+      "level_horizontal_corner_radius_m": 0.10606601717798213,
+      "candidate_sphere_radius_m": 0.09,
+      "candidate_status": "Tested as first-study C at radius.09 versus B at.055: common CF250/256 versus247/256, but identical Isaac development25/32. Not selected or shipped; still underbounds diagonal corners and overbounds height, not exact box parity.",
+      "contact_caveat": "Native analytical distance<radius;Isaac contact force>.01N. Runtime contact offsets were not measured."
+    }
+  },
+  "minor_edges": [
+    "Per-world FIFO reset replaces reference cross-episode deque carryover.",
+    "Reset privileged wind mean differs for initial critic frame.",
+    "Controller-DR RNG keyed by map_seed;distributions match,realizations differ.",
+    "Analytic surfaces replace mesh/KD queries;column base0 versus reference.05m."
+  ],
+  "evidence_and_next_trial": {
+    "evaluation": "reports/sim2sim/final/summary.json:baseline155/160 successes,selected132/160;all23 extra failures are collisions,no timeout/instability. Five shared layouts,not160 independent maps.",
+    "recommendation": "Historical pre-study recommendation completed in the equal-budget B/C comparison. No Isaac development gain was observed from radius.09. A failed its release gate; a separately registered245.76M follow-up tied old development success and was not released. Native defaults and frozen Isaac physics/assets/noise were retained; no further training is planned.",
+    "extra_dr": "Physical mass/inertia/motor/drag DR would be a separate transfer extension,not source DR. Blanket noise increase unsupported."
+  },
+  "study_resolution": {
+    "study": "reports/training-study/README.md",
+    "round1_release": "reports/training-study/round1-release.json",
+    "round2_release": "reports/training-study/round2/release.json",
+    "deployment": "Original legacy actor-only NPZ/PT retained unchanged; current rsl_aligned training and actual full actor/critic exports were tested but not shipped as replacement weights.",
+    "score_scope": "Same old/baseline weights:431..435 old141/160 baseline157/160; historical42..46 old132/160 baseline155/160. Different seeds, not model improvement."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "round": 2,
+  "kind": "post-study-follow-up",
+  "registered_at_utc": "2026-11-27T16:41:16.377987+00:00",
+  "original_conditional_extension_triggered": false,
+  "case": "A-1024-control",
+  "target_total_iterations": 2000,
+  "target_total_transitions": 245760000,
+  "maximum_followup_rounds": 1,
+  "further_training_after_round": false,
+  "historical_heldout_seeds": [
+    431,
+    432,
+    433,
+    434,
+    435
+  ],
+  "fresh_heldout_seeds": [
+    441,
+    442,
+    443,
+    444,
+    445
+  ],
+  "evidence": [
+    {
+      "role": "cf",
+      "path": "outputs/tof-training-study/evaluation/cf/index.json",
+      "sha256": "edb4fb183f87b8c5543ac4f5242fcc2bdf6d624789bcc6b7e0757400240232a0"
+    },
+    {
+      "role": "dev",
+      "path": "outputs/tof-training-study/evaluation/dev/index.json",
+      "sha256": "e2f75cbaa61d99c4224821009e6e02ffb65728cf0e5585e2ac1d45ae19023025"
+    },
+    {
+      "role": "round1_heldout",
+      "path": "outputs/tof-training-study/evaluation/heldout/summary.json",
+      "sha256": "a9a2f2dd3cffe30d4430d4fa34d1f1b61642f0426653f2db2b754468173ed80b"
+    }
+  ],
+  "reason": "Round1candidate failed release. Add one explicit post-study budget follow-up because original newcases122.88M were below the historical oldpolicy233.472M training budget. This is not the untriggered original conditional extension and uses new untouched heldout seeds. All round1 results remain reported.",
+  "training": "Exact full-msgpack resume of A1000 to2000, same1024envs/32minibatches/horizon120/fiveepochs/radius.055/defaultCrazyflowphysics/source DR, no new calibration or parameter changes.",
+  "development": "Same CF radius.09/256episodes/seed9001/map42; fixed Isaacdevseed42/32firstepisodes. Candidate eligible only if CFsuccess>=248/256 and Isaacdevsuccess>25/32 with matching config/scene hashes.",
+  "release": "If eligible, lock this single newcandidate then run old+baseline+candidate on441..445,32firstepisodes each. Publish only if candidate aggregate successes>=old and numerical failures0; otherwise keep old. No further training or alternative checkpoint trials."
+}

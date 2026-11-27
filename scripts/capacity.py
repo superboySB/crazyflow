@@ -2,6 +2,7 @@
 """Measure real GPU PPO batches, stop before 10 GiB, retain every trial's evidence."""
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -31,9 +32,22 @@ def main() -> None:
     )
     parser.add_argument("--iterations", type=int, default=4)
     parser.add_argument("--num-steps", type=int, default=120)
+    parser.add_argument(
+        "--config",
+        default="config/training.yaml",
+        help="training YAML inside this repository, resolved from its root",
+    )
     parser.add_argument("--output", default="outputs/tof-capacity")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    config = (root / Path(args.config).expanduser()).resolve()
+    try:
+        config_path = config.relative_to(root).as_posix()
+    except ValueError:
+        parser.error("--config must resolve to a file inside this repository")
+    if not config.is_file():
+        parser.error(f"--config file does not exist: {config_path}")
+    config_sha256 = hashlib.sha256(config.read_bytes()).hexdigest()
     output = (root / args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     records = []
@@ -42,6 +56,8 @@ def main() -> None:
     if baseline > 512:
         raise SystemExit("Stop other CUDA compute workloads before the capacity test.")
     for n in args.envs:
+        if hashlib.sha256(config.read_bytes()).hexdigest() != config_sha256:
+            raise SystemExit("Training configuration changed during the capacity test.")
         trial = output / str(n)
         trial.mkdir(exist_ok=True)
         name = f"crazyflow-tof-capacity-{os.getpid()}-{n}"
@@ -78,6 +94,8 @@ def main() -> None:
             "python",
             "-m",
             "crazyflow.tof.train",
+            "--config",
+            config_path,
             "--output",
             container_output,
             "--num-envs",
@@ -108,6 +126,8 @@ def main() -> None:
             "poll_seconds": 0.25,
             "wall_seconds": time.monotonic() - start,
             "command": command,
+            "config_path": config_path,
+            "config_sha256": config_sha256,
         }
         if status == 0:
             result = json.loads((trial / "result.json").read_text())
@@ -121,6 +141,13 @@ def main() -> None:
                         "source_sha256",
                     ]
                 }
+            )
+            training = result["training_config"]
+            record.update(
+                ppo_variant=training.get("ppo_variant", "legacy"),
+                num_minibatches=training.get("num_minibatches", 32),
+                update_epochs=training.get("update_epochs", training.get("epochs", 5)),
+                num_steps=training["num_steps"],
             )
         records.append(record)
         (output / "capacity.json").write_text(json.dumps(records, indent=2) + "\n")

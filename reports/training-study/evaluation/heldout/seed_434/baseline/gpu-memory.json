@@ -1,0 +1,25 @@
+{
+  "command": [
+    "./crazyrl",
+    "sim2sim",
+    "evaluate",
+    "--policy",
+    "models/baseline/model_36825.pt",
+    "--num-envs",
+    "32",
+    "--episodes",
+    "1",
+    "--seed",
+    "434",
+    "--output",
+    "outputs/tof-training-study/evaluation/heldout/seed_434/baseline"
+  ],
+  "container_id": "e8677a2aa6ad4a91419844d93389ea2a81b20383de7ad66694bd7b768f5e8496",
+  "container_name": "crazyflow-heldout-bff0a14596c548f4",
+  "exit_code": 0,
+  "memory_limit_mib": 9728,
+  "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+  "poll_seconds": 0.25,
+  "sampled_peak_mib": 4666.0,
+  "watchdog_stopped": false
+}

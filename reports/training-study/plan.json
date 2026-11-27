@@ -1,0 +1,58 @@
+{
+  "created_date": "2026-11-28",
+  "seed": 42,
+  "cases": [
+    {
+      "name": "A-1024-control",
+      "num_envs": 1024,
+      "minibatches": 32,
+      "iterations": 1000,
+      "radius": 0.055,
+      "config": "outputs/tof-training-study/configs/A-1024-control.yaml",
+      "output": "outputs/tof-training-study/runs/A-1024-control",
+      "transitions": 122880000
+    },
+    {
+      "name": "B-2048-control",
+      "num_envs": 2048,
+      "minibatches": 64,
+      "iterations": 500,
+      "radius": 0.055,
+      "config": "outputs/tof-training-study/configs/B-2048-control.yaml",
+      "output": "outputs/tof-training-study/runs/B-2048-control",
+      "transitions": 122880000
+    },
+    {
+      "name": "C-2048-clearance",
+      "num_envs": 2048,
+      "minibatches": 64,
+      "iterations": 500,
+      "radius": 0.09,
+      "config": "outputs/tof-training-study/configs/C-2048-clearance.yaml",
+      "output": "outputs/tof-training-study/runs/C-2048-clearance",
+      "transitions": 122880000
+    }
+  ],
+  "constant_minibatch_samples": 3840,
+  "constant_transitions_per_case": 122880000,
+  "constant_optimizer_steps_per_case": 160000,
+  "selection": "Common Crazyflow validation with radius .09, followed by Isaac development seed42. Existing selected policy is a fixed comparator. Separate untouched Isaac seeds431-435 for final acceptance. No target-evaluator dynamics or noise changes.",
+  "conditional_budget_extension": {
+    "registered_at_utc": "2026-11-27T16:09:25.274825+00:00",
+    "status": "Preregistered before any A/B/C Isaac development or holdout evaluation.",
+    "maximum_extensions": 1,
+    "trigger": "After all A/B/C final policies complete common Crazyflow validation and identical Isaac development seed42, none has strictly higher Isaac success count than the fixed old policy while limiting common Crazyflow success-rate drop to2 percentage points.",
+    "case_choice": "Among new A/B/C final policies, choose greatest Isaac development success count; ties choose greater common Crazyflow success count, then lexicographically smallest case name.",
+    "resume": "Resume that case final checkpoint.msgpack exactly, including actor, real trained critic, Adam, normalizers, policy/environment RNG and complete environment/curriculum state. Do not initialize from PT/NPZ or recreate fresh environments.",
+    "fixed_settings": "Same case config, num_envs, minibatches, horizon, epochs, variant, seed, training radius, physics/rewards/noise/randomization and all remaining invariant settings. Only target total iterations and output/logging paths may change.",
+    "target_total_transitions": 245760000,
+    "additional_transitions": 122880000,
+    "target_total_iterations": {
+      "A-1024-control": 2000,
+      "B-2048-control": 1000,
+      "C-2048-clearance": 1000
+    },
+    "comparison": "Report this as a separate unequal-budget continuation, retaining the original equal122.88M A/B/C comparison. Evaluate the extended final policy once using the same common Crazyflow and Isaac development protocol and original eligibility gate.",
+    "stop_and_holdout": "No second extension or further parameter tuning. Lock the selected winner before untouched Isaac seeds431..435; never use these holdout results to extend training or reselect a checkpoint."
+  }
+}

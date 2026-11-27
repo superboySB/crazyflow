@@ -1,0 +1,150 @@
+{
+  "artifact_count": 14,
+  "artifacts": [
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/cf/docker-command.json",
+      "published_bytes": 1028,
+      "published_sha256": "7db7467981348815b15b517e8250595aff0689d5d0b25600959474b438909952",
+      "source": "outputs/tof-training-study/evaluation/round2/cf/docker-command.json",
+      "source_bytes": 990,
+      "source_sha256": "503e6e6643eb980b40e4f78353776a8f59a606099a9f6c175a81dcee437905f0"
+    },
+    {
+      "byte_identical": true,
+      "published": "reports/training-study/round2/evaluation/cf/episodes.csv",
+      "published_bytes": 28590,
+      "published_sha256": "951e9a4371fa939748a613322749527588544127307fd7f7ebd4082a62ea5120",
+      "source": "outputs/tof-training-study/evaluation/round2/cf/episodes.csv",
+      "source_bytes": 28590,
+      "source_sha256": "951e9a4371fa939748a613322749527588544127307fd7f7ebd4082a62ea5120"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/cf/gpu-memory.json",
+      "published_bytes": 748,
+      "published_sha256": "976247e1fa65713e2ec287fb6d8f32afb4e5a9727fa29c6c80d7174634d0951f",
+      "source": "outputs/tof-training-study/evaluation/round2/cf/gpu-memory.json",
+      "source_bytes": 748,
+      "source_sha256": "fa83cc58e24912679972a16909550cf67a7eb805ccb32a996f55ab2164e3a445"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/cf/summary.json",
+      "published_bytes": 103208,
+      "published_sha256": "5c4146691349c2e38c2284e522970976390bce003b427738444b8c83300ea924",
+      "source": "outputs/tof-training-study/evaluation/round2/cf/summary.json",
+      "source_bytes": 103208,
+      "source_sha256": "f5ead582c2dacedd633354f247271d82d5fb2f1f7ac6a503365bff058c29fb28"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/dev/docker-command.json",
+      "published_bytes": 1477,
+      "published_sha256": "84bb744b9e5b340fbc2fbb35115d6707a8c004df1625234f0ee4a32eb114750a",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/docker-command.json",
+      "source_bytes": 1509,
+      "source_sha256": "81263d0f6c38e63b1295e2230a7cb2b6d2b53115a941155d2994e9afd4e2f392"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/dev/gpu-memory.json",
+      "published_bytes": 675,
+      "published_sha256": "4fbcbd5ee00c139e7665598d888ad8d7db7e36c1de2e73ebe6b97137159a7907",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/gpu-memory.json",
+      "source_bytes": 675,
+      "source_sha256": "f479ad6b6f47fc1960d579941f1d3e2860d173f1e5fc12d9967f6b36bcdcc3a5"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/dev/initial_scene.json",
+      "published_bytes": 18813,
+      "published_sha256": "542e4da20bc59469b628fdb3a3fceaf02020d0e73286ecaf6896f46a2b22e0a3",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/initial_scene.json",
+      "source_bytes": 18813,
+      "source_sha256": "5a4ac8e93124f25f7efda6f197a5421b50583652cf8154e81adfdac23f006a46"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/dev/invocation.json",
+      "published_bytes": 1891,
+      "published_sha256": "2d426d6e101ab83b1650c922ff013ee1acc85aceb4bdc089cad3f42ca9f4a46a",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/invocation.json",
+      "source_bytes": 2017,
+      "source_sha256": "f43834d338312f7a8e75dc0e1f811dc78d570105bf88b0c2858edd923c6def41"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/dev/policy.environment.json",
+      "published_bytes": 22780,
+      "published_sha256": "fdaecacd76c9346c475068b83215755287d6ae256dfb518e8311375b66c2c87c",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/policy.environment.json",
+      "source_bytes": 22780,
+      "source_sha256": "08324531831204d7d43edf1d35f4812ca22bfa3857de1358b5d8e32f94e48a73"
+    },
+    {
+      "byte_identical": true,
+      "published": "reports/training-study/round2/evaluation/dev/policy.episodes.csv",
+      "published_bytes": 4682,
+      "published_sha256": "3d07864b1493eccf1937c4f7295cf90b619500a01cc2874fff84159b639b10d9",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/policy.episodes.csv",
+      "source_bytes": 4682,
+      "source_sha256": "3d07864b1493eccf1937c4f7295cf90b619500a01cc2874fff84159b639b10d9"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/dev/policy.summary.json",
+      "published_bytes": 2817,
+      "published_sha256": "852f2586ad7216f45c443b9f77d6ffcbff5e0422238225ac86a9e2bbe401b340",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/policy.summary.json",
+      "source_bytes": 2817,
+      "source_sha256": "bc70d60b7bacda1c223d86d17d2cca4e8cd118a8ff56315cfc7cb546a664346a"
+    },
+    {
+      "byte_identical": true,
+      "published": "reports/training-study/round2/evaluation/dev/success.csv",
+      "published_bytes": 29,
+      "published_sha256": "6b248ee4eab4d43f65e35404e7ae5c97b5d8ebdbff470ade9d8ae97724855f02",
+      "source": "outputs/tof-training-study/evaluation/round2/dev/success.csv",
+      "source_bytes": 29,
+      "source_sha256": "6b248ee4eab4d43f65e35404e7ae5c97b5d8ebdbff470ade9d8ae97724855f02"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/index.json",
+      "published_bytes": 8367,
+      "published_sha256": "9469e9e0d1a69b93d7ca0fb02612b15b772cd1a302b22333c7cf3ad2e9aa4ad2",
+      "source": "outputs/tof-training-study/evaluation/round2/index.json",
+      "source_bytes": 8391,
+      "source_sha256": "19636f341fd4fdd0bd9c6dcdf5c62913d73697073a04afe53b49421b62c55a40"
+    },
+    {
+      "byte_identical": false,
+      "published": "reports/training-study/round2/evaluation/summary.json",
+      "published_bytes": 8367,
+      "published_sha256": "9469e9e0d1a69b93d7ca0fb02612b15b772cd1a302b22333c7cf3ad2e9aa4ad2",
+      "source": "outputs/tof-training-study/evaluation/round2/summary.json",
+      "source_bytes": 8391,
+      "source_sha256": "19636f341fd4fdd0bd9c6dcdf5c62913d73697073a04afe53b49421b62c55a40"
+    }
+  ],
+  "base_proof_helper": "outputs/tof-training-study/publish_evaluation.py",
+  "base_proof_helper_sha256": "6829db4ac9b0bbabde14c598e06fbf6fad84d56a32adbc1ef54811ddae610a7a",
+  "completion_scope": "common CF + development; fixed gate failed, no fresh heldout",
+  "development_eligible": false,
+  "fresh_heldout_complete": false,
+  "kind": "post-study-follow-up",
+  "normalization": "Only checkout ROOT becomes ${REPO}; copied artifact references map to reports. Commands, checkpoints and hash-bound original selection/evidence stay historical. Source/published SHA distinguish normalized JSON; all CSV bytes unchanged.",
+  "omissions": "No logs, trajectories, videos, caches or model/optimizer weights; native CF has no invented scene/invocation files.",
+  "original_conditional_extension_triggered": false,
+  "original_publication": "reports/training-study/evaluation/manifest.json",
+  "original_publication_sha256": "1260ec369406fbfa5003d64ef9960004ea3c52099ba1983b4709df51dc860d5c",
+  "passed": true,
+  "publication_root": "reports/training-study/round2/evaluation",
+  "publisher": "outputs/tof-training-study/publish_round2.py",
+  "publisher_sha256": "ff7e213113e7a87b2a38c02d23b159afec6edcb652f40d71c796c4c089e37f49",
+  "release_acceptance_passed": null,
+  "round": 2,
+  "schema_version": 1,
+  "source_root": "outputs/tof-training-study/evaluation/round2"
+}

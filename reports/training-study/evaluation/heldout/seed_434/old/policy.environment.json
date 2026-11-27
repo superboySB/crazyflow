@@ -1,0 +1,888 @@
+{
+  "MP_TOF_FOV": 45.0,
+  "SP_TOF_FOV": 10.0,
+  "action_delay_steps": 4,
+  "action_noise_model": null,
+  "action_space": 4,
+  "back_tof_camera": {
+    "attach_yaw_only": false,
+    "class_type": "e2e_drone.utils.reloadable_raycaster_camera:ReloadableRayCasterCamera",
+    "data_types": [
+      "distance_to_image_plane"
+    ],
+    "debug_vis": false,
+    "depth_clipping_behavior": "max",
+    "drift_range": [
+      0.0,
+      0.0
+    ],
+    "history_length": 0,
+    "max_distance": 4.0,
+    "mesh_prim_paths": [
+      "/map_mesh"
+    ],
+    "offset": {
+      "convention": "world",
+      "pos": [
+        -0.02,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    "pattern_cfg": {
+      "focal_length": 20.0,
+      "func": "isaaclab.sensors.ray_caster.patterns.patterns:pinhole_camera_pattern",
+      "height": 1,
+      "horizontal_aperture": 20.955,
+      "horizontal_aperture_offset": 0.0,
+      "vertical_aperture": 20.955,
+      "vertical_aperture_offset": 0.0,
+      "width": 1
+    },
+    "prim_path": "/World/envs/env_.*/Robot/body",
+    "ray_alignment": "base",
+    "ray_cast_drift_range": {
+      "x": [
+        0.0,
+        0.0
+      ],
+      "y": [
+        0.0,
+        0.0
+      ],
+      "z": [
+        0.0,
+        0.0
+      ]
+    },
+    "update_period": 0.0,
+    "visualizer_cfg": {
+      "markers": {
+        "hit": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": true,
+          "visual_material": {
+            "diffuse_color": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        }
+      },
+      "prim_path": "/Visuals/RayCaster"
+    }
+  },
+  "c_distance_reward": 8.0,
+  "c_z_position_penalty": 0.25,
+  "camera_aperture": 20.955,
+  "camera_focal_length": 20.0,
+  "camera_max_distance": 4.0,
+  "contact_force_threshold": 0.01,
+  "contact_sensor": {
+    "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+    "debug_vis": false,
+    "filter_prim_paths_expr": [],
+    "force_threshold": 1.0,
+    "history_length": 10,
+    "prim_path": "/World/envs/env_.*/Robot/body",
+    "track_air_time": false,
+    "track_pose": false,
+    "update_period": 0.0,
+    "visualizer_cfg": {
+      "markers": {
+        "contact": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": true,
+          "visual_material": {
+            "diffuse_color": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        },
+        "no_contact": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": false,
+          "visual_material": {
+            "diffuse_color": [
+              0.0,
+              1.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        }
+      },
+      "prim_path": "/Visuals/ContactSensor"
+    }
+  },
+  "controller_Kang": [
+    20.0,
+    20.0
+  ],
+  "controller_Kang_vel": [
+    20.0,
+    20.0,
+    15.0
+  ],
+  "controller_Kdang": [
+    0.5,
+    0.5
+  ],
+  "curriculum_stage": "static_goals",
+  "death_replay_data_dir": "/workspace/isaaclab/logs/death_replay",
+  "death_replay_history_capacity": 5000,
+  "death_replay_visualization_num": 10,
+  "debug_camera_offset": [
+    0.05,
+    0.0,
+    0.0
+  ],
+  "debug_vis": false,
+  "decimation": 10,
+  "depth_cam_dims": 64,
+  "depth_cam_history": 1,
+  "depth_invalid_rate_max": 0.15,
+  "des_vel_range": [
+    0.5,
+    1.5
+  ],
+  "distance_goal_mapping_scale": 0.8,
+  "down_tof_camera": {
+    "attach_yaw_only": false,
+    "class_type": "e2e_drone.utils.reloadable_raycaster_camera:ReloadableRayCasterCamera",
+    "data_types": [
+      "distance_to_image_plane"
+    ],
+    "debug_vis": false,
+    "depth_clipping_behavior": "max",
+    "drift_range": [
+      0.0,
+      0.0
+    ],
+    "history_length": 0,
+    "max_distance": 4.0,
+    "mesh_prim_paths": [
+      "/map_mesh"
+    ],
+    "offset": {
+      "convention": "world",
+      "pos": [
+        0.0,
+        0.0,
+        -0.02
+      ],
+      "rot": [
+        0.7071,
+        0.0,
+        0.7071,
+        0.0
+      ]
+    },
+    "pattern_cfg": {
+      "focal_length": 20.0,
+      "func": "isaaclab.sensors.ray_caster.patterns.patterns:pinhole_camera_pattern",
+      "height": 1,
+      "horizontal_aperture": 20.955,
+      "horizontal_aperture_offset": 0.0,
+      "vertical_aperture": 20.955,
+      "vertical_aperture_offset": 0.0,
+      "width": 1
+    },
+    "prim_path": "/World/envs/env_.*/Robot/body",
+    "ray_alignment": "base",
+    "ray_cast_drift_range": {
+      "x": [
+        0.0,
+        0.0
+      ],
+      "y": [
+        0.0,
+        0.0
+      ],
+      "z": [
+        0.0,
+        0.0
+      ]
+    },
+    "update_period": 0.0,
+    "visualizer_cfg": {
+      "markers": {
+        "hit": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": true,
+          "visual_material": {
+            "diffuse_color": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        }
+      },
+      "prim_path": "/Visuals/RayCaster"
+    }
+  },
+  "enable_death_replay": false,
+  "enable_debug_camera": false,
+  "enable_difficulty_curriculum": false,
+  "enable_height_randomization": false,
+  "enable_mass_randomization": true,
+  "enable_omni_tof": true,
+  "enable_thrust_uncertainty": true,
+  "episode_length_s": 80,
+  "events": null,
+  "floater_size_range": [
+    0.4,
+    0.8
+  ],
+  "frame_observation_space": 28,
+  "frame_observation_space_critic": 37,
+  "goal_sampling_noise_range": 0.15,
+  "height_randomization_climb_rate": 0.2,
+  "height_randomization_debug_dir": null,
+  "height_randomization_noise_scale": 0.1,
+  "height_randomization_range": [
+    0.5,
+    1.5
+  ],
+  "height_randomization_waypoint_distance": 8.0,
+  "history_length": 10,
+  "hover_hold_distance_threshold": 0.5,
+  "hover_hold_increment_s": 0.1,
+  "hover_hold_initial_s": 0.0,
+  "hover_hold_max_s": 2.0,
+  "hover_hold_speed_threshold": 0.5,
+  "hover_yaw_penalty_distance": 0.2,
+  "is_finite_horizon": false,
+  "left_tof_camera": {
+    "attach_yaw_only": false,
+    "class_type": "e2e_drone.utils.reloadable_raycaster_camera:ReloadableRayCasterCamera",
+    "data_types": [
+      "distance_to_image_plane"
+    ],
+    "debug_vis": false,
+    "depth_clipping_behavior": "max",
+    "drift_range": [
+      0.0,
+      0.0
+    ],
+    "history_length": 0,
+    "max_distance": 4.0,
+    "mesh_prim_paths": [
+      "/map_mesh"
+    ],
+    "offset": {
+      "convention": "world",
+      "pos": [
+        0.0,
+        0.02,
+        0.0
+      ],
+      "rot": [
+        0.7071,
+        0.0,
+        0.0,
+        0.7071
+      ]
+    },
+    "pattern_cfg": {
+      "focal_length": 20.0,
+      "func": "isaaclab.sensors.ray_caster.patterns.patterns:pinhole_camera_pattern",
+      "height": 1,
+      "horizontal_aperture": 20.955,
+      "horizontal_aperture_offset": 0.0,
+      "vertical_aperture": 20.955,
+      "vertical_aperture_offset": 0.0,
+      "width": 1
+    },
+    "prim_path": "/World/envs/env_.*/Robot/body",
+    "ray_alignment": "base",
+    "ray_cast_drift_range": {
+      "x": [
+        0.0,
+        0.0
+      ],
+      "y": [
+        0.0,
+        0.0
+      ],
+      "z": [
+        0.0,
+        0.0
+      ]
+    },
+    "update_period": 0.0,
+    "visualizer_cfg": {
+      "markers": {
+        "hit": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": true,
+          "visual_material": {
+            "diffuse_color": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        }
+      },
+      "prim_path": "/Visuals/RayCaster"
+    }
+  },
+  "light_color": [
+    0.75,
+    0.75,
+    0.75
+  ],
+  "light_intensity": 2000.0,
+  "log_comments": "new seed",
+  "map_generation_step_threshold": 3000,
+  "map_spacing_factor": 0.8,
+  "mass_randomization_percent": 0.2,
+  "max_angle_penalty": 0.785,
+  "max_angular_velocity_check": 125.60000000000001,
+  "max_angular_velocity_penalty": 0.785,
+  "num_actions": null,
+  "num_goals": 1,
+  "num_observations": null,
+  "num_states": null,
+  "observation_noise_model": null,
+  "observation_space": 344,
+  "obstacle_min_distance_init": 1.5,
+  "obstacle_min_distance_min": 0.4,
+  "obstacle_query_workers": -1,
+  "obstacle_size_range": [
+    0.4,
+    0.8
+  ],
+  "raycast_camera": {
+    "attach_yaw_only": false,
+    "class_type": "e2e_drone.utils.reloadable_raycaster_camera:ReloadableRayCasterCamera",
+    "data_types": [
+      "distance_to_image_plane"
+    ],
+    "debug_vis": false,
+    "depth_clipping_behavior": "max",
+    "drift_range": [
+      0.0,
+      0.0
+    ],
+    "history_length": 0,
+    "max_distance": 4.0,
+    "mesh_prim_paths": [
+      "/map_mesh"
+    ],
+    "offset": {
+      "convention": "world",
+      "pos": [
+        0.02,
+        0.0,
+        0.0
+      ],
+      "rot": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "pattern_cfg": {
+      "focal_length": 20.0,
+      "func": "isaaclab.sensors.ray_caster.patterns.patterns:pinhole_camera_pattern",
+      "height": 8,
+      "horizontal_aperture": 20.955,
+      "horizontal_aperture_offset": 0.0,
+      "vertical_aperture": 20.955,
+      "vertical_aperture_offset": 0.0,
+      "width": 8
+    },
+    "prim_path": "/World/envs/env_.*/Robot/body",
+    "ray_alignment": "base",
+    "ray_cast_drift_range": {
+      "x": [
+        0.0,
+        0.0
+      ],
+      "y": [
+        0.0,
+        0.0
+      ],
+      "z": [
+        0.0,
+        0.0
+      ]
+    },
+    "update_period": 0.0,
+    "visualizer_cfg": {
+      "markers": {
+        "hit": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": true,
+          "visual_material": {
+            "diffuse_color": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        }
+      },
+      "prim_path": "/Visuals/RayCaster"
+    }
+  },
+  "rerender_on_reset": false,
+  "reward_coef_action_change_penalty": 0.5,
+  "reward_coef_action_magnitude_penalty": 0.3,
+  "reward_coef_alive_reward": 0.0,
+  "reward_coef_ang_vel_reward_scale": 0,
+  "reward_coef_distance_reward": 8.0,
+  "reward_coef_distance_to_goal_reward_scale": 0,
+  "reward_coef_esdf_reward": 0.1,
+  "reward_coef_lin_vel_reward_scale": 0,
+  "reward_coef_max_ang_vel_penalty": 0.0,
+  "reward_coef_max_angle_penalty": 0.0,
+  "reward_coef_obstacle_collision_penalty": 80.0,
+  "reward_coef_succeed_reward": 80.0,
+  "reward_coef_vel_direction_penalty": 0.15,
+  "reward_coef_vel_speed_excess_penalty": 0.5,
+  "reward_coef_vel_speed_match_reward": 0.0,
+  "reward_coef_yaw_direction_penalty": 0.3,
+  "reward_coef_z_position_penalty": 0.25,
+  "reward_coef_z_vel_penalty": 0.0,
+  "right_tof_camera": {
+    "attach_yaw_only": false,
+    "class_type": "e2e_drone.utils.reloadable_raycaster_camera:ReloadableRayCasterCamera",
+    "data_types": [
+      "distance_to_image_plane"
+    ],
+    "debug_vis": false,
+    "depth_clipping_behavior": "max",
+    "drift_range": [
+      0.0,
+      0.0
+    ],
+    "history_length": 0,
+    "max_distance": 4.0,
+    "mesh_prim_paths": [
+      "/map_mesh"
+    ],
+    "offset": {
+      "convention": "world",
+      "pos": [
+        0.0,
+        -0.02,
+        0.0
+      ],
+      "rot": [
+        0.7071,
+        0.0,
+        0.0,
+        -0.7071
+      ]
+    },
+    "pattern_cfg": {
+      "focal_length": 20.0,
+      "func": "isaaclab.sensors.ray_caster.patterns.patterns:pinhole_camera_pattern",
+      "height": 1,
+      "horizontal_aperture": 20.955,
+      "horizontal_aperture_offset": 0.0,
+      "vertical_aperture": 20.955,
+      "vertical_aperture_offset": 0.0,
+      "width": 1
+    },
+    "prim_path": "/World/envs/env_.*/Robot/body",
+    "ray_alignment": "base",
+    "ray_cast_drift_range": {
+      "x": [
+        0.0,
+        0.0
+      ],
+      "y": [
+        0.0,
+        0.0
+      ],
+      "z": [
+        0.0,
+        0.0
+      ]
+    },
+    "update_period": 0.0,
+    "visualizer_cfg": {
+      "markers": {
+        "hit": {
+          "activate_contact_sensors": false,
+          "collision_props": null,
+          "copy_from_source": true,
+          "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+          "mass_props": null,
+          "physics_material": null,
+          "physics_material_path": "material",
+          "radius": 0.02,
+          "rigid_props": null,
+          "semantic_tags": null,
+          "visible": true,
+          "visual_material": {
+            "diffuse_color": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "emissive_color": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+            "metallic": 0.0,
+            "opacity": 1.0,
+            "roughness": 0.5
+          },
+          "visual_material_path": "material"
+        }
+      },
+      "prim_path": "/Visuals/RayCaster"
+    }
+  },
+  "robot": {
+    "actuators": {
+      "dummy": {
+        "armature": null,
+        "class_type": "isaaclab.actuators.actuator_pd:ImplicitActuator",
+        "damping": 0.0,
+        "effort_limit": null,
+        "effort_limit_sim": null,
+        "friction": null,
+        "joint_names_expr": [
+          ".*"
+        ],
+        "stiffness": 0.0,
+        "velocity_limit": null,
+        "velocity_limit_sim": null
+      }
+    },
+    "articulation_external_wrench_frame": "local",
+    "articulation_root_prim_path": null,
+    "class_type": "isaaclab.assets.articulation.articulation:Articulation",
+    "collision_group": 0,
+    "debug_vis": false,
+    "init_state": {
+      "ang_vel": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "joint_pos": {
+        ".*": 0.0
+      },
+      "joint_vel": {
+        "m1_joint": 200.0,
+        "m2_joint": -200.0,
+        "m3_joint": 200.0,
+        "m4_joint": -200.0
+      },
+      "lin_vel": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pos": [
+        0.0,
+        0.0,
+        0.5
+      ],
+      "rot": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "prim_path": "/World/envs/env_.*/Robot",
+    "soft_joint_pos_limit_factor": 1.0,
+    "spawn": {
+      "activate_contact_sensors": false,
+      "articulation_props": {
+        "articulation_enabled": null,
+        "enabled_self_collisions": false,
+        "fix_root_link": null,
+        "sleep_threshold": 0.005,
+        "solver_position_iteration_count": 4,
+        "solver_velocity_iteration_count": 0,
+        "stabilization_threshold": 0.001
+      },
+      "collision_props": null,
+      "copy_from_source": false,
+      "deformable_props": null,
+      "fixed_tendons_props": null,
+      "func": "isaaclab.sim.spawners.from_files.from_files:spawn_from_usd",
+      "joint_drive_props": null,
+      "mass_props": null,
+      "rigid_props": {
+        "angular_damping": null,
+        "disable_gravity": false,
+        "enable_gyroscopic_forces": true,
+        "kinematic_enabled": null,
+        "linear_damping": null,
+        "max_angular_velocity": null,
+        "max_contact_impulse": null,
+        "max_depenetration_velocity": 10.0,
+        "max_linear_velocity": null,
+        "retain_accelerations": null,
+        "rigid_body_enabled": null,
+        "sleep_threshold": null,
+        "solver_position_iteration_count": null,
+        "solver_velocity_iteration_count": null,
+        "stabilization_threshold": null
+      },
+      "scale": null,
+      "semantic_tags": null,
+      "usd_path": "/workspace/crazyflow/sim2sim/reference/assets/Assets/Isaac/4.5/Isaac/Robots/Crazyflie/cf2x.usd",
+      "variants": null,
+      "visible": true,
+      "visual_material": null,
+      "visual_material_path": "material"
+    }
+  },
+  "robot_arm_length": 0.046,
+  "robot_inertia": [
+    2.16e-05,
+    2.16e-05,
+    4.33e-05
+  ],
+  "robot_mass": 0.049,
+  "scene": {
+    "env_spacing": 16.0,
+    "filter_collisions": true,
+    "lazy_sensor_update": true,
+    "num_envs": 32,
+    "replicate_physics": true
+  },
+  "seed": 434,
+  "sim": {
+    "device": "cuda:0",
+    "dt": 0.006666666666666667,
+    "enable_scene_query_support": false,
+    "gravity": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "physics_material": {
+      "compliant_contact_damping": 0.0,
+      "compliant_contact_stiffness": 0.0,
+      "dynamic_friction": 1.0,
+      "friction_combine_mode": "multiply",
+      "func": "isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material",
+      "improve_patch_friction": true,
+      "restitution": 0.0,
+      "restitution_combine_mode": "multiply",
+      "static_friction": 1.0
+    },
+    "physics_prim_path": "/physicsScene",
+    "physx": {
+      "bounce_threshold_velocity": 0.5,
+      "enable_ccd": false,
+      "enable_enhanced_determinism": false,
+      "enable_stabilization": false,
+      "friction_correlation_distance": 0.025,
+      "friction_offset_threshold": 0.04,
+      "gpu_collision_stack_size": 268435456,
+      "gpu_found_lost_aggregate_pairs_capacity": 33554432,
+      "gpu_found_lost_pairs_capacity": 2097152,
+      "gpu_heap_capacity": 67108864,
+      "gpu_max_num_partitions": 8,
+      "gpu_max_particle_contacts": 1048576,
+      "gpu_max_rigid_contact_count": 8388608,
+      "gpu_max_rigid_patch_count": 163840,
+      "gpu_max_soft_body_contacts": 1048576,
+      "gpu_temp_buffer_capacity": 16777216,
+      "gpu_total_aggregate_pairs_capacity": 2097152,
+      "max_position_iteration_count": 255,
+      "max_velocity_iteration_count": 255,
+      "min_position_iteration_count": 1,
+      "min_velocity_iteration_count": 0,
+      "solver_type": 1
+    },
+    "render": {
+      "antialiasing_mode": null,
+      "carb_settings": null,
+      "dlss_mode": 2,
+      "enable_ambient_occlusion": null,
+      "enable_direct_lighting": null,
+      "enable_dl_denoiser": false,
+      "enable_dlssg": null,
+      "enable_global_illumination": null,
+      "enable_reflections": null,
+      "enable_shadows": null,
+      "enable_translucency": null,
+      "rendering_mode": null,
+      "samples_per_pixel": null
+    },
+    "render_interval": 10,
+    "use_fabric": true
+  },
+  "spawn_mode": "free_points",
+  "speed_adjustment_distance": 1.0,
+  "state_space": 0,
+  "step_freq": 15,
+  "success_rate_window_size": 100,
+  "thrust_uncertainty_degradation_range": [
+    0.1,
+    0.15
+  ],
+  "thrust_uncertainty_initial_range": [
+    0.85,
+    1.0
+  ],
+  "thrust_uncertainty_min_effectiveness": 0.7,
+  "ui_window_class_type": "isaaclab.envs.ui.base_env_window:BaseEnvWindow",
+  "vel_direction_huber_delta": 0.2,
+  "viewer": {
+    "asset_name": "robot",
+    "body_name": null,
+    "cam_prim_path": "/OmniverseKit_Persp",
+    "env_index": 0,
+    "eye": [
+      7.5,
+      7.5,
+      7.5
+    ],
+    "lookat": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "origin_type": "world",
+    "resolution": [
+      1280,
+      720
+    ]
+  },
+  "wait_for_textures": true,
+  "wind_sigma": 0.5,
+  "wind_tau": 1.0,
+  "xr": null,
+  "z_position_huber_delta": 0.3
+}

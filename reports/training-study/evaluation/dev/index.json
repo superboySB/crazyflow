@@ -1,0 +1,428 @@
+{
+  "config": "config/training-clearance.yaml",
+  "config_sha256": "c23311b2bf1c402d426320126f3d5e564d68ec94e1e728957275949de2221b53",
+  "passed": true,
+  "plan": {
+    "cf": {
+      "common_radius_m": 0.09,
+      "episodes": 256,
+      "map_seed": 42,
+      "seed": 9001
+    },
+    "dev": {
+      "episodes_per_env": 1,
+      "num_envs": 32,
+      "seed": 42
+    },
+    "heldout": {
+      "policies": [
+        "baseline",
+        "old",
+        "selected"
+      ],
+      "seeds": [
+        431,
+        432,
+        433,
+        434,
+        435
+      ],
+      "use": "Root runs later, after selection is frozen; never used to select a candidate."
+    },
+    "physics": "Use existing CLIs, common native config and unchanged Isaac task; no custom plant values.",
+    "selection": "Eligible only if Isaac dev success strictly exceeds old and common-CF success is no more than .02 below old. Rank eligible candidates by Isaac success, then highest CF mean return, then A/B/C order. Otherwise retain old; ties with old retain old."
+  },
+  "pt_preflight": {
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "none",
+      "-e",
+      "JAX_PLATFORMS=cpu",
+      "-v",
+      "${REPO}:/opt/crazyflow:ro",
+      "-w",
+      "/opt/crazyflow",
+      "crazyflow:dani-crazyrl",
+      "python",
+      "-c",
+      "import json,sys,torch; assert torch.version.cuda is None; print(json.dumps([torch.load(p,weights_only=True,map_location=\"cpu\").get(\"crazyflow_metadata\",{}).get(\"source_npz_sha256\") for p in json.loads(sys.argv[1])]))",
+      "[\"/opt/crazyflow/models/crazyflow/policy.pt\", \"/opt/crazyflow/outputs/tof-training-study/runs/A-1024-control/policy.pt\", \"/opt/crazyflow/outputs/tof-training-study/runs/B-2048-control/policy.pt\", \"/opt/crazyflow/outputs/tof-training-study/runs/C-2048-clearance/policy.pt\"]"
+    ],
+    "cpu_only": true,
+    "declared_source_npz_sha256": {
+      "A": "2ad8ef63ec22fd8838636bf51106f07917a8f13c25c1fb6b7ab45fc73a097be3",
+      "B": "133600929e4cd7fd6913e5818b8b1c14b3190db71cda54947c59621ba8a32ee2",
+      "C": "97595e136d7da00ccef578b24f2bcc0642a9dd3ad4e99dcbca9635517ae736cd",
+      "old": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206"
+    },
+    "exit_code": 0,
+    "pt_sha256": {
+      "A": "5042d233787782f8d4c44cbea9a30f4bfd429a093e970c1363aad67d4e1aef1d",
+      "B": "0106cea2b8c01016ff9fabb47b1ec8a141b2a6ea3c8785b953ef4c65e51f81c1",
+      "C": "ca3dd988c872097f70871027dbeb4cfa6d2236efc3b90fed993bbc7b2ee8543d",
+      "old": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c"
+    }
+  },
+  "records": {
+    "A": {
+      "checkpoint": "outputs/tof-training-study/runs/A-1024-control/policy.pt",
+      "checkpoint_sha256": "5042d233787782f8d4c44cbea9a30f4bfd429a093e970c1363aad67d4e1aef1d",
+      "command": [
+        "./crazyrl",
+        "sim2sim",
+        "evaluate",
+        "--policy",
+        "outputs/tof-training-study/runs/A-1024-control/policy.pt",
+        "--num-envs",
+        "32",
+        "--episodes",
+        "1",
+        "--seed",
+        "42",
+        "--output",
+        "outputs/tof-training-study/evaluation/dev/A"
+      ],
+      "console": "outputs/tof-training-study/evaluation/dev/A/runner.log",
+      "episodes_csv": "reports/training-study/evaluation/dev/A/policy.episodes.csv",
+      "exit_code": 0,
+      "gpu_memory": {
+        "command": [
+          "./crazyrl",
+          "sim2sim",
+          "evaluate",
+          "--policy",
+          "outputs/tof-training-study/runs/A-1024-control/policy.pt",
+          "--num-envs",
+          "32",
+          "--episodes",
+          "1",
+          "--seed",
+          "42",
+          "--output",
+          "outputs/tof-training-study/evaluation/dev/A"
+        ],
+        "container_id": "c6dc3c935fdba93d3e096793d382500b84f238719861a5b1fd05fb7223004f04",
+        "container_name": "crazyflow-heldout-96b813ddf45e4335",
+        "exit_code": 0,
+        "memory_limit_mib": 9728,
+        "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+        "poll_seconds": 0.25,
+        "sampled_peak_mib": 4662.0,
+        "watchdog_stopped": false
+      },
+      "initial_scene": "reports/training-study/evaluation/dev/A/initial_scene.json",
+      "outcomes": {
+        "collision_count": 6,
+        "num_episodes": 32,
+        "numerical_instability_count": 0,
+        "outcome_counts": {
+          "collision": 6,
+          "numerical_instability": 0,
+          "other_death": 0,
+          "success": 26,
+          "timeout": 0
+        },
+        "success_count": 26,
+        "success_rate": 0.8125,
+        "timeout_count": 0
+      },
+      "pt_declared_source_npz_sha256": "2ad8ef63ec22fd8838636bf51106f07917a8f13c25c1fb6b7ab45fc73a097be3",
+      "scene_sha256": "335e2762914080b46d410e7038ed8f26d0c19ea191fcff1729715d18f1509355",
+      "source_npz_sha256": "2ad8ef63ec22fd8838636bf51106f07917a8f13c25c1fb6b7ab45fc73a097be3",
+      "started_at_utc": "2026-11-27T16:30:17.608259+00:00",
+      "success_csv": "reports/training-study/evaluation/dev/A/success.csv",
+      "summary": "reports/training-study/evaluation/dev/A/policy.summary.json",
+      "wall_seconds": 28.45150913496036
+    },
+    "B": {
+      "checkpoint": "outputs/tof-training-study/runs/B-2048-control/policy.pt",
+      "checkpoint_sha256": "0106cea2b8c01016ff9fabb47b1ec8a141b2a6ea3c8785b953ef4c65e51f81c1",
+      "command": [
+        "./crazyrl",
+        "sim2sim",
+        "evaluate",
+        "--policy",
+        "outputs/tof-training-study/runs/B-2048-control/policy.pt",
+        "--num-envs",
+        "32",
+        "--episodes",
+        "1",
+        "--seed",
+        "42",
+        "--output",
+        "outputs/tof-training-study/evaluation/dev/B"
+      ],
+      "console": "outputs/tof-training-study/evaluation/dev/B/runner.log",
+      "episodes_csv": "reports/training-study/evaluation/dev/B/policy.episodes.csv",
+      "exit_code": 0,
+      "gpu_memory": {
+        "command": [
+          "./crazyrl",
+          "sim2sim",
+          "evaluate",
+          "--policy",
+          "outputs/tof-training-study/runs/B-2048-control/policy.pt",
+          "--num-envs",
+          "32",
+          "--episodes",
+          "1",
+          "--seed",
+          "42",
+          "--output",
+          "outputs/tof-training-study/evaluation/dev/B"
+        ],
+        "container_id": "777cb4f9d89b8a4615e9d3db3f5860cc7a780fff5607b1195211de74e366c261",
+        "container_name": "crazyflow-heldout-aaf94454abe14d4a",
+        "exit_code": 0,
+        "memory_limit_mib": 9728,
+        "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+        "poll_seconds": 0.25,
+        "sampled_peak_mib": 4662.0,
+        "watchdog_stopped": false
+      },
+      "initial_scene": "reports/training-study/evaluation/dev/B/initial_scene.json",
+      "outcomes": {
+        "collision_count": 7,
+        "num_episodes": 32,
+        "numerical_instability_count": 0,
+        "outcome_counts": {
+          "collision": 7,
+          "numerical_instability": 0,
+          "other_death": 0,
+          "success": 25,
+          "timeout": 0
+        },
+        "success_count": 25,
+        "success_rate": 0.78125,
+        "timeout_count": 0
+      },
+      "pt_declared_source_npz_sha256": "133600929e4cd7fd6913e5818b8b1c14b3190db71cda54947c59621ba8a32ee2",
+      "scene_sha256": "335e2762914080b46d410e7038ed8f26d0c19ea191fcff1729715d18f1509355",
+      "source_npz_sha256": "133600929e4cd7fd6913e5818b8b1c14b3190db71cda54947c59621ba8a32ee2",
+      "started_at_utc": "2026-11-27T16:30:46.063714+00:00",
+      "success_csv": "reports/training-study/evaluation/dev/B/success.csv",
+      "summary": "reports/training-study/evaluation/dev/B/policy.summary.json",
+      "wall_seconds": 27.68325351102976
+    },
+    "C": {
+      "checkpoint": "outputs/tof-training-study/runs/C-2048-clearance/policy.pt",
+      "checkpoint_sha256": "ca3dd988c872097f70871027dbeb4cfa6d2236efc3b90fed993bbc7b2ee8543d",
+      "command": [
+        "./crazyrl",
+        "sim2sim",
+        "evaluate",
+        "--policy",
+        "outputs/tof-training-study/runs/C-2048-clearance/policy.pt",
+        "--num-envs",
+        "32",
+        "--episodes",
+        "1",
+        "--seed",
+        "42",
+        "--output",
+        "outputs/tof-training-study/evaluation/dev/C"
+      ],
+      "console": "outputs/tof-training-study/evaluation/dev/C/runner.log",
+      "episodes_csv": "reports/training-study/evaluation/dev/C/policy.episodes.csv",
+      "exit_code": 0,
+      "gpu_memory": {
+        "command": [
+          "./crazyrl",
+          "sim2sim",
+          "evaluate",
+          "--policy",
+          "outputs/tof-training-study/runs/C-2048-clearance/policy.pt",
+          "--num-envs",
+          "32",
+          "--episodes",
+          "1",
+          "--seed",
+          "42",
+          "--output",
+          "outputs/tof-training-study/evaluation/dev/C"
+        ],
+        "container_id": "151b054c88642528c06c0f8f4166832e085cdbad03f9c4f5ea171519db1d069f",
+        "container_name": "crazyflow-heldout-b995edc5a8f94db7",
+        "exit_code": 0,
+        "memory_limit_mib": 9728,
+        "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+        "poll_seconds": 0.25,
+        "sampled_peak_mib": 4662.0,
+        "watchdog_stopped": false
+      },
+      "initial_scene": "reports/training-study/evaluation/dev/C/initial_scene.json",
+      "outcomes": {
+        "collision_count": 7,
+        "num_episodes": 32,
+        "numerical_instability_count": 0,
+        "outcome_counts": {
+          "collision": 7,
+          "numerical_instability": 0,
+          "other_death": 0,
+          "success": 25,
+          "timeout": 0
+        },
+        "success_count": 25,
+        "success_rate": 0.78125,
+        "timeout_count": 0
+      },
+      "pt_declared_source_npz_sha256": "97595e136d7da00ccef578b24f2bcc0642a9dd3ad4e99dcbca9635517ae736cd",
+      "scene_sha256": "335e2762914080b46d410e7038ed8f26d0c19ea191fcff1729715d18f1509355",
+      "source_npz_sha256": "97595e136d7da00ccef578b24f2bcc0642a9dd3ad4e99dcbca9635517ae736cd",
+      "started_at_utc": "2026-11-27T16:31:13.749975+00:00",
+      "success_csv": "reports/training-study/evaluation/dev/C/success.csv",
+      "summary": "reports/training-study/evaluation/dev/C/policy.summary.json",
+      "wall_seconds": 28.455882727983408
+    },
+    "baseline": {
+      "checkpoint": "models/baseline/model_36825.pt",
+      "checkpoint_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+      "command": [
+        "./crazyrl",
+        "sim2sim",
+        "evaluate",
+        "--policy",
+        "models/baseline/model_36825.pt",
+        "--num-envs",
+        "32",
+        "--episodes",
+        "1",
+        "--seed",
+        "42",
+        "--output",
+        "outputs/tof-training-study/evaluation/dev/baseline"
+      ],
+      "console": "outputs/tof-training-study/evaluation/dev/baseline/runner.log",
+      "episodes_csv": "reports/training-study/evaluation/dev/baseline/model_36825.episodes.csv",
+      "exit_code": 0,
+      "gpu_memory": {
+        "command": [
+          "./crazyrl",
+          "sim2sim",
+          "evaluate",
+          "--policy",
+          "models/baseline/model_36825.pt",
+          "--num-envs",
+          "32",
+          "--episodes",
+          "1",
+          "--seed",
+          "42",
+          "--output",
+          "outputs/tof-training-study/evaluation/dev/baseline"
+        ],
+        "container_id": "d51366d68cea1f1ba9fa9c467cbfeeb1ad1ca111be573f1e4f6cd4dbdfbb2677",
+        "container_name": "crazyflow-heldout-528a2a9b8303407e",
+        "exit_code": 0,
+        "memory_limit_mib": 9728,
+        "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+        "poll_seconds": 0.25,
+        "sampled_peak_mib": 4666.0,
+        "watchdog_stopped": false
+      },
+      "initial_scene": "reports/training-study/evaluation/dev/baseline/initial_scene.json",
+      "outcomes": {
+        "collision_count": 1,
+        "num_episodes": 32,
+        "numerical_instability_count": 0,
+        "outcome_counts": {
+          "collision": 1,
+          "numerical_instability": 0,
+          "other_death": 0,
+          "success": 31,
+          "timeout": 0
+        },
+        "success_count": 31,
+        "success_rate": 0.96875,
+        "timeout_count": 0
+      },
+      "scene_sha256": "335e2762914080b46d410e7038ed8f26d0c19ea191fcff1729715d18f1509355",
+      "started_at_utc": "2026-11-27T16:29:19.413059+00:00",
+      "success_csv": "reports/training-study/evaluation/dev/baseline/success.csv",
+      "summary": "reports/training-study/evaluation/dev/baseline/model_36825.summary.json",
+      "wall_seconds": 28.612367129011545
+    },
+    "old": {
+      "checkpoint": "models/crazyflow/policy.pt",
+      "checkpoint_sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+      "command": [
+        "./crazyrl",
+        "sim2sim",
+        "evaluate",
+        "--policy",
+        "models/crazyflow/policy.pt",
+        "--num-envs",
+        "32",
+        "--episodes",
+        "1",
+        "--seed",
+        "42",
+        "--output",
+        "outputs/tof-training-study/evaluation/dev/old"
+      ],
+      "console": "outputs/tof-training-study/evaluation/dev/old/runner.log",
+      "episodes_csv": "reports/training-study/evaluation/dev/old/policy.episodes.csv",
+      "exit_code": 0,
+      "gpu_memory": {
+        "command": [
+          "./crazyrl",
+          "sim2sim",
+          "evaluate",
+          "--policy",
+          "models/crazyflow/policy.pt",
+          "--num-envs",
+          "32",
+          "--episodes",
+          "1",
+          "--seed",
+          "42",
+          "--output",
+          "outputs/tof-training-study/evaluation/dev/old"
+        ],
+        "container_id": "df92df9fc6d6368e31c4fcab110266f06b9fb6871e9c9119e32e2caef4cdd2d0",
+        "container_name": "crazyflow-heldout-e0d34524564f410b",
+        "exit_code": 0,
+        "memory_limit_mib": 9728,
+        "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+        "poll_seconds": 0.25,
+        "sampled_peak_mib": 4662.0,
+        "watchdog_stopped": false
+      },
+      "initial_scene": "reports/training-study/evaluation/dev/old/initial_scene.json",
+      "outcomes": {
+        "collision_count": 7,
+        "num_episodes": 32,
+        "numerical_instability_count": 0,
+        "outcome_counts": {
+          "collision": 7,
+          "numerical_instability": 0,
+          "other_death": 0,
+          "success": 25,
+          "timeout": 0
+        },
+        "success_count": 25,
+        "success_rate": 0.78125,
+        "timeout_count": 0
+      },
+      "pt_declared_source_npz_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+      "scene_sha256": "335e2762914080b46d410e7038ed8f26d0c19ea191fcff1729715d18f1509355",
+      "source_npz_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+      "started_at_utc": "2026-11-27T16:29:48.029805+00:00",
+      "success_csv": "reports/training-study/evaluation/dev/old/success.csv",
+      "summary": "reports/training-study/evaluation/dev/old/policy.summary.json",
+      "wall_seconds": 29.57124759303406
+    }
+  },
+  "selection": {
+    "eligible": [
+      "A"
+    ],
+    "heldout_used": false,
+    "rule": "Eligible only if Isaac dev success strictly exceeds old and common-CF success is no more than .02 below old. Rank eligible candidates by Isaac success, then highest CF mean return, then A/B/C order. Otherwise retain old; ties with old retain old.",
+    "selected": "A"
+  },
+  "stage": "dev"
+}

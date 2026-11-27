@@ -1,0 +1,53 @@
+{
+  "scope": "Offline plot of exact recorded training metrics; no simulation/evaluation/optimization.",
+  "cumulative_ppo_transitions": 245760000,
+  "original_ppo_transitions": 122880000,
+  "additional_ppo_transitions": 122880000,
+  "additional_non_gradient_calibration_env_steps_original": 122880,
+  "additional_non_gradient_calibration_env_steps_resume": 0,
+  "original_loop_wall_seconds": 662.6132838550257,
+  "resumed_loop_wall_seconds": 1248.7452628660249,
+  "summed_loop_wall_seconds": 1911.3585467210505,
+  "time_excludes": [
+    "launcher",
+    "initialization",
+    "initial random-action calibration",
+    "resume initialization",
+    "real time gap between runs"
+  ],
+  "time_includes": [
+    "update compilation",
+    "map maintenance",
+    "prior saves",
+    "original final export in offset"
+  ],
+  "smoothing": "Trailing25-update equal-weight mean; shorter prefix windows; not reset at resume boundary.",
+  "sources": [
+    {
+      "path": "outputs/tof-training-study/runs/A-1024-control/config.json",
+      "sha256": "6c68be8c2bdfa16e5de2a81afb51510071a53cccd32c89f75d8d23be04bc5481"
+    },
+    {
+      "path": "outputs/tof-training-study/runs/A-1024-control/result.json",
+      "sha256": "2fc9089acffe7b9a414fe6f5aa4f57f9115e797a886d94371466e813779abd7d"
+    },
+    {
+      "path": "outputs/tof-training-study/runs/A-1024-control/training.jsonl",
+      "sha256": "935cf1e7a55b93bec870cec8b5a8990208e43890d5f7fcb2184cd8667421d47b"
+    },
+    {
+      "path": "outputs/tof-training-study/runs/A-1024-budget245m/config.json",
+      "sha256": "8616506b05aa47a5903bcd92a6ebd4b93f5d205776272dd0b7236e6cc16dbbe5"
+    },
+    {
+      "path": "outputs/tof-training-study/runs/A-1024-budget245m/result.json",
+      "sha256": "953688edc1a2141bb90256cef8d72084918df148f5c1d098fbbe31c4135a2193"
+    },
+    {
+      "path": "outputs/tof-training-study/runs/A-1024-budget245m/training.jsonl",
+      "sha256": "8aeefab9a769d52067363b3cf1f1deb6ef211db05b5511241bbecaa8bf400446"
+    }
+  ],
+  "plot": "reports/training-study/round2/learning.png",
+  "plot_sha256": "81e85c25dc1ccc80f9ad30fc9d6058acea6e1f360b16d9e5c1f302d609190e54"
+}

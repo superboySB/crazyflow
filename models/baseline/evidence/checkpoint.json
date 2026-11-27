@@ -1,0 +1,187 @@
+{
+  "checkpoint": "models/baseline/model_36825.pt",
+  "sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+  "format": "PyTorch torch.save / RSL OnPolicyRunner checkpoint",
+  "checkpoint_keys": [
+    "infos",
+    "iter",
+    "model_state_dict",
+    "obs_norm_state_dict",
+    "optimizer_state_dict",
+    "privileged_obs_norm_state_dict"
+  ],
+  "saved_iteration": 36825,
+  "actor_tensor_shapes": {
+    "actor.0.weight": [
+      256,
+      344
+    ],
+    "actor.0.bias": [
+      256
+    ],
+    "actor.2.weight": [
+      256,
+      256
+    ],
+    "actor.2.bias": [
+      256
+    ],
+    "actor.4.weight": [
+      128,
+      256
+    ],
+    "actor.4.bias": [
+      128
+    ],
+    "actor.6.weight": [
+      64,
+      128
+    ],
+    "actor.6.bias": [
+      64
+    ],
+    "actor.8.weight": [
+      4,
+      64
+    ],
+    "actor.8.bias": [
+      4
+    ]
+  },
+  "critic_tensor_shapes": {
+    "critic.0.weight": [
+      256,
+      434
+    ],
+    "critic.0.bias": [
+      256
+    ],
+    "critic.2.weight": [
+      256,
+      256
+    ],
+    "critic.2.bias": [
+      256
+    ],
+    "critic.4.weight": [
+      128,
+      256
+    ],
+    "critic.4.bias": [
+      128
+    ],
+    "critic.6.weight": [
+      64,
+      128
+    ],
+    "critic.6.bias": [
+      64
+    ],
+    "critic.8.weight": [
+      1,
+      64
+    ],
+    "critic.8.bias": [
+      1
+    ]
+  },
+  "noise_std": [
+    0.06722074747085571,
+    0.03654133901000023,
+    0.0978688970208168,
+    0.1758730113506317
+  ],
+  "contains_optimizer_state": true,
+  "inspection_device": "cpu",
+  "normalizers": {
+    "obs_norm_state_dict": {
+      "keys": [
+        "_mean",
+        "_std",
+        "_var",
+        "count"
+      ],
+      "tensor_shapes": {
+        "_mean": [
+          1,
+          344
+        ],
+        "_var": [
+          1,
+          344
+        ],
+        "_std": [
+          1,
+          344
+        ],
+        "count": []
+      },
+      "count": 100022000
+    },
+    "privileged_obs_norm_state_dict": {
+      "keys": [
+        "_mean",
+        "_std",
+        "_var",
+        "count"
+      ],
+      "tensor_shapes": {
+        "_mean": [
+          1,
+          434
+        ],
+        "_var": [
+          1,
+          434
+        ],
+        "_std": [
+          1,
+          434
+        ],
+        "count": []
+      },
+      "count": 100022000
+    }
+  },
+  "archived_torchscript": {
+    "path": "outputs/sim2sim/baseline-reference/rl/exported/policy.pt",
+    "sha256": "ab1a21345885279e994c9ee9e5f0f2f3987b59bc6427ef16e886815cf86341bd",
+    "format": "TorchScript",
+    "output_shape": [
+      128,
+      4
+    ],
+    "probe_samples": 128,
+    "probe_max_abs_difference_from_canonical_checkpoint": 0.0,
+    "canonical_actor_parameter_keys_present": [
+      "actor.0.bias",
+      "actor.0.weight",
+      "actor.2.bias",
+      "actor.2.weight",
+      "actor.4.bias",
+      "actor.4.weight",
+      "actor.6.bias",
+      "actor.6.weight",
+      "actor.8.bias",
+      "actor.8.weight"
+    ],
+    "actor_weights_bit_identical_to_canonical": true
+  },
+  "archived_onnx": {
+    "path": "outputs/sim2sim/baseline-reference/rl/exported/policy.onnx",
+    "producer_name": "pytorch",
+    "producer_version": "2.7.0",
+    "opsets": [
+      {
+        "domain": "",
+        "version": 11
+      }
+    ],
+    "inputs": [
+      "obs"
+    ],
+    "outputs": [
+      "actions"
+    ]
+  }
+}

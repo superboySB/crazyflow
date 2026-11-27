@@ -1,0 +1,112 @@
+{
+  "framework": "Isaac Lab / RSL-RL PPO / PyTorch",
+  "logger": "TensorBoard",
+  "tensorflow_training": false,
+  "framework_evidence": {
+    "upstream_project": "CrazyRL",
+    "upstream_revision": "9333442c18fa15799adac7e02988a978aeaf97b9",
+    "source_files": [
+      {
+        "path": "e2e_drone/rsl_rl/train.py",
+        "facts": [
+          "imports torch",
+          "constructs rsl_rl.runners.OnPolicyRunner",
+          "calls runner.learn",
+          "writes YAML/pickle configs"
+        ],
+        "sha256": "13d26780a0b8890d4b2a5a587615c2e0ca1d17c8d4761d63ce0b0ea84f1f8b00"
+      },
+      {
+        "path": "e2e_drone/tasks/baseline/agents/rsl_rl_ppo_cfg.py",
+        "facts": [
+          "RslRlOnPolicyRunnerCfg",
+          "RslRlPpoAlgorithmCfg",
+          "static_goals curriculum"
+        ],
+        "sha256": "5621f574beb6e93851eccf8700348526034a2ca047d16d4eab03ccb3ff1eb682"
+      }
+    ],
+    "checkpoint_format": "Torch model_state_dict, optimizer_state_dict and RSL normalizers",
+    "archived_onnx_producer": "pytorch"
+  },
+  "saved_agent_configuration": {
+    "seed": 42,
+    "device": "cuda:0",
+    "num_steps_per_env": 120,
+    "max_iterations": 100000,
+    "empirical_normalization": true,
+    "policy": {
+      "class_name": "ActorCritic",
+      "init_noise_std": 1.0,
+      "noise_std_type": "scalar",
+      "actor_hidden_dims": [
+        256,
+        256,
+        128,
+        64
+      ],
+      "critic_hidden_dims": [
+        256,
+        256,
+        128,
+        64
+      ],
+      "activation": "elu"
+    },
+    "algorithm": {
+      "class_name": "PPO",
+      "num_learning_epochs": 5,
+      "num_mini_batches": 200,
+      "learning_rate": 0.0005,
+      "schedule": "adaptive",
+      "gamma": 0.99,
+      "lam": 0.95,
+      "entropy_coef": 0.005,
+      "desired_kl": 0.01,
+      "max_grad_norm": 1.0,
+      "value_loss_coef": 1.0,
+      "use_clipped_value_loss": true,
+      "clip_param": 0.2,
+      "normalize_advantage_per_mini_batch": false,
+      "symmetry_cfg": null,
+      "rnd_cfg": null
+    },
+    "clip_actions": null,
+    "save_interval": 25,
+    "experiment_name": "baseline_direct",
+    "run_name": "",
+    "logger": "tensorboard",
+    "neptune_project": "isaaclab",
+    "wandb_project": "isaaclab",
+    "resume": false,
+    "load_run": "2025-10-13_00-51-18",
+    "load_checkpoint": "model_2900.pt",
+    "curriculum_stage": "static_goals",
+    "gamma": 0.99
+  },
+  "saved_environment_summary": {
+    "num_envs": 26000,
+    "physics_dt": 0.006666666666666667,
+    "decimation": 10,
+    "episode_length_s": 80,
+    "camera_max_distance": 4.0,
+    "camera_focal_length": 20.0,
+    "camera_aperture": 20.955,
+    "robot_mass": 0.049,
+    "enable_mass_randomization": true,
+    "mass_randomization_percent": 0.2,
+    "wind_tau": 1.0,
+    "wind_sigma": 0.5,
+    "enable_thrust_uncertainty": true,
+    "thrust_uncertainty_initial_range": [
+      0.85,
+      1.0
+    ],
+    "thrust_uncertainty_degradation_range": [
+      0.1,
+      0.15
+    ],
+    "thrust_uncertainty_min_effectiveness": 0.7
+  },
+  "configuration_lineage_limit": "max_iterations is a configured upper target, not executed iterations. Saved resume=false coexists with load_run/load_checkpoint selectors; these fields and checkpoint iter alone do not establish whether all optimization started from random weights. The event file continues after the bundled checkpoint. The imported repository revision identifies the source snapshot, not a proven training-time code commit; the latter is not recorded in the supplied artifacts."
+}

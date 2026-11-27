@@ -1,0 +1,24 @@
+{
+  "round": 2,
+  "evaluation_passed": true,
+  "candidate": "A-1024-budget245m",
+  "candidate_released": false,
+  "reason": "Native CF255/256 passed248 gate, but Isaac development25/32 did not strictly exceed frozen old25/32; no fresh heldout test was run. Retain original paired deployment weights.",
+  "common_native_successes": 255,
+  "common_native_episodes": 256,
+  "development_successes": 25,
+  "development_episodes": 32,
+  "fresh_heldout_run": false,
+  "fresh_heldout_seeds_reserved": [
+    441,
+    442,
+    443,
+    444,
+    445
+  ],
+  "evidence": "outputs/tof-training-study/evaluation/round2/summary.json",
+  "evidence_sha256": "19636f341fd4fdd0bd9c6dcdf5c62913d73697073a04afe53b49421b62c55a40",
+  "deployed_npz_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "deployed_pt_sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+  "additional_training_followups": 0
+}

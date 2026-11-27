@@ -1,0 +1,23 @@
+{
+  "source_curve_screenshot": {
+    "path": "models/baseline/evidence/rl.png",
+    "sha256": "81ba4b6dae59d816aa4845e5dac2f7f8f33f1ab742edda54d6e8bd778e12c0fe",
+    "pixel_size": [
+      1856,
+      854
+    ],
+    "interpretation": "Original training-dashboard screenshot. Its displayed step range is not proof of checkpoint identity."
+  },
+  "historical_video": {
+    "path": "outputs/sim2sim/baseline-reference/rl/videos/play/rl-video-step-0.mp4",
+    "sha256": "ab8604f6cbd7370beeaaf60a2d02178dc080f291d4b1ce425bb862f4fae3d69a",
+    "frames": 449,
+    "fps": 15.0,
+    "width": 1280,
+    "height": 720,
+    "duration_seconds": 29.933333333333334,
+    "preview": "models/baseline/evidence/historical-play.png",
+    "preview_frame": 224,
+    "interpretation": "Original archived playback, not a newly run evaluation and not an independent checkpoint-identity assertion."
+  }
+}

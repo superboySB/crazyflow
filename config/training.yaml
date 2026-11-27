@@ -1,9 +1,13 @@
 # JAX PPO, CrazyRL state/action/reward contract; no differentiation through physics.
 # Both training and evaluation use crazyflow.tof.config.load_config.
 training:
+  # Keep JAX PPO; align advantage/KL/Adam semantics with the saved RSL baseline.
+  ppo_variant: rsl_aligned
+  normalization_until: 100000000
   iterations: 1000
   num_envs:
-    gpu: 12288
+    # Selected equal-budget recipe; 2048 is faster but did not improve validation.
+    gpu: 1024
     cpu: 32
   num_steps: 120
   num_minibatches: 32

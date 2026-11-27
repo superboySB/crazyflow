@@ -1,0 +1,158 @@
+{
+  "upstream_project": "CrazyRL",
+  "upstream_revision": "9333442c18fa15799adac7e02988a978aeaf97b9",
+  "upstream_assets_root": "assets/replementation",
+  "upstream_worktree_dirty": false,
+  "archive_root": "outputs/sim2sim/baseline-reference",
+  "archive_git_tracked": false,
+  "source_file_count": 10,
+  "source_total_bytes": 91684204,
+  "all_source_files_archived_byte_identically": true,
+  "files": [
+    {
+      "upstream_relative_path": "assets/replementation/rl/events.out.tfevents.1768936229.dcj.32.0",
+      "bytes": 81883824,
+      "sha256": "2f7a310383d85593b93c5aae13390289f6f31e9de23088446b79a93e91ebf6d5",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/events.out.tfevents.1768936229.dcj.32.0",
+      "archive_byte_identical": true,
+      "tensorboard_path": "outputs/sim2sim/tensorboard/events.out.tfevents.1768936229.dcj.32.0",
+      "archive_link_reuses_existing_event": true,
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/exported/policy.onnx",
+      "bytes": 786675,
+      "sha256": "ed4299eafdaa4130c46c1f032d0776a518e499de33dee591fd4fafd9ead3621f",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/exported/policy.onnx",
+      "archive_byte_identical": true,
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/exported/policy.pt",
+      "bytes": 802362,
+      "sha256": "ab1a21345885279e994c9ee9e5f0f2f3987b59bc6427ef16e886815cf86341bd",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/exported/policy.pt",
+      "archive_byte_identical": true,
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/model_36825.pt",
+      "bytes": 5004055,
+      "sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/model_36825.pt",
+      "archive_byte_identical": true,
+      "versioned_path": "models/baseline/model_36825.pt",
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/params/agent.pkl",
+      "bytes": 1099,
+      "sha256": "43d8e12de9d8ad29a6e01bc981050b96917fa0a57c2ffb80ae285678368b776c",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/params/agent.pkl",
+      "archive_byte_identical": true,
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/params/agent.yaml",
+      "bytes": 939,
+      "sha256": "2415c673e8c194383dd84f57ab76a0d1760a543135a32ead0fc0ee3938a3f9e4",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/params/agent.yaml",
+      "archive_byte_identical": true,
+      "versioned_path": "models/baseline/agent.yaml",
+      "versioned_sha256": "2415c673e8c194383dd84f57ab76a0d1760a543135a32ead0fc0ee3938a3f9e4",
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/params/env.pkl",
+      "bytes": 13155,
+      "sha256": "37ffc9bee5c9ba73b98d757ec299f19ebe4374212eab6b9aadd1f656277c135c",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/params/env.pkl",
+      "archive_byte_identical": true,
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/params/env.yaml",
+      "bytes": 18908,
+      "sha256": "921c858bc499de884750a8b706145fc7af570826821f38c66630e2d08c9178d4",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/params/env.yaml",
+      "archive_byte_identical": true,
+      "versioned_path": "models/baseline/env.yaml",
+      "versioned_sha256": "bcec4a27fd258143d94514e375c9e3ee49b3ac86cccd0cd2a89e9969e5f98f29",
+      "versioned_note": "Local runtime asset path is normalized; original saved config remains byte-identical in ignored archive.",
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl/videos/play/rl-video-step-0.mp4",
+      "bytes": 2976986,
+      "sha256": "ab8604f6cbd7370beeaaf60a2d02178dc080f291d4b1ce425bb862f4fae3d69a",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl/videos/play/rl-video-step-0.mp4",
+      "archive_byte_identical": true,
+      "upstream_git_tracked": false,
+      "local_archive_ignored": true
+    },
+    {
+      "upstream_relative_path": "assets/replementation/rl.png",
+      "bytes": 196201,
+      "sha256": "81ba4b6dae59d816aa4845e5dac2f7f8f33f1ab742edda54d6e8bd778e12c0fe",
+      "local_archive_path": "outputs/sim2sim/baseline-reference/rl.png",
+      "archive_byte_identical": true,
+      "versioned_path": "models/baseline/evidence/rl.png",
+      "upstream_git_tracked": true,
+      "local_archive_ignored": true
+    }
+  ],
+  "archive_portability": "Raw files are ignored and absent from fresh clones. Archive both outputs/sim2sim/baseline-reference and outputs/sim2sim/tensorboard together; the relative event symlink remains valid.",
+  "source_file_tracking_note": "Nine source assets are committed in the pinned upstream revision; the original playback video is an untracked local artifact identified by SHA256.",
+  "generated_evidence": [
+    {
+      "path": "models/baseline/evidence/checkpoint.json",
+      "bytes": 3344,
+      "sha256": "96e843a498054e699002ae596bc41635bd826f566286bffd9c77d4fa12bc3c64",
+      "kind": "offline summary/visualization; no simulation or training"
+    },
+    {
+      "path": "models/baseline/evidence/historical-play.png",
+      "bytes": 162755,
+      "sha256": "2bf16e3e4e69c99ab189641b8e670b1e83bcd48aa9838c0c4682ebf306666e5b",
+      "kind": "offline summary/visualization; no simulation or training"
+    },
+    {
+      "path": "models/baseline/evidence/media.json",
+      "bytes": 879,
+      "sha256": "5735ddf402dbe8ed332ba1ea21c65a2db4d8c23c100d2f2380349d918c372251",
+      "kind": "offline summary/visualization; no simulation or training"
+    },
+    {
+      "path": "models/baseline/evidence/tensorboard-scalars.csv",
+      "bytes": 6644,
+      "sha256": "9d1d9046feee7e3082004874293a766f8862be3fa653fceb7fdf491d1512ced7",
+      "kind": "offline summary/visualization; no simulation or training"
+    },
+    {
+      "path": "models/baseline/evidence/tensorboard.json",
+      "bytes": 7071,
+      "sha256": "b2ad0d3e84665f85aa50a62577831fa205a0e2661a0bec4994e79c8c31568458",
+      "kind": "offline summary/visualization; no simulation or training"
+    },
+    {
+      "path": "models/baseline/evidence/training-curves.png",
+      "bytes": 175992,
+      "sha256": "1ef4d1b6119fc64efe2e89d37194b354494e5e950f21d0b011addeb57fc47229",
+      "kind": "offline summary/visualization; no simulation or training"
+    },
+    {
+      "path": "models/baseline/evidence/training.json",
+      "bytes": 3532,
+      "sha256": "c1f4d668d166bc94582c50417cc5ed88a50818aa9e10a55e37d1d75869b0b6cd",
+      "kind": "offline summary/visualization; no simulation or training"
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "case": "E-A-1024-budget245m",
+  "round": 2,
+  "iteration": 2000,
+  "jax_backend": "cpu",
+  "packets": 128,
+  "packet_source": "outputs/sim2sim/io-contract-20261127/realistic-packets.npz",
+  "packet_source_sha256": "1472fdefb07280b505d593869821a0f270578f09ddb2514e952a5cc69eb441ed",
+  "iteration_matches_real_checkpoint": true,
+  "actor_only": false,
+  "weights_exactly_equal_to_real_agent": true,
+  "weights": {
+    "actor.0.weight": {
+      "shape": [
+        256,
+        344
+      ],
+      "dtype": "float32"
+    },
+    "actor.0.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.2.weight": {
+      "shape": [
+        256,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.2.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.4.weight": {
+      "shape": [
+        128,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.4.bias": {
+      "shape": [
+        128
+      ],
+      "dtype": "float32"
+    },
+    "actor.6.weight": {
+      "shape": [
+        64,
+        128
+      ],
+      "dtype": "float32"
+    },
+    "actor.6.bias": {
+      "shape": [
+        64
+      ],
+      "dtype": "float32"
+    },
+    "actor.8.weight": {
+      "shape": [
+        4,
+        64
+      ],
+      "dtype": "float32"
+    },
+    "actor.8.bias": {
+      "shape": [
+        4
+      ],
+      "dtype": "float32"
+    },
+    "critic.0.weight": {
+      "shape": [
+        256,
+        434
+      ],
+      "dtype": "float32"
+    },
+    "critic.0.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.2.weight": {
+      "shape": [
+        256,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.2.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.4.weight": {
+      "shape": [
+        128,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.4.bias": {
+      "shape": [
+        128
+      ],
+      "dtype": "float32"
+    },
+    "critic.6.weight": {
+      "shape": [
+        64,
+        128
+      ],
+      "dtype": "float32"
+    },
+    "critic.6.bias": {
+      "shape": [
+        64
+      ],
+      "dtype": "float32"
+    },
+    "critic.8.weight": {
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32"
+    },
+    "critic.8.bias": {
+      "shape": [
+        1
+      ],
+      "dtype": "float32"
+    }
+  },
+  "normalizers": {
+    "actor_norm": {
+      "width": 344,
+      "mean_and_variance_equal_to_real_agent": true,
+      "count": 100024320,
+      "count_dtype": "torch.int64",
+      "normalization": "(x-mean)/(sqrt(var)+.01)"
+    },
+    "critic_norm": {
+      "width": 434,
+      "mean_and_variance_equal_to_real_agent": true,
+      "count": 100024320,
+      "count_dtype": "torch.int64",
+      "normalization": "(x-mean)/(sqrt(var)+.01)"
+    }
+  },
+  "std_matches_exp_clipped_logstd_max_abs": 1.4901161193847656e-08,
+  "npz_actor_vs_full_agent_max_abs": 0.0,
+  "artifacts": {
+    "outputs/tof-training-study/runs/A-1024-budget245m/result.json": {
+      "sha256": "953688edc1a2141bb90256cef8d72084918df148f5c1d098fbbe31c4135a2193",
+      "bytes": 2788
+    },
+    "outputs/tof-training-study/runs/A-1024-budget245m/checkpoint.msgpack": {
+      "sha256": "15ef44a27f936783fab1c83e26d142f40f5958d6e8e4c3c83f9283dc8f2d114d",
+      "bytes": 11399197
+    },
+    "outputs/tof-training-study/runs/A-1024-budget245m/policy.npz": {
+      "sha256": "665f9dd0faff8341c920436f121dbc43d73db5b4fd097dbf552f8a57d755f7b4",
+      "bytes": 736735
+    },
+    "outputs/tof-training-study/runs/A-1024-budget245m/policy.pt": {
+      "sha256": "af49c3212d09e4b87a5ab126d5e9ac96a3c66b4fc6824a98e33787f9949ecf42",
+      "bytes": 1682165
+    },
+    "outputs/tof-training-study/round2/export-parity/E-cpu-packets.npz": {
+      "sha256": "14840f54638598d5366d6d1ebbc1522bdc9c615d8ffeeaf13e931c83ec5cd9d5",
+      "bytes": 346204
+    }
+  },
+  "passed": true,
+  "scope": "CPU-only serialization and native inference proof for actual completed E continuation; no Isaac app, simulation, GPU, retraining or model mutation.",
+  "native_rsl": {
+    "strict_OnPolicyRunner_load_passed": true,
+    "load_optimizer": false,
+    "all_model_state_keys_present": true,
+    "model_state_tensor_count": 21,
+    "critic_tensor_count": 10,
+    "top_level_keys": [
+      "crazyflow_metadata",
+      "infos",
+      "iter",
+      "model_state_dict",
+      "obs_norm_state_dict",
+      "privileged_obs_norm_state_dict"
+    ],
+    "optimizer_state_present": false,
+    "adapter_state_and_outputs_identical": true,
+    "loading_preserves_torch_rng": true,
+    "normalizer_keys": [
+      "_mean",
+      "_std",
+      "_var",
+      "count"
+    ]
+  },
+  "max_absolute_error": {
+    "native_pt_vs_jax_npz_raw_actor": 1.430511474609375e-06,
+    "native_pt_vs_legacy_npz_torch_raw_actor": 9.5367431640625e-07,
+    "native_pt_vs_real_jax_critic": 8.392333984375e-05,
+    "actor_normalized_packets_torch_vs_jax": 4.76837158203125e-07,
+    "critic_normalized_packets_torch_vs_jax": 4.76837158203125e-07
+  },
+  "numerical_tolerance": {
+    "rtol": 2e-05,
+    "atol": 2e-05,
+    "tested_actor_and_critic_normalized_packets": true
+  },
+  "physical_contract": {
+    "actor_input": "344 values:10 chronological28-feature noisy sensor/state/action-history frames plus current row-major8x8 depth. Inputs already have task feature scaling; apply this policy own normalizer once.",
+    "critic_input": "434 values:10 chronological37-feature privileged frames plus64 depth samples, with independent critic statistics.",
+    "actor_output_order": [
+      "roll attitude",
+      "pitch attitude",
+      "yaw rate",
+      "collective thrust"
+    ],
+    "actor_output": "Four raw unsquashed Gaussian means, not radians/Newtons. Frozen target task applies tanh once, maps thrust to[0,1], then reference attitude/rate/thrust scaling. No additional tanh in deployment adapter.",
+    "architecture": "Actor344→256→256→128→64→4, critic434→256→256→128→64→1; hidden ELU, linear outputs.",
+    "std": "Four positive exploration std values=exp(clip(JAX logstd,-5,2)); deterministic inference uses means."
+  },
+  "qualification": "This proves export structure, actual trained actor/critic mapping and numerical inference parity. It does not measure success or sim2sim transfer. PT excludes Optax state; JAX full resume remains checkpoint.msgpack.",
+  "original_A1000_proof": "reports/training-study/export-parity.json"
+}

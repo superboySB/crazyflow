@@ -1,0 +1,88 @@
+{
+  "checkpoint": "/workspace/crazyflow/models/baseline/model_36825.pt",
+  "checkpoint_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3",
+  "collision_count": 1,
+  "collision_rate": 0.03125,
+  "commanded_speed_m_s": {
+    "max": 1.4795451164245605,
+    "mean": 0.9560752622783184,
+    "median": 0.9489288926124573,
+    "min": 0.5030652284622192,
+    "p10": 0.6054237842559814,
+    "p90": 1.3667869567871094,
+    "total": 30.59440839290619
+  },
+  "cruising_speed_m_s": {
+    "max": 1.593896746635437,
+    "median": 0.772288978099823,
+    "p95": 1.3203689813613892,
+    "samples": 3767,
+    "time_weighted_mean": 0.7961734735199507
+  },
+  "definitions": {
+    "accepted_episodes": "Completed episodes within each environment's quota; unfinished episodes are excluded.",
+    "collision": "Any task-detected body contact; raw collision rate includes simultaneous success.",
+    "cruising_speed": "Speed samples with more than 1 m remaining to the current goal.",
+    "episode_index": "One-based episode number within each environment.",
+    "outcome": "Exclusive priority: success, collision, numerical instability, timeout, other death.",
+    "path_length": "3D displacement summed at the control frequency; reset teleports excluded.",
+    "speed": "3D linear speed sampled before reset; time-weighted over accepted episode steps."
+  },
+  "duration_s": {
+    "max": 24.266666666666666,
+    "mean": 8.879166666666666,
+    "median": 7.733333333333333,
+    "min": 2.0,
+    "p10": 3.64,
+    "p90": 16.20666666666667,
+    "total": 284.13333333333327
+  },
+  "episodes_per_env": 1,
+  "evaluation_wall_time_s": 10.749557971954346,
+  "evaluator_success_rate": 0.96875,
+  "headless": true,
+  "num_envs": 32,
+  "num_episodes": 32,
+  "numerical_instability_count": 0,
+  "numerical_instability_rate": 0.0,
+  "outcome_counts": {
+    "collision": 1,
+    "numerical_instability": 0,
+    "other_death": 0,
+    "success": 31,
+    "timeout": 0
+  },
+  "path_length_m": {
+    "max": 13.578291893005371,
+    "mean": 6.853266598656774,
+    "median": 6.6883461475372314,
+    "min": 0.9918283820152283,
+    "p10": 2.315376329421997,
+    "p90": 11.032540416717529,
+    "total": 219.30453115701675
+  },
+  "sampling_frequency_hz": 15.0,
+  "seed": 434,
+  "simulation_steps": 364,
+  "speed_m_s": {
+    "max": 1.593896746635437,
+    "median": 0.7319686412811279,
+    "p95": 1.3159035503864287,
+    "samples": 4262,
+    "time_weighted_mean": 0.7724229472054318
+  },
+  "start_goal_distance_m": {
+    "max": 12.735283851623535,
+    "mean": 6.869168393313885,
+    "median": 6.966057777404785,
+    "min": 1.0683071613311768,
+    "p10": 1.8728130459785461,
+    "p90": 11.20896167755127,
+    "total": 219.8133885860443
+  },
+  "success_count": 31,
+  "success_rate": 0.96875,
+  "task": "baseline",
+  "timeout_count": 0,
+  "timeout_rate": 0.0
+}

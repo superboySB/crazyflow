@@ -1,6 +1,6 @@
-# ToF PPO 的本机训练与验收
+# 历史 legacy ToF PPO 的本机训练与验收
 
-实现与命令见 [主 README](../../README.md)，源项目对应关系见[任务说明](../../docs/tof-parity.md)。本次全部新训练使用 JAX/Flax/Optax PPO、官方 Crazyflow first_principles 参数，最终积分器为官方 RK4。Isaac 只做评测。
+这里记录原 legacy 训练及当时验收；该策略在后续研究结束后仍被保留，新的实验和最新留出见[训练研究](../training-study/README.md)。实现与当前命令见 [主 README](../../README.md)，源项目对应关系见[任务说明](../../docs/tof-parity.md)。本次历史训练使用 JAX/Flax/Optax PPO、官方 Crazyflow first_principles 参数，最终积分器为官方 RK4。Isaac 只做评测。
 
 机器为 RTX 4070 Ti SUPER，16376 MiB，驱动 580.126.09。GPU 训练关闭预分配，watchdog 每 0.25 s 采样，超过 9728 MiB 计算进程显存则停止；桌面图形进程不计入该进程占用。小于采样间隔的峰值不作为精确测量保证。
 
@@ -12,10 +12,10 @@
 | ---: | ---: | ---: | ---: | --- |
 | 1,024 | 1,376 | 0.345 | 356,282 | 通过，实测吞吐最高 |
 | 8,192 | 5,400 | 4.080 | 240,924 | 通过 |
-| 12,288 | 9,706 | 7.065 | 208,714 | 通过，默认并行数 |
+| 12,288 | 9,706 | 7.065 | 208,714 | 通过，当时的大批量设置 |
 | 14,336 | 9,774 | — | — | watchdog 停止 |
 
-12,288 是本次测量中可运行的最大值；环境更多没有提高每秒交互数。快速迭代可用 `--num-envs 1024`，大批量可以使用默认值。计时只涵盖 PPO 更新，首轮编译另记；课程换图和重新编译会影响长运行耗时。容量短测本身不证明后续任意课程密度均可容纳。
+12,288 是这次历史测量中可运行的最大值；环境更多没有提高每秒交互数。当前默认已采用 1,024 环境的 rsl_aligned 配方，不能从此表推导当前推荐设置。计时只涵盖 PPO 更新，首轮编译另记；课程换图和重新编译会影响长运行耗时。容量短测本身不证明后续任意课程密度均可容纳。
 
 ## 正式训练与模型选择
 
@@ -46,7 +46,7 @@
 
 ## 工程验收
 
-详细证据见 [verification.json](verification.json) 与 [runtime-image.json](runtime-image.json)。
+详细证据见 [verification.json](verification.json) 与 [runtime-image.json](runtime-image.json)。 原始验收 JSON 保留当时的旧 CLI 命令；当前显式加载方式为 `./crazyrl play --checkpoint models/crazyflow/policy.npz`，按 [主 README](../../README.md) 操作。
 
 - 完整 CPU 测试：790 passed、45 skipped、16 deselected。跳过项包括需要 GPU 或渲染标记的测试；渲染另行实测。
 - 新环境测试覆盖 344/434 维接口、动作单位、奖励手算、深度、自动重置、无物理反传、DR、双地图、默认及实测物理的冻结和 RK4 稳定性。
@@ -60,7 +60,7 @@
 - Isaac 两种模型加载路径：原始 PT 和新 NPZ 均完成原生 GUI/video 450 步，退出码 0；各生成 449 帧、1280×720、15 fps 视频，首/中/末帧解码通过。
 - 复制的历史 TensorBoard 事件可读取，HTTP 标量接口返回 35 个标签。
 
-TensorBoard 历史事件位于本地忽略目录 `outputs/sim2sim/tensorboard/`；新日志、视频和 GPU 记录也写入 `outputs/`。Git 仅保留两份模型权重：最佳 Crazyflow NPZ 与官方 baseline PT，配套配置及必要 USD 随代码保留。历史记录路径已规范化，未重跑或修改评测数值，说明见[报告目录](../README.md)。
+TensorBoard 历史事件位于本地忽略目录 `outputs/sim2sim/tensorboard/`；新日志、视频和 GPU 记录也写入 `outputs/`。当前 Git 保留三份权重：此策略的 NPZ/PT 对和官方 baseline PT，配套配置及必要 USD 随代码保留。PT 是同一 actor 的导出，不增加训练。历史记录路径已规范化，未改写当时评测数值，说明见[报告目录](../README.md)。
 
 ## 诊断边界
 

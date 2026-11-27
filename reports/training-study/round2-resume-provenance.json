@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-11-27T16:41:16.378136+00:00",
+  "case": "A-1024-control",
+  "checkpoint_path": "outputs/tof-training-study/runs/A-1024-control/checkpoint.msgpack",
+  "checkpoint_sha256": "d856accbda0d5602bde16a876e291584891a5872286c49a52c3efb121f5f56a1",
+  "config_path": "outputs/tof-training-study/configs/A-1024-control.yaml",
+  "config_sha256": "a0e528c677f27fcf0ec37d8730c540d27bddad5906e2f02bd4a1c892015943be",
+  "output": "outputs/tof-training-study/runs/A-1024-budget245m",
+  "command": [
+    "./crazyrl",
+    "train",
+    "--device",
+    "gpu",
+    "--config",
+    "outputs/tof-training-study/configs/A-1024-control.yaml",
+    "--num-envs",
+    "1024",
+    "--iterations",
+    "2000",
+    "--resume",
+    "outputs/tof-training-study/runs/A-1024-control/checkpoint.msgpack",
+    "--output",
+    "outputs/tof-training-study/runs/A-1024-budget245m"
+  ],
+  "round2_plan_sha256": "c382eea6a8e5fdd9c5f9bf6f8481937448ee612759510b3d7108aeaead7ee139"
+}

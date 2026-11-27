@@ -1,0 +1,28 @@
+{
+  "command": [
+    "./crazyrl",
+    "evaluate",
+    "--checkpoint",
+    "models/crazyflow/policy.npz",
+    "--config",
+    "config/training-clearance.yaml",
+    "--episodes",
+    "256",
+    "--seed",
+    "9001",
+    "--map-seed",
+    "42",
+    "--device",
+    "gpu",
+    "--output",
+    "outputs/tof-training-study/evaluation/cf/old"
+  ],
+  "container_id": "008cb8c2dd667285f9fd552e4a969095ac28521ada33b39f2deb91b00f34beb7",
+  "container_name": "crazyflow-heldout-9f1500606e004962",
+  "exit_code": 0,
+  "memory_limit_mib": 9728,
+  "metric": "nvidia-smi compute allocation for host PIDs from docker top of ONLY this container",
+  "poll_seconds": 0.25,
+  "sampled_peak_mib": 798.0,
+  "watchdog_stopped": false
+}

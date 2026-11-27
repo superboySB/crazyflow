@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "locked_at_utc": "2026-11-27T16:32:32.254899+00:00",
+  "heldout_used": false,
+  "selected": {
+    "name": "A-1024-control",
+    "path": "outputs/tof-training-study/runs/A-1024-control/policy.pt",
+    "pt_sha256": "5042d233787782f8d4c44cbea9a30f4bfd429a093e970c1363aad67d4e1aef1d",
+    "npz_sha256": "2ad8ef63ec22fd8838636bf51106f07917a8f13c25c1fb6b7ab45fc73a097be3"
+  },
+  "old": {
+    "path": "outputs/tof-training-study/frozen-old/policy.pt",
+    "pt_sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c",
+    "npz_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206"
+  },
+  "baseline": {
+    "path": "models/baseline/model_36825.pt",
+    "pt_sha256": "7c3ecc53bf468989789b1deee0c3efd6856438604aa5b0f19e35693527d15cc3"
+  },
+  "evidence": [
+    {
+      "path": "outputs/tof-training-study/evaluation/cf/index.json",
+      "sha256": "edb4fb183f87b8c5543ac4f5242fcc2bdf6d624789bcc6b7e0757400240232a0"
+    },
+    {
+      "path": "outputs/tof-training-study/evaluation/dev/index.json",
+      "sha256": "e2f75cbaa61d99c4224821009e6e02ffb65728cf0e5585e2ac1d45ae19023025"
+    }
+  ],
+  "selection_rule": {
+    "selected": "A",
+    "eligible": [
+      "A"
+    ],
+    "rule": "Eligible only if Isaac dev success strictly exceeds old and common-CF success is no more than .02 below old. Rank eligible candidates by Isaac success, then highest CF mean return, then A/B/C order. Otherwise retain old; ties with old retain old.",
+    "heldout_used": false
+  },
+  "conditional_extension_triggered": false,
+  "development_counts": {
+    "baseline": 31,
+    "old": 25,
+    "A": 26,
+    "B": 25,
+    "C": 25
+  },
+  "common_native_counts": {
+    "old": 253,
+    "A": 251,
+    "B": 247,
+    "C": 250
+  },
+  "qualification": "Development winner only; untouched heldout seeds431..435 run after this immutable lock. No promotion or generalization claim based solely on one development layout."
+}

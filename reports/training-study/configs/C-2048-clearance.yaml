@@ -1,0 +1,82 @@
+# JAX PPO, CrazyRL state/action/reward contract; no differentiation through physics.
+# Both training and evaluation use crazyflow.tof.config.load_config.
+training:
+  # Keep JAX PPO; align advantage/KL/Adam semantics with the saved RSL baseline.
+  ppo_variant: rsl_aligned
+  normalization_until: 100000000
+  iterations: 1000
+  num_envs:
+    gpu: 2048
+    cpu: 32
+  num_steps: 120
+  num_minibatches: 64
+  update_epochs: 5
+  learning_rate: 0.0005
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_coef: 0.2
+  entropy_coef: 0.005
+  value_coef: 1.0
+  max_grad_norm: 1.0
+  desired_kl: 0.01
+  seed: 42
+  save_interval: 25
+
+environment:
+  drone: cf21B_500
+  # Optional identified physical TOML inside outputs; null retains official defaults.
+  model_params_path: null
+  integrator: rk4
+  policy_hz: 15
+  physics_hz: 150
+  action_delay_steps: 4
+  history_length: 10
+  episode_seconds: 80.0
+  # 8x8 front depth plus left/right/back/down single pixel cameras.
+  camera_max_distance: 4.0
+  camera_focal_length: 20.0
+  camera_aperture: 20.955
+  depth_invalid_rate_max: 0.15
+  observation_noise: true
+  domain_randomization: true
+  mass_randomization_percent: 0.2
+  wind_tau: 1.0
+  wind_sigma: 0.5
+  thrust_initial_min: 0.85
+  thrust_initial_max: 1.0
+  thrust_degradation_min: 0.10
+  thrust_degradation_max: 0.15
+  thrust_min_effectiveness: 0.7
+  desired_speed_min: 0.5
+  desired_speed_max: 1.5
+  goal_noise: 0.15
+  map_seed: 42
+  num_maps: 2
+  enable_difficulty_curriculum: true
+  map_generation_reset_batches: 3000
+  obstacle_min_distance_min: 0.4
+  hover_hold_max_seconds: 2.0
+  hover_hold_increment_seconds: 0.1
+  map_size: 16.0
+  obstacle_min_distance: 1.5
+  obstacle_size_min: 0.4
+  obstacle_size_max: 0.8
+  floater_size_min: 0.4
+  floater_size_max: 0.8
+  spawn_clearance: 0.20
+  drone_radius: 0.09
+  hover_hold_seconds: 0.0
+  hover_distance: 0.5
+  hover_speed: 0.5
+  # CrazyRL static_goals coefficients, per policy step (not multiplied by dt).
+  reward_distance: 8.0
+  reward_yaw: 0.3
+  reward_action: 0.3
+  reward_action_change: 0.5
+  reward_velocity_direction: 0.15
+  reward_speed_excess: 0.5
+  reward_speed_match: 0.0
+  reward_height: 0.25
+  reward_collision: 80.0
+  reward_esdf: 0.1
+  reward_success: 80.0

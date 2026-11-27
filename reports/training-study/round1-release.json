@@ -1,0 +1,17 @@
+{
+  "round": 1,
+  "evaluation_passed": true,
+  "candidate": "A-1024-control",
+  "candidate_released": false,
+  "reason": "Locked candidate136/160 is below frozen old141/160; retain old deployment. No other round1candidate was evaluated on heldout.",
+  "success_counts": {
+    "baseline": 157,
+    "old": 141,
+    "selected": 136
+  },
+  "episodes_per_policy": 160,
+  "heldout": "outputs/tof-training-study/evaluation/heldout/summary.json",
+  "heldout_sha256": "a9a2f2dd3cffe30d4430d4fa34d1f1b61642f0426653f2db2b754468173ed80b",
+  "deployed_npz_sha256": "ac8dda90bc960a1e683b63a6bd9697fe0a40e98735dc82e7a09811392b08c206",
+  "deployed_pt_sha256": "2d86bd1b3ccd7b38324ec85b4817298ac80cb60049791cfe59524722211e1b8c"
+}

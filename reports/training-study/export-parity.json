@@ -1,0 +1,235 @@
+{
+  "case": "A-1024-control",
+  "iteration": 1000,
+  "jax_backend": "cpu",
+  "packets": 128,
+  "packet_source": "outputs/sim2sim/io-contract-20261127/realistic-packets.npz",
+  "packet_source_sha256": "1472fdefb07280b505d593869821a0f270578f09ddb2514e952a5cc69eb441ed",
+  "iteration_matches_real_checkpoint": true,
+  "actor_only": false,
+  "weights_exactly_equal_to_real_agent": true,
+  "weights": {
+    "actor.0.weight": {
+      "shape": [
+        256,
+        344
+      ],
+      "dtype": "float32"
+    },
+    "actor.0.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.2.weight": {
+      "shape": [
+        256,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.2.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.4.weight": {
+      "shape": [
+        128,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "actor.4.bias": {
+      "shape": [
+        128
+      ],
+      "dtype": "float32"
+    },
+    "actor.6.weight": {
+      "shape": [
+        64,
+        128
+      ],
+      "dtype": "float32"
+    },
+    "actor.6.bias": {
+      "shape": [
+        64
+      ],
+      "dtype": "float32"
+    },
+    "actor.8.weight": {
+      "shape": [
+        4,
+        64
+      ],
+      "dtype": "float32"
+    },
+    "actor.8.bias": {
+      "shape": [
+        4
+      ],
+      "dtype": "float32"
+    },
+    "critic.0.weight": {
+      "shape": [
+        256,
+        434
+      ],
+      "dtype": "float32"
+    },
+    "critic.0.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.2.weight": {
+      "shape": [
+        256,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.2.bias": {
+      "shape": [
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.4.weight": {
+      "shape": [
+        128,
+        256
+      ],
+      "dtype": "float32"
+    },
+    "critic.4.bias": {
+      "shape": [
+        128
+      ],
+      "dtype": "float32"
+    },
+    "critic.6.weight": {
+      "shape": [
+        64,
+        128
+      ],
+      "dtype": "float32"
+    },
+    "critic.6.bias": {
+      "shape": [
+        64
+      ],
+      "dtype": "float32"
+    },
+    "critic.8.weight": {
+      "shape": [
+        1,
+        64
+      ],
+      "dtype": "float32"
+    },
+    "critic.8.bias": {
+      "shape": [
+        1
+      ],
+      "dtype": "float32"
+    }
+  },
+  "normalizers": {
+    "actor_norm": {
+      "width": 344,
+      "mean_and_variance_equal_to_real_agent": true,
+      "count": 100024320,
+      "count_dtype": "torch.int64",
+      "normalization": "(x-mean)/(sqrt(var)+.01)"
+    },
+    "critic_norm": {
+      "width": 434,
+      "mean_and_variance_equal_to_real_agent": true,
+      "count": 100024320,
+      "count_dtype": "torch.int64",
+      "normalization": "(x-mean)/(sqrt(var)+.01)"
+    }
+  },
+  "std_matches_exp_clipped_logstd_max_abs": 1.4901161193847656e-08,
+  "npz_actor_vs_full_agent_max_abs": 0.0,
+  "artifacts": {
+    "outputs/tof-training-study/runs/A-1024-control/result.json": {
+      "sha256": "2fc9089acffe7b9a414fe6f5aa4f57f9115e797a886d94371466e813779abd7d",
+      "bytes": 2787
+    },
+    "outputs/tof-training-study/runs/A-1024-control/checkpoint.msgpack": {
+      "sha256": "d856accbda0d5602bde16a876e291584891a5872286c49a52c3efb121f5f56a1",
+      "bytes": 11397338
+    },
+    "outputs/tof-training-study/runs/A-1024-control/policy.npz": {
+      "sha256": "2ad8ef63ec22fd8838636bf51106f07917a8f13c25c1fb6b7ab45fc73a097be3",
+      "bytes": 735107
+    },
+    "outputs/tof-training-study/runs/A-1024-control/policy.pt": {
+      "sha256": "5042d233787782f8d4c44cbea9a30f4bfd429a093e970c1363aad67d4e1aef1d",
+      "bytes": 1680693
+    },
+    "outputs/tof-training-study/export-parity/A-cpu-packets.npz": {
+      "sha256": "dd490c71d48479dfbac6297632915e5433655cac778f7c927eeade9e9b3b9416",
+      "bytes": 346195
+    }
+  },
+  "passed": true,
+  "scope": "CPU-only serialization and native inference proof for actual completed A; no Isaac app, simulation, GPU, retraining or model mutation.",
+  "native_rsl": {
+    "strict_OnPolicyRunner_load_passed": true,
+    "load_optimizer": false,
+    "all_model_state_keys_present": true,
+    "model_state_tensor_count": 21,
+    "critic_tensor_count": 10,
+    "top_level_keys": [
+      "crazyflow_metadata",
+      "infos",
+      "iter",
+      "model_state_dict",
+      "obs_norm_state_dict",
+      "privileged_obs_norm_state_dict"
+    ],
+    "optimizer_state_present": false,
+    "adapter_state_and_outputs_identical": true,
+    "loading_preserves_torch_rng": true,
+    "normalizer_keys": [
+      "_mean",
+      "_std",
+      "_var",
+      "count"
+    ]
+  },
+  "max_absolute_error": {
+    "native_pt_vs_jax_npz_raw_actor": 8.344650268554688e-07,
+    "native_pt_vs_legacy_npz_torch_raw_actor": 9.5367431640625e-07,
+    "native_pt_vs_real_jax_critic": 3.814697265625e-05,
+    "actor_normalized_packets_torch_vs_jax": 4.76837158203125e-07,
+    "critic_normalized_packets_torch_vs_jax": 4.76837158203125e-07
+  },
+  "physical_contract": {
+    "actor_input": "344 values:10 chronological28-feature noisy sensor/state/action-history frames plus current row-major8x8 depth. Inputs already have task feature scaling; apply this policy own normalizer once.",
+    "critic_input": "434 values:10 chronological37-feature privileged frames plus64 depth samples, with independent critic statistics.",
+    "actor_output_order": [
+      "roll attitude",
+      "pitch attitude",
+      "yaw rate",
+      "collective thrust"
+    ],
+    "actor_output": "Four raw unsquashed Gaussian means, not radians/Newtons. Frozen target task applies tanh once, maps thrust to[0,1], then applies reference attitude/rate/thrust scaling. No additional tanh in either deployment adapter.",
+    "architecture": "Actor344→256→256→128→64→4, critic434→256→256→128→64→1; hidden ELU, linear outputs.",
+    "std": "Four positive exploration std values=exp(clip(JAX logstd,-5,2)); deterministic inference uses means."
+  },
+  "qualification": "This proves export structure, actual trained actor/critic mapping and numerical inference parity. It does not measure success or sim2sim transfer. PT excludes Optax state; JAX full resume remains checkpoint.msgpack.",
+  "numerical_tolerance": {
+    "rtol": 2e-05,
+    "atol": 2e-05,
+    "tested_actor_and_critic_normalized_packets": true
+  }
+}
